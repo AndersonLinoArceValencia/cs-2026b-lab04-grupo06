@@ -15,6 +15,7 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 | **5** | 03/10/2026 | Antigravity AI | **(E2 - Prompt 2)** Crítica adversarial ("abogado del diablo") contra el Monolito Modular Asíncrono recomendado. | Señaló 5 riesgos críticos en producción: 1) Bloqueo del Event Loop por cómputo espacial, 2) Punto único de falla de Redis, 3) Erosión modular por prisas de entrega, 4) Agotamiento de sockets con pasajeros, 5) Agotamiento de conexiones a BD. | **Corrección crítica del equipo:** Se refutó la suposición ingenua de que un monolito asíncrono básico soporta la carga sin bloquearse. Se corrigió la propuesta inicial adoptando la *"Alternativa C Corregida"* (desacople de CPU mediante Redis Streams y workers en segundo plano) y se formalizaron las opciones en [`demostracion-abogado-del-diablo.md`](demostracion-abogado-del-diablo.md). | **Corregida** |
 | **6** | 03/10/2026 | Antigravity AI | **(E3)** Generación del código Diagram as Code en Mermaid (`arquitectura.mmd`) a partir de la matriz de decisión y drivers. | Diagrama con 3 actores, 5 módulos de dominio explícitos, capa de infraestructura asíncrona, Redis y PostgreSQL/PostGIS, más servicios externos (OpenStreetMap y Web Push). | Se verificó la correspondencia biunívoca con los RF de `drivers.md` (RF-01 a RF-06), el aislamiento por subgraphs y la dirección no circular de dependencias. Se exportaron imágenes PNG y SVG a `diagramas/img/`. | **Aceptada** |
 | **7** | 03/10/2026 | Antigravity AI | **(E5)** Modelado en PlantUML de la segunda mejor opción (`alternativa.puml`) con nota explicativa de descarte. | Diagrama de componentes de la Alternativa A (Monolito en capas Django) con nota técnica de descarte citando su puntaje (3.35/5.00). | Se verificó que la nota cumpla la extensión de 3 a 5 líneas de la guía, justificando el descarte por bloqueo de workers WSGI y saturación de I/O en BD. Se generaron las imágenes PNG y SVG en `diagramas/img/`. | **Aceptada** |
+| **8** | 03/10/2026 | Antigravity AI | **(E6)** Script de vista de despliegue (`despliegue.py`) y diagrama PlantUML de topología física en VPS (`despliegue.puml`). | Topología en clusters: 300 buses, PWA de pasajeros, Nginx, FastAPI ASGI, Redis Streams, PostgreSQL/PostGIS, Prometheus/Grafana y servicios externos. | Al detectarse la ausencia de Graphviz/pip en el sistema, se implementó el fallback oficial E6.4 (elaborar la vista física con PlantUML y documentarlo en el README). Se generaron `despliegue.png` y `despliegue.svg` en `diagramas/img/`. | **Aceptada** |
 
 ---
 
@@ -108,5 +109,18 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   Generó el diagrama de componentes en PlantUML estructurado en 3 capas secuenciales (Presentación, Lógica y ORM) hacia PostgreSQL único, con la nota técnica de descarte detallando la saturación de workers síncronos WSGI y el colapso de I/O en la base de datos.
 * **Validación humana:**
   Se verificó que la nota técnica cite puntualmente el puntaje de 3.35 de `matriz-decision.md` y demuestre la inviabilidad ante el requerimiento crítico de latencia de 15 s (QA-01). Se exportaron las imágenes renderizadas (`alternativa.png` y `alternativa.svg`) a `diagramas/img/`. Decisión: **Aceptada**.
+
+---
+
+### Interacción 8: Vista de Despliegue Físico en VPS (E6)
+* **Rol:** Arquitecto de Software e Ingeniero de Infraestructura con IA.
+* **Contexto:** Topología física de despliegue en un único servidor VPS económico (2-4 vCPU, 4-8 GB RAM) para RutaSIT Arequipa.
+* **Prompt emitido:**
+  > *"Genera el script `despliegue.py` con la librería Python Diagrams y el diagrama de despliegue PlantUML `despliegue.puml`. Debe modelar dispositivos (300 buses GPS y pasajeros), proxy Nginx, cluster de aplicación FastAPI con workers desacoplados, cluster de almacenamiento (Redis y PostGIS), cluster de observabilidad (Prometheus y Grafana) y servicios externos con conexiones etiquetadas."*
+* **Respuesta de la IA:**
+  Generó el código Python con la librería `diagrams` agrupando por `Cluster` y conexiones `Edge(label=...)`. Ante la ausencia de `graphviz` y `pip` en el entorno Linux, generó la especificación complementaria en PlantUML (`despliegue.puml`) conforme a la regla oficial E6.4 y renderizó las imágenes `despliegue.svg` y `despliegue.png` en `diagramas/img/`.
+* **Validación humana:**
+  Se verificó que todos los componentes esenciales para operar con 30 req/s y 1500 conexiones de pasajeros estuvieran claramente ubicados en el VPS. Se exportó `despliegue.png` y se realizó el commit `E6: vista de despliegue`. Decisión: **Aceptada**.
+
 
 

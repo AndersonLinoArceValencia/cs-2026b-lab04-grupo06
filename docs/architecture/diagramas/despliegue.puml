@@ -1,0 +1,102 @@
+@startuml
+skinparam dpi 220
+skinparam defaultFontName Arial
+skinparam backgroundColor white
+skinparam roundCorner 10
+
+skinparam node {
+    BackgroundColor #FAFAFA
+    BorderColor #37474F
+    FontColor #263238
+}
+
+skinparam package {
+    BackgroundColor #FFFFFF
+    BorderColor #78909C
+    FontColor #37474F
+}
+
+skinparam component {
+    BackgroundColor #E8F5E9
+    BorderColor #2E7D32
+    FontColor #1B5E20
+}
+
+skinparam database {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+    FontColor #BF360C
+}
+
+skinparam actor {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontColor #0D47A1
+}
+
+skinparam cloud {
+    BackgroundColor #F3E5F5
+    BorderColor #7B1FA2
+    FontColor #4A148C
+}
+
+title RutaSIT Arequipa — Vista de Despliegue Físico en VPS (Entregable E6)
+
+actor "300 Buses SIT\n(GPS Embarcado)" as Buses
+actor "Pasajeros SIT\n(App Móvil PWA)" as Passengers
+actor "Operador SIT\n(Consola Web)" as Operator
+
+node "Servidor en la Nube (VPS de Producción: 2-4 vCPU, 4-8 GB RAM, Linux Arch/Debian)" as VPS {
+
+    node "Nginx Web Server / Reverse Proxy" as Nginx {
+        component "Nginx Proxy\n- Terminación SSL/HTTPS\n- Proxy Pass ASGI\n- Gestión WebSockets masivos (ulimit optimizado)" as Proxy
+    }
+
+    node "Docker Compose / Runtime Monolito" as Docker {
+
+        package "Monolito Modular Asíncrono (Python 3.10+ / FastAPI)" as AppCluster {
+            component "FastAPI Core Application\n- API Gateway ASGI\n- Módulos: Ingesta, Catálogo, Flota\n- WebSocket Server" as FastAPI
+            component "Worker Geoespacial\n- Proyecciones espaciales y cálculo de ETA\n- Detección de desvíos > 100m\n- Ejecución fuera del Event Loop" as WorkerGeo
+            component "Batch Writer Worker\n- Persistencia periódica en lote cada 5s\n- Inserción optimizada COPY" as WorkerBatch
+        }
+
+        database "Redis 7.x (En Memoria)" as Redis {
+            storage "Redis Data Storage:\n• Redis Streams (Búfer Ingesta)\n• Hash Map (Estado último de buses)\n• Pub/Sub (Canal difusión WS)" as RedisData
+        }
+
+        database "PostgreSQL 16 + PostGIS 3.4" as Postgres {
+            storage "PostGIS Data Storage:\n• Esquema Catálogo: Rutas y paraderos\n• Esquema Flota: Unidades y conductores\n• Esquema Histórico: Telemetría particionada" as PGData
+        }
+
+        package "Pila de Observabilidad" as Monitoring {
+            component "Prometheus\n- Recolección métricas /metrics\n- Monitoreo latencia p95 y CPU" as Prom
+            component "Grafana\n- Dashboard de estado del sistema SIT\n- Alertas de rendimiento" as Graf
+        }
+    }
+}
+
+cloud "OpenStreetMap CDN\n(Servidor de Mapas Libre)" as OSM
+cloud "Servicio Web Push\n(Notificaciones Navegador)" as Push
+
+' Conexiones de red externas
+Buses --> Proxy : HTTP POST /telemetry (c/10s)\n~30 req/s continuas
+Passengers --> Proxy : HTTPS / WSS (Mapa y ETA en tiempo real ≤ 15s)
+Operator --> Proxy : HTTPS (Panel de supervisión)
+
+' Proxy a la aplicación
+Proxy --> FastAPI : Proxy pass local (Unix Socket / HTTP ASGI)
+
+' Flujo de aplicación interna
+FastAPI --> RedisData : Ingesta inmediata XADD (<1ms)\nSuscripción Pub/Sub WebSockets
+WorkerGeo --> RedisData : Consume stream de telemetría\nActualiza último estado en caché
+WorkerBatch --> RedisData : Lee lotes de tramas de telemetría
+WorkerBatch --> PGData : Inserción en bloque consolidada cada 5s
+FastAPI --> PGData : Consultas espaciales de catálogo y paraderos
+
+' Servicios externos y observabilidad
+Passengers ..> OSM : Descarga directa de teselas cartográficas
+FastAPI ..> Push : Notificaciones push por desvíos o incidencias
+FastAPI ..> Prom : Exposición de métricas /metrics
+Prom --> Graf : Consulta y visualización
+
+@enduml
