@@ -1,0 +1,69 @@
+flowchart TB
+    %% Actores del Sistema
+    BUS["🚌 Bus SIT (Dispositivo GPS Embarcado)<br/><i>300 unidades • 1 trama c/10s</i>"]
+    PAS["📱 Pasajero SIT<br/><i>App Móvil PWA (Leaflet)</i>"]
+    OPE["💻 Operador del SIT<br/><i>Centro de Control y Monitoreo</i>"]
+
+    %% Sistema Central: Monolito Modular Asíncrono
+    subgraph APP["RutaSIT Arequipa — Monolito Modular Asíncrono (Un solo despliegue en VPS)"]
+        API["Capa de Entrada: API Gateway ASGI (FastAPI + Nginx Proxy)<br/><i>Terminación HTTPS, enrutamiento y WebSockets masivos</i>"]
+
+        subgraph MODULOS["Módulos de Dominio (Fronteras y contratos explícitos)"]
+            M1["Módulo de Ingesta GPS<br/><b>[RF-01]</b> <i>Validación ultrarrápida y buffer</i>"]
+            M2["Módulo de ETA y Geocercas<br/><b>[RF-03, RF-04]</b> <i>Cálculo espacial y desvíos</i>"]
+            M3["Módulo de Notificaciones y Tiempo Real<br/><b>[RF-02, RF-03]</b> <i>Broker WebSockets</i>"]
+            M4["Módulo de Catálogo SIT<br/><b>[RF-06]</b> <i>Rutas, paraderos y tarifas</i>"]
+            M5["Módulo de Supervisión de Flota<br/><b>[RF-05]</b> <i>Indicadores, frecuencias y panel</i>"]
+        end
+
+        INF["Capa de Infraestructura y Tareas en Segundo Plano<br/><i>Workers desacoplados, persistencia por lotes y adaptadores</i>"]
+    end
+
+    %% Capa de Almacenamiento y Estado
+    REDIS[("⚡ Redis en Memoria<br/><i>Redis Streams (buffer) + Caché estado buses + Pub/Sub</i>")]
+    DB[("🐘 PostgreSQL + PostGIS<br/><i>Esquemas: catálogo espacial, flota e histórico batch</i>")]
+
+    %% Servicios Externos
+    OSM["🗺️ Servidor OpenStreetMap / CDN Tiles<br/><i>(Cartografía abierta libre de costos comerciales)</i>"]
+    PUSH["🔔 Servicio Web Push / Alertas<br/><i>(Notificaciones de desvío y congestión)</i>"]
+
+    %% Relaciones de Actores con la API
+    BUS -->|"HTTP POST / Telemetría GPS (~30 req/s)"| API
+    PAS -->|"HTTPS / Consulta de catálogo y rutas"| API
+    PAS <-->|"WebSocket / Flujo continuo de buses y ETA (≤15s)"| API
+    OPE -->|"HTTPS / Dashboard de supervisión y gestión"| API
+
+    %% Flujo Interno en el Monolito
+    API --> M1
+    API --> M4
+    API --> M5
+    API <--> M3
+
+    %% Conexiones con la Capa de Infraestructura y Almacenamiento
+    M1 -->|"XADD trama instantánea (<1ms)"| REDIS
+    INF -->|"Lee stream de telemetría"| REDIS
+    INF -->|"Ejecuta cómputo geométrico (async worker)"| M2
+    M2 -->|"Actualiza último estado y ETA"| REDIS
+    REDIS -->|"Evento Pub/Sub difusión"| M3
+    INF -->|"Escritura en lote consolidada c/5s"| DB
+    M4 & M5 --> INF
+    INF --> DB
+    INF -.->|"Despacho de alertas masivas"| PUSH
+
+    %% Consumo externo de mapas
+    PAS -.->|"Descarga capas y teselas de mapa"| OSM
+
+    %% Definición de Estilos
+    classDef usr fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#0D47A1
+    classDef api fill:#ECEFF1,stroke:#37474F,stroke-width:2px,color:#263238
+    classDef mod fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    classDef inf fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#E65100
+    classDef store fill:#FFF3E0,stroke:#E65100,stroke-width:2px,color:#BF360C
+    classDef ext fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px,stroke-dasharray: 4 3,color:#4A148C
+
+    class BUS,PAS,OPE usr
+    class API api
+    class M1,M2,M3,M4,M5 mod
+    class INF inf
+    class REDIS,DB store
+    class OSM,PUSH ext
