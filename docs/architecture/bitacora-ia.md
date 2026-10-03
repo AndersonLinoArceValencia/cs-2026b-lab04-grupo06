@@ -14,6 +14,7 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 | **4** | 03/10/2026 | Antigravity AI | **(E2 - Prompt 1)** Generación de 3 alternativas de estilo arquitectónico para sistema de transportes con alta concurrencia en 1 VPS. | Propuso: A) Monolito en capas (Django), B) Microservicios distribuidos (FastAPI + RabbitMQ), C) Monolito modular asíncrono (FastAPI + Redis). Recomendó la opción C. | **Verificación del equipo:** Se validó mediante cálculo de carga (300 buses $\times$ 1 trama/10 s = 30 req/s continuas). Un monolito síncrono WSGI saturaría hilos de ejecución rápidamente; y microservicios consumiría >4 GB de RAM solo en orquestación y colas, violando R-03. La recomendación C es la única viable. | **Aceptada** |
 | **5** | 03/10/2026 | Antigravity AI | **(E2 - Prompt 2)** Crítica adversarial ("abogado del diablo") contra el Monolito Modular Asíncrono recomendado. | Señaló 5 riesgos críticos en producción: 1) Bloqueo del Event Loop por cómputo espacial, 2) Punto único de falla de Redis, 3) Erosión modular por prisas de entrega, 4) Agotamiento de sockets con pasajeros, 5) Agotamiento de conexiones a BD. | **Corrección crítica del equipo:** Se refutó la suposición ingenua de que un monolito asíncrono básico soporta la carga sin bloquearse. Se corrigió la propuesta inicial adoptando la *"Alternativa C Corregida"* (desacople de CPU mediante Redis Streams y workers en segundo plano) y se formalizaron las opciones en [`demostracion-abogado-del-diablo.md`](demostracion-abogado-del-diablo.md). | **Corregida** |
 | **6** | 03/10/2026 | Antigravity AI | **(E3)** Generación del código Diagram as Code en Mermaid (`arquitectura.mmd`) a partir de la matriz de decisión y drivers. | Diagrama con 3 actores, 5 módulos de dominio explícitos, capa de infraestructura asíncrona, Redis y PostgreSQL/PostGIS, más servicios externos (OpenStreetMap y Web Push). | Se verificó la correspondencia biunívoca con los RF de `drivers.md` (RF-01 a RF-06), el aislamiento por subgraphs y la dirección no circular de dependencias. Se exportaron imágenes PNG y SVG a `diagramas/img/`. | **Aceptada** |
+| **7** | 03/10/2026 | Antigravity AI | **(E5)** Modelado en PlantUML de la segunda mejor opción (`alternativa.puml`) con nota explicativa de descarte. | Diagrama de componentes de la Alternativa A (Monolito en capas Django) con nota técnica de descarte citando su puntaje (3.35/5.00). | Se verificó que la nota cumpla la extensión de 3 a 5 líneas de la guía, justificando el descarte por bloqueo de workers WSGI y saturación de I/O en BD. Se generaron las imágenes PNG y SVG en `diagramas/img/`. | **Aceptada** |
 
 ---
 
@@ -95,4 +96,17 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   Generó el diagrama con 3 actores (`Bus SIT`, `Pasajero SIT`, `Operador SIT`), capa de entrada ASGI (FastAPI + Nginx), 5 módulos (`M1` Ingesta, `M2` ETA/Geocercas, `M3` Notificaciones/WebSockets, `M4` Catálogo SIT, `M5` Supervisión), capa de infraestructura con workers y adaptadores, almacenamiento en Redis y PostgreSQL/PostGIS, y servicios externos (OpenStreetMap y Web Push).
 * **Validación humana:**
   Se verificó que no existieran dependencias circulares, que cada módulo mapee a un RF de `drivers.md` y que la sintaxis compile limpiamente sin errores. Se exportaron las vistas gráficas (`arquitectura.svg` y `arquitectura.png`) y se realizó el commit `E3: diagrama Mermaid`. Decisión: **Aceptada**.
+
+---
+
+### Interacción 7: Diagrama PlantUML de la Alternativa Descartada (E5)
+* **Rol:** Arquitecto Líder y Diagramador con IA.
+* **Contexto:** Representación de la 2da mejor alternativa (Alternativa A: Monolito en capas Django) y justificación de descarte.
+* **Prompt emitido:**
+  > *"Genera el código PlantUML (`alternativa.puml`) para la segunda mejor alternativa de la matriz de decisión (Monolito en capas Django). Debe incluir actores (buses y usuarios), las capas del monolito, la base de datos PostgreSQL, el servicio de mapas y una nota explicativa de 3 a 5 líneas que cite su puntaje (3.35) y explique técnicamente por qué se descartó."*
+* **Respuesta de la IA:**
+  Generó el diagrama de componentes en PlantUML estructurado en 3 capas secuenciales (Presentación, Lógica y ORM) hacia PostgreSQL único, con la nota técnica de descarte detallando la saturación de workers síncronos WSGI y el colapso de I/O en la base de datos.
+* **Validación humana:**
+  Se verificó que la nota técnica cite puntualmente el puntaje de 3.35 de `matriz-decision.md` y demuestre la inviabilidad ante el requerimiento crítico de latencia de 15 s (QA-01). Se exportaron las imágenes renderizadas (`alternativa.png` y `alternativa.svg`) a `diagramas/img/`. Decisión: **Aceptada**.
+
 

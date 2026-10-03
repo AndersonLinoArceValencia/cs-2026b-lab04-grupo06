@@ -1,0 +1,72 @@
+@startuml
+skinparam dpi 220
+skinparam componentStyle rectangle
+skinparam defaultFontName Arial
+skinparam backgroundColor white
+skinparam roundCorner 10
+
+skinparam package {
+    BackgroundColor #FAFAFA
+    BorderColor #455A64
+    FontColor #263238
+}
+
+skinparam node {
+    BackgroundColor #ECEFF1
+    BorderColor #37474F
+    FontColor #263238
+}
+
+skinparam database {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+    FontColor #BF360C
+}
+
+skinparam actor {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontColor #0D47A1
+}
+
+skinparam cloud {
+    BackgroundColor #F3E5F5
+    BorderColor #7B1FA2
+    FontColor #4A148C
+}
+
+title Alternativa A (Segunda mejor en Matriz: 3.35 / 5.00) - Descartada:\nMonolito Tradicional en Capas (Django + PostgreSQL)
+
+actor "Pasajeros y Operadores\n(Web / Móvil)" as Users
+actor "300 Buses SIT\n(Dispositivos GPS)" as Buses
+
+node "Servidor en la Nube (VPS Único: 2-4 vCPU, 4-8 GB RAM)" as VPS {
+
+    package "Monolito en Capas Tradicional (Django WSGI)" as Monolito {
+        [Capa de Presentación\n(Django Views, Templates y DRF)] as Pres
+        [Capa de Lógica de Negocio\n(Servicios de Rutas, Estimación de ETA y Alertas)] as Logic
+        [Capa de Acceso a Datos\n(Django ORM / QuerySets)] as DataAccess
+    }
+
+    database "PostgreSQL\n(Base de Datos Relacional Única)" as DB
+}
+
+cloud "OpenStreetMap\n(Servidor de Mapas Libre)" as OSM
+
+Buses --> Pres : HTTP POST síncrono\n(Telemetría c/10s, ~30 req/s continuas)
+Users --> Pres : Peticiones HTTP regulares\n(Consulta de paraderos y polling de mapa)
+Users ..> OSM : Descarga de teselas de mapa (Leaflet)
+
+Pres --> Logic : Llamadas directas y síncronas en memoria
+Logic --> DataAccess : Invocación síncrona del ORM
+DataAccess --> DB : Transacciones SQL individuales (INSERT / SELECT)
+
+note bottom of Logic
+DESCARTADA (Puntaje en matriz: 3.35 / 5.00):
+1. El modelo WSGI síncrono agota los workers de Python ante 30 req/s continuas.
+2. Inserción directa de cada trama vía ORM genera >2.5 millones de writes/día en la BD,
+   provocando saturación severa de I/O en el disco del único VPS.
+3. Imposibilita WebSockets bidireccionales masivos para actualizar el ETA en ≤ 15 s (QA-01).
+end note
+
+@enduml
