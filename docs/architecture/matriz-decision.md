@@ -49,4 +49,4 @@ Elegimos el **Monolito Modular Asíncrono con Eventos en Memoria (Alternativa C)
 2. **Factibilidad en 1 mes y 2 desarrolladores (R-01, R-02):** Evita la dispersión de esfuerzos en múltiples repositorios, gestión de redes virtuales y sincronización distribuida de datos que exige la opción de microservicios.
 3. **Optimización de recursos en 1 solo VPS (R-03):** La combinación de una aplicación modular en Python + Redis + PostgreSQL/PostGIS consume menos de 1.5 GB de RAM bajo régimen de producción, operando con holgura en el servidor de bajo costo.
 
-Para mayores detalles sobre la decisión arquitectónica formal, sus implicancias técnicas y tácticas de mitigación, ver [ADR-001](adr/001-estilo-arquitectonico.md).
+Para mayores detalles sobre la decisión arquitectónica formal, sus implicancias técnicas y tácticas de mitigación, ver [ADR-001](adr/001-estilo-arquitectonico.md). Asimismo, para consultar el análisis adversarial y las alternativas tácticas surgidas de la crítica profunda, ver [Demostración como Abogado del Diablo](demostracion-abogado-del-diablo.md).
