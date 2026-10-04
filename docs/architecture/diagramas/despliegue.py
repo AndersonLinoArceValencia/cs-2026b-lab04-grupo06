@@ -2,13 +2,18 @@
 Script de vista de despliegue para RutaSIT Arequipa utilizando la librería Diagrams.
 Representa la topología física de ejecución en un único VPS de bajo costo.
 
-Para ejecutar este script se requiere:
+Requisitos:
     pip install diagrams
-    sudo pacman -S graphviz (o equivalente según la distribución)
+    Graphviz instalado en el sistema:
+        Windows:  winget install graphviz   (luego reiniciar la terminal)
+        Ubuntu:   sudo apt install graphviz
+        macOS:    brew install graphviz
 
-En caso de no contar con Graphviz en el entorno del sistema, la guía de laboratorio
-establece en el Paso E6.4 la alternativa de utilizar la vista de despliegue con PlantUML
-(disponible en docs/architecture/diagramas/despliegue.puml y renderizada en img/despliegue.png).
+Ejecutar desde la raíz del repositorio:
+    python docs/architecture/diagramas/despliegue.py
+
+Genera docs/architecture/diagramas/img/despliegue.png y despliegue.svg.
+La vista complementaria en PlantUML (despliegue.puml) se renderiza en img/despliegue-plantuml.png.
 """
 
 from diagrams import Diagram, Cluster, Edge
@@ -24,7 +29,8 @@ from diagrams.onprem.compute import Server
 graph_attr = {
     "fontsize": "20",
     "bgcolor": "white",
-    "pad": "0.4"
+    "pad": "0.4",
+    "splines": "spline"
 }
 
 with Diagram(
@@ -33,7 +39,7 @@ with Diagram(
     show=False,
     direction="LR",
     graph_attr=graph_attr,
-    outformat="png"
+    outformat=["png", "svg"]
 ) as diag:
     # 1. Dispositivos y Usuarios
     buses = Mobile("300 Buses SIT\n(GPS Embarcado)")
@@ -50,7 +56,7 @@ with Diagram(
             batch_worker = Server("Batch Writer\n(escritura en lote c/5s)")
 
         with Cluster("Almacenamiento y Estado en Memoria"):
-            cache = Redis("Redis 7.x\n(Streams + Caché Hash + Pub/Sub)")
+            cache = Redis("Redis 7.x\n(Streams + Caché Hash + Pub/Sub, AOF)")
             db = PostgreSQL("PostgreSQL 16 + PostGIS\n(Catálogo, Flota e Histórico)")
 
         with Cluster("Pila de Observabilidad"):
@@ -63,7 +69,7 @@ with Diagram(
     push = Internet("Web Push\n(Notificaciones y alertas)")
 
     # 4. Flujos de red y conexiones etiquetadas con Edge(label=...)
-    buses >> Edge(label="POST /telemetry (c/10s)") >> proxy
+    buses >> Edge(label="POST /telemetry (c/10s)\n/telemetry/batch tras corte") >> proxy
     pasajeros >> Edge(label="HTTPS / WSS (ETA ≤ 15s)") >> proxy
     operador >> Edge(label="HTTPS Admin") >> proxy
 
@@ -76,6 +82,7 @@ with Diagram(
     batch_worker >> Edge(label="COPY c/5s") >> db
 
     app >> Edge(label="catálogo / rutas") >> db
+    db >> Edge(label="rehidrata estado al arrancar", style="dashed") >> cache
     cache >> Edge(label="Pub/Sub broadcast") >> app
 
     app >> Edge(label="métricas /metrics", style="dotted") >> prom
