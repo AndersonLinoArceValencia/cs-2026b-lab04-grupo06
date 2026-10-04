@@ -1,188 +1,237 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1350 920" width="100%" height="100%" style="background:#ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#37474F" />
-    </marker>
-    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#E65100" />
-    </marker>
-    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#1565C0" />
-    </marker>
-    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2E7D32" />
-    </marker>
-    <filter id="drop-shadow" x="-5%" y="-5%" width="110%" height="115%">
-      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.08" />
-    </filter>
-  </defs>
-
-  <!-- Title -->
-  <text x="675" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#1A237E">RutaSIT Arequipa — Vista de Despliegue Físico en VPS</text>
-  <text x="675" y="60" text-anchor="middle" font-size="13" fill="#546E7A">Entregable E6 • Topología Física de Contenedores y Procesos en 1 VPS de Bajo Costo (Linux / Docker Compose)</text>
-
-  <!-- USUARIOS Y DISPOSITIVOS (EXTERNO) -->
-  <g transform="translate(50, 90)">
-    <!-- Buses GPS -->
-    <rect x="0" y="0" width="280" height="80" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" filter="url(#drop-shadow)"/>
-    <text x="140" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#0D47A1">🚌 300 Buses SIT (GPS)</text>
-    <text x="140" y="50" text-anchor="middle" font-size="12" fill="#1565C0">Módem Celular 3G/4G</text>
-    <text x="140" y="68" text-anchor="middle" font-size="11" fill="#546E7A">POST c/10s • ~30 req/s continuas</text>
-
-    <!-- Pasajeros PWA -->
-    <rect x="485" y="0" width="280" height="80" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" filter="url(#drop-shadow)"/>
-    <text x="625" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#0D47A1">📱 Pasajeros SIT (PWA)</text>
-    <text x="625" y="50" text-anchor="middle" font-size="12" fill="#1565C0">Navegadores Móviles / Leaflet</text>
-    <text x="625" y="68" text-anchor="middle" font-size="11" fill="#546E7A">WebSockets + HTTPS (ETA ≤ 15s)</text>
-
-    <!-- Operador SIT -->
-    <rect x="970" y="0" width="280" height="80" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="2" filter="url(#drop-shadow)"/>
-    <text x="1110" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#0D47A1">💻 Operador SIT (Consola Web)</text>
-    <text x="1110" y="50" text-anchor="middle" font-size="12" fill="#1565C0">Centro de Gestión y Control</text>
-    <text x="1110" y="68" text-anchor="middle" font-size="11" fill="#546E7A">Monitoreo de alertas y frecuencias</text>
-  </g>
-
-  <!-- CLUSTER SERVIDOR VPS -->
-  <rect x="50" y="215" width="1250" height="580" rx="14" fill="#FAFAFA" stroke="#37474F" stroke-width="2.5" stroke-dasharray="6 4" filter="url(#drop-shadow)"/>
-  <text x="80" y="244" font-size="16" font-weight="bold" fill="#263238">🖥️ Servidor en la Nube (VPS de Producción: 2-4 vCPU, 4-8 GB RAM, Linux / Docker Compose)</text>
-
-  <!-- Proxy Nginx -->
-  <g transform="translate(80, 265)">
-    <rect x="0" y="0" width="1190" height="65" rx="8" fill="#ECEFF1" stroke="#455A64" stroke-width="2"/>
-    <text x="595" y="28" text-anchor="middle" font-size="15" font-weight="bold" fill="#263238">Nginx Reverse Proxy &amp; Load Balancer (Contenedor Docker: :80/:443)</text>
-    <text x="595" y="48" text-anchor="middle" font-size="12" fill="#455A64">Terminación SSL/HTTPS • Proxy Pass ASGI a FastAPI • Proxy WebSocket con ulimit -n 65535 (soporta 1500+ conexiones concurrentes)</text>
-  </g>
-
-  <!-- CLUSTER MONOLITO MODULAR -->
-  <g transform="translate(80, 355)">
-    <rect x="0" y="0" width="1190" height="175" rx="10" fill="#FFFFFF" stroke="#2E7D32" stroke-width="2" filter="url(#drop-shadow)"/>
-    <text x="20" y="26" font-size="14" font-weight="bold" fill="#1B5E20">📦 Cluster de Aplicación: Monolito Modular Asíncrono (FastAPI ASGI)</text>
-
-    <!-- Componente FastAPI Core -->
-    <rect x="20" y="40" width="360" height="115" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
-    <text x="200" y="68" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B5E20">FastAPI Core Application</text>
-    <text x="200" y="88" text-anchor="middle" font-size="11" fill="#2E7D32">API Gateway ASGI + Router Modular</text>
-    <text x="200" y="106" text-anchor="middle" font-size="11" fill="#333333">• Módulo Ingesta GPS [RF-01]</text>
-    <text x="200" y="124" text-anchor="middle" font-size="11" fill="#333333">• WebSocket Server &amp; Pub/Sub [RF-02, RF-03]</text>
-    <text x="200" y="142" text-anchor="middle" font-size="11" fill="#333333">• Módulo Catálogo y Supervisión [RF-05, RF-06]</text>
-
-    <!-- Componente Worker Geoespacial -->
-    <rect x="415" y="40" width="360" height="115" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
-    <text x="595" y="68" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B5E20">Worker Geoespacial &amp; ETA</text>
-    <text x="595" y="88" text-anchor="middle" font-size="11" fill="#2E7D32">Procesamiento Fuera del Event Loop</text>
-    <text x="595" y="106" text-anchor="middle" font-size="11" fill="#333333">• Consume telemetría desde Redis Streams</text>
-    <text x="595" y="124" text-anchor="middle" font-size="11" fill="#333333">• Proyecciones Shapely/PostGIS y cálculo ETA</text>
-    <text x="595" y="142" text-anchor="middle" font-size="11" fill="#333333">• Detección desvío &gt;100m y alertas de congestión</text>
-
-    <!-- Componente Batch Writer Worker -->
-    <rect x="810" y="40" width="360" height="115" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
-    <text x="990" y="68" text-anchor="middle" font-size="14" font-weight="bold" fill="#1B5E20">Batch Telemetry Inserter</text>
-    <text x="990" y="88" text-anchor="middle" font-size="11" fill="#2E7D32">Persistencia Consolidada por Lotes</text>
-    <text x="990" y="106" text-anchor="middle" font-size="11" fill="#333333">• Lee lotes de Redis Streams cada 5 segundos</text>
-    <text x="990" y="124" text-anchor="middle" font-size="11" fill="#333333">• Ejecuta COPY masivo a PostgreSQL</text>
-    <text x="990" y="142" text-anchor="middle" font-size="11" fill="#333333">• Evita saturación de I/O en disco VPS (R-03)</text>
-  </g>
-
-  <!-- CLUSTER DE ALMACENAMIENTO Y OBSERVABILIDAD -->
-  <g transform="translate(80, 555)">
-    <!-- Redis en Memoria -->
-    <rect x="0" y="0" width="370" height="215" rx="10" fill="#FFF3E0" stroke="#E65100" stroke-width="2" filter="url(#drop-shadow)"/>
-    <text x="185" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#BF360C">⚡ Redis 7.x (En Memoria)</text>
-    <text x="185" y="50" text-anchor="middle" font-size="11" fill="#E65100">Almacenamiento ultra veloz (RAM ~150 MB)</text>
-    <text x="20" y="80" font-size="12" fill="#333333">• <b>Streams (telemetry_stream):</b> Ingesta &lt; 1ms</text>
-    <text x="20" y="105" font-size="12" fill="#333333">• <b>Hash (bus:locations):</b> Última posición 300 buses</text>
-    <text x="20" y="130" font-size="12" fill="#333333">• <b>Pub/Sub (channel:eta_updates):</b> Difusión WS</text>
-    <text x="20" y="155" font-size="12" fill="#333333">• <b>Cache (routes:catalog):</b> TTL 24 horas</text>
-    <text x="20" y="185" font-size="11" font-style="italic" fill="#BF360C">🛡️ Persistencia RDB periódica activada (anti-SPOF)</text>
-
-    <!-- PostgreSQL / PostGIS -->
-    <rect x="410" y="0" width="430" height="215" rx="10" fill="#FFF3E0" stroke="#E65100" stroke-width="2" filter="url(#drop-shadow)"/>
-    <text x="625" y="30" text-anchor="middle" font-size="15" font-weight="bold" fill="#BF360C">🐘 PostgreSQL 16 + Extensión PostGIS 3.4</text>
-    <text x="625" y="50" text-anchor="middle" font-size="11" fill="#E65100">Base de Datos Relacional y Geoespacial Central</text>
-    <text x="430" y="80" font-size="12" fill="#333333">• <b>Esquema Catálogo SIT:</b> Rutas, paraderos y geometrías</text>
-    <text x="430" y="105" font-size="12" fill="#333333">• <b>Esquema Flota:</b> Registro de unidades, conductores y tarifas</text>
-    <text x="430" y="130" font-size="12" fill="#333333">• <b>Esquema Telemetría:</b> Histórico particionado por fecha</text>
-    <text x="430" y="155" font-size="12" fill="#333333">• <b>Índices Espaciales:</b> GiST en geometrías para consultas &lt; 5ms</text>
-    <text x="430" y="185" font-size="11" font-style="italic" fill="#BF360C">🔒 Connection Pool limitado (PgBouncer/SQLAlchemy)</text>
-
-    <!-- Pila de Observabilidad -->
-    <rect x="880" y="0" width="310" height="215" rx="10" fill="#ECEFF1" stroke="#37474F" stroke-width="2" filter="url(#drop-shadow)"/>
-    <text x="1035" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#263238">📊 Observabilidad &amp; Métricas</text>
-    <text x="1035" y="50" text-anchor="middle" font-size="11" fill="#455A64">Monitoreo de Acuerdos de Nivel de Servicio</text>
-    <text x="900" y="85" font-size="12" fill="#333333">• <b>Prometheus:</b> Scrape /metrics cada 10s</text>
-    <text x="900" y="110" font-size="12" fill="#333333">• <b>Grafana:</b> Dashboard en tiempo real</text>
-    <text x="900" y="135" font-size="12" fill="#333333">• Monitoreo latencia p95 (QA-01 ≤ 15s)</text>
-    <text x="900" y="160" font-size="12" fill="#333333">• Alarmas de uso de CPU (≤ 75%) y RAM</text>
-    <text x="900" y="185" font-size="11" font-style="italic" fill="#1565C0">Consumo total observabilidad &lt; 200 MB</text>
-  </g>
-
-  <!-- SERVICIOS EXTERNOS (INTERNET) -->
-  <g transform="translate(150, 825)">
-    <!-- OpenStreetMap -->
-    <rect x="0" y="0" width="480" height="65" rx="8" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2" stroke-dasharray="5 3" filter="url(#drop-shadow)"/>
-    <text x="240" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#4A148C">🗺️ OpenStreetMap CDN / Tile Server (Servicio Externo Libre)</text>
-    <text x="240" y="50" text-anchor="middle" font-size="11" fill="#6A1B9A">Descarga directa de teselas cartográficas por la PWA móvil del pasajero (0 costo de API)</text>
-
-    <!-- Web Push -->
-    <rect x="570" y="0" width="480" height="65" rx="8" fill="#F3E5F5" stroke="#7B1FA2" stroke-width="2" stroke-dasharray="5 3" filter="url(#drop-shadow)"/>
-    <text x="810" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#4A148C">🔔 Servicio Web Push / Navegadores (Servicio Externo)</text>
-    <text x="810" y="50" text-anchor="middle" font-size="11" fill="#6A1B9A">Notificaciones automáticas a pasajeros por desvíos de ruta o demoras severas</text>
-  </g>
-
-  <!-- FLECHAS Y CONEXIONES CON LABELS (Edge(label=...)) -->
-  <!-- Buses a Nginx -->
-  <line x1="190" y1="170" x2="280" y2="265" stroke="#37474F" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="170" y="205" width="130" height="20" rx="4" fill="#FFFFFF" stroke="#37474F" stroke-width="1"/>
-  <text x="235" y="219" text-anchor="middle" font-size="10" font-weight="bold" fill="#37474F">POST /telemetry (c/10s)</text>
-
-  <!-- Pasajeros a Nginx -->
-  <line x1="625" y1="170" x2="675" y2="265" stroke="#1565C0" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
-  <rect x="595" y="205" width="155" height="20" rx="4" fill="#FFFFFF" stroke="#1565C0" stroke-width="1"/>
-  <text x="672" y="219" text-anchor="middle" font-size="10" font-weight="bold" fill="#1565C0">HTTPS / WSS (ETA ≤ 15s)</text>
-
-  <!-- Operador a Nginx -->
-  <line x1="1110" y1="170" x2="1050" y2="265" stroke="#37474F" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="1035" y="205" width="95" height="20" rx="4" fill="#FFFFFF" stroke="#37474F" stroke-width="1"/>
-  <text x="1082" y="219" text-anchor="middle" font-size="10" font-weight="bold" fill="#37474F">HTTPS Admin</text>
-
-  <!-- Nginx a FastAPI -->
-  <line x1="300" y1="330" x2="260" y2="395" stroke="#2E7D32" stroke-width="2" marker-end="url(#arrow-green)"/>
-  <text x="240" y="365" font-size="10" font-weight="bold" fill="#2E7D32">ASGI Proxy Pass</text>
-
-  <!-- FastAPI a Redis -->
-  <line x1="220" y1="510" x2="220" y2="555" stroke="#E65100" stroke-width="2" marker-end="url(#arrow-orange)"/>
-  <text x="145" y="535" font-size="10" font-weight="bold" fill="#E65100">XADD /telemetry_stream</text>
-
-  <!-- Redis a Worker Geoespacial -->
-  <line x1="370" y1="600" x2="470" y2="510" stroke="#E65100" stroke-width="1.8" marker-end="url(#arrow-orange)"/>
-  <text x="375" y="555" font-size="10" fill="#E65100">read stream</text>
-
-  <!-- Worker Geoespacial a Redis (actualiza estado y Pub/Sub) -->
-  <line x1="510" y1="510" x2="370" y2="650" stroke="#2E7D32" stroke-width="1.8" marker-end="url(#arrow-green)"/>
-  <text x="425" y="580" font-size="10" fill="#2E7D32">update bus:locations</text>
-
-  <!-- Redis a Batch Writer Worker -->
-  <line x1="370" y1="700" x2="860" y2="510" stroke="#E65100" stroke-width="1.8" marker-end="url(#arrow-orange)"/>
-  <text x="580" y="540" font-size="10" fill="#E65100">batch read (c/5s)</text>
-
-  <!-- Batch Writer a PostgreSQL -->
-  <line x1="900" y1="510" x2="750" y2="555" stroke="#BF360C" stroke-width="2" marker-end="url(#arrow-orange)"/>
-  <text x="800" y="535" font-size="10" font-weight="bold" fill="#BF360C">COPY / Batch INSERT</text>
-
-  <!-- FastAPI a PostgreSQL (Catálogo) -->
-  <line x1="350" y1="510" x2="500" y2="555" stroke="#37474F" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="430" y="535" font-size="10" fill="#37474F">SQL queries</text>
-
-  <!-- FastAPI a Observabilidad -->
-  <line x1="380" y1="430" x2="1000" y2="430" stroke="#37474F" stroke-width="1.5" stroke-dasharray="4 3"/>
-  <line x1="1000" y1="430" x2="1000" y2="555" stroke="#37474F" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
-  <text x="880" y="420" font-size="10" fill="#37474F">metrics /metrics</text>
-
-  <!-- Pasajeros a OSM -->
-  <path d="M 485 130 C 100 130, 80 840, 150 855" fill="none" stroke="#7B1FA2" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
-  <text x="95" y="790" font-size="10" fill="#6A1B9A">Tiles OSM</text>
-
-  <!-- FastAPI a Web Push -->
-  <path d="M 380 470 C 1200 470, 1200 840, 1050 855" fill="none" stroke="#7B1FA2" stroke-width="1.5" stroke-dasharray="4 2" marker-end="url(#arrow)"/>
-  <text x="1160" y="790" font-size="10" fill="#6A1B9A">Push API</text>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: RutaSIT Arequipa &#45; Vista de Despliegue en VPS Pages: 1 -->
+<svg width="1396pt" height="1199pt"
+ viewBox="0.00 0.00 1395.60 1198.60" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:c2pa="http://c2pa.org/manifest"><metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTo1NmQ3Y2E1MS1iZjRhLTQwZTQtOTNiOS02YTg5YzdiNWJjMmMAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaDihBtKMvrOu6RL6IGuzCM4AAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDpjMmQ4N2VmYi04NjRhLTQ5ZjUtYWE5ZC0wNzFiODc1MGQ5ODBscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNo/8JYFoz7pd+bNUSMsmHNGAAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggQMabHKt5noBaX5yDyWh3zC7iGY2yE2lDBHrQTNQ2nv6kZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaD7HdNQwVWFozmBczAPQaywAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIKRRMMJMwKa6GihRTcQdraSU+S0AD5xi0ntb98w2Q/XuZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GQHvZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjU2ZDdjYTUxLWJmNGEtNDBlNC05M2I5LTZhODljN2I1YmMyYy9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjQ2NmYzMWE3LTA5ZjEtNGJkMS04ZTNiLTYzMmJlZDQ1YmZhY3JjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCBAxpscq3megFpfnIPJaHfMLuIZjbITaUMEetBM1Dae/qJjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggvzUFG+TDD/j3cCh5TlZt41kd2wuLE1F0yAon+AZth02iY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggftQhWbEyBoUR8yCw6srGi3sGJ+nhIKBmMDryg0kubLx0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQMv1Sm9YxLwAwza0t9XB4623Dk5SoVo60aK9C54Rb8bEazZihDSndKwvPL3fu+FLxAt4wmagfkdM4CGXxyFjT+Q=</c2pa:manifest></metadata>
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 1169.8)">
+<title>RutaSIT Arequipa &#45; Vista de Despliegue en VPS</title>
+<polygon fill="white" stroke="transparent" points="-28.8,28.8 -28.8,-1169.8 1366.8,-1169.8 1366.8,28.8 -28.8,28.8"/>
+<text text-anchor="middle" x="669" y="-10" font-family="Sans-Serif" font-size="20.00" fill="#2d3436">RutaSIT Arequipa &#45; Vista de Despliegue en VPS</text>
+<g id="clust1" class="cluster">
+<title>cluster_Servidor en la Nube (VPS Único: 2&#45;4 vCPU, 4&#45;8 GB RAM)</title>
+<path fill="#e5f5fd" stroke="#aeb6be" d="M325,-223C325,-223 1318,-223 1318,-223 1324,-223 1330,-229 1330,-235 1330,-235 1330,-1121 1330,-1121 1330,-1127 1324,-1133 1318,-1133 1318,-1133 325,-1133 325,-1133 319,-1133 313,-1127 313,-1121 313,-1121 313,-235 313,-235 313,-229 319,-223 325,-223"/>
+<text text-anchor="middle" x="484.5" y="-1119.4" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Servidor en la Nube (VPS Único: 2&#45;4 vCPU, 4&#45;8 GB RAM)</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_Monolito Modular Asíncrono (Python / ASGI)</title>
+<path fill="#ebf3e7" stroke="#aeb6be" d="M592,-231C592,-231 837,-231 837,-231 843,-231 849,-237 849,-243 849,-243 849,-840 849,-840 849,-846 843,-852 837,-852 837,-852 592,-852 592,-852 586,-852 580,-846 580,-840 580,-840 580,-243 580,-243 580,-237 586,-231 592,-231"/>
+<text text-anchor="middle" x="714.5" y="-838.4" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Monolito Modular Asíncrono (Python / ASGI)</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_Almacenamiento y Estado en Memoria</title>
+<path fill="#ebf3e7" stroke="#aeb6be" d="M668,-901C668,-901 1154,-901 1154,-901 1160,-901 1166,-907 1166,-913 1166,-913 1166,-1092 1166,-1092 1166,-1098 1160,-1104 1154,-1104 1154,-1104 668,-1104 668,-1104 662,-1104 656,-1098 656,-1092 656,-1092 656,-913 656,-913 656,-907 662,-901 668,-901"/>
+<text text-anchor="middle" x="773" y="-1090.4" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Almacenamiento y Estado en Memoria</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_Pila de Observabilidad</title>
+<path fill="#ebf3e7" stroke="#aeb6be" d="M1061,-242C1061,-242 1310,-242 1310,-242 1316,-242 1322,-248 1322,-254 1322,-254 1322,-433 1322,-433 1322,-439 1316,-445 1310,-445 1310,-445 1061,-445 1061,-445 1055,-445 1049,-439 1049,-433 1049,-433 1049,-254 1049,-254 1049,-248 1055,-242 1061,-242"/>
+<text text-anchor="middle" x="1121" y="-431.4" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Pila de Observabilidad</text>
+</g>
+<!-- 1592526b229348ce9dc543c9bdec83e4 -->
+<g id="node1" class="node">
+<title>1592526b229348ce9dc543c9bdec83e4</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/generic/device/mobile.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="0" y="-372.5"/>
+<text text-anchor="middle" x="50.5" y="-256.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">300 Buses SIT</text>
+<text text-anchor="middle" x="50.5" y="-242.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(GPS Embarcado)</text>
+</g>
+<!-- 38d4887f2a5d4f5db47d8c690371f350 -->
+<g id="node6" class="node">
+<title>38d4887f2a5d4f5db47d8c690371f350</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/network/nginx.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="321" y="-372.5"/>
+<text text-anchor="middle" x="371.5" y="-256.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Nginx Proxy</text>
+<text text-anchor="middle" x="371.5" y="-242.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(HTTPS / WSS)</text>
+</g>
+<!-- 1592526b229348ce9dc543c9bdec83e4&#45;&gt;38d4887f2a5d4f5db47d8c690371f350 -->
+<g id="edge2" class="edge">
+<title>1592526b229348ce9dc543c9bdec83e4&#45;&gt;38d4887f2a5d4f5db47d8c690371f350</title>
+<path fill="none" stroke="#7b8894" d="M101.34,-322C157.91,-322 250.15,-322 310.59,-322"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="310.74,-325.5 320.74,-322 310.74,-318.5 310.74,-325.5"/>
+<text text-anchor="middle" x="211" y="-339.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">POST /telemetry (c/10s)</text>
+<text text-anchor="middle" x="211" y="-325.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">/telemetry/batch tras corte</text>
+</g>
+<!-- f1259a5978284383a7136c0be7e454e3 -->
+<g id="node2" class="node">
+<title>f1259a5978284383a7136c0be7e454e3</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/client/users.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="0" y="-163.5"/>
+<text text-anchor="middle" x="50.5" y="-47.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Pasajeros</text>
+<text text-anchor="middle" x="50.5" y="-33.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(PWA Móvil)</text>
+</g>
+<!-- f1259a5978284383a7136c0be7e454e3&#45;&gt;38d4887f2a5d4f5db47d8c690371f350 -->
+<g id="edge3" class="edge">
+<title>f1259a5978284383a7136c0be7e454e3&#45;&gt;38d4887f2a5d4f5db47d8c690371f350</title>
+<path fill="none" stroke="#7b8894" d="M101.34,-145.66C158.38,-183.03 251.68,-244.15 312.08,-283.72"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="310.46,-286.85 320.74,-289.4 314.3,-280.99 310.46,-286.85"/>
+<text text-anchor="middle" x="211" y="-274.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">HTTPS / WSS (ETA ≤ 15s)</text>
+</g>
+<!-- 63367a4e2c084cc39e540eeedf879a58 -->
+<g id="node12" class="node">
+<title>63367a4e2c084cc39e540eeedf879a58</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/network/internet.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="321" y="-163.5"/>
+<text text-anchor="middle" x="371.5" y="-47.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">OpenStreetMap</text>
+<text text-anchor="middle" x="371.5" y="-33.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(CDN de mapas abierto)</text>
+</g>
+<!-- f1259a5978284383a7136c0be7e454e3&#45;&gt;63367a4e2c084cc39e540eeedf879a58 -->
+<g id="edge15" class="edge">
+<title>f1259a5978284383a7136c0be7e454e3&#45;&gt;63367a4e2c084cc39e540eeedf879a58</title>
+<path fill="none" stroke="#7b8894" stroke-dasharray="5,2" d="M101.34,-113C157.91,-113 250.15,-113 310.59,-113"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="310.74,-116.5 320.74,-113 310.74,-109.5 310.74,-116.5"/>
+<text text-anchor="middle" x="211" y="-116.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">descarga mapas</text>
+</g>
+<!-- 510ac13d6f364fb8b1edc7fc79d57909 -->
+<g id="node3" class="node">
+<title>510ac13d6f364fb8b1edc7fc79d57909</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/client/users.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="0" y="-581.5"/>
+<text text-anchor="middle" x="50.5" y="-465.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Operador SIT</text>
+<text text-anchor="middle" x="50.5" y="-451.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(Consola Web)</text>
+</g>
+<!-- 510ac13d6f364fb8b1edc7fc79d57909&#45;&gt;38d4887f2a5d4f5db47d8c690371f350 -->
+<g id="edge4" class="edge">
+<title>510ac13d6f364fb8b1edc7fc79d57909&#45;&gt;38d4887f2a5d4f5db47d8c690371f350</title>
+<path fill="none" stroke="#7b8894" d="M101.34,-498.34C158.38,-460.97 251.68,-399.85 312.08,-360.28"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="314.3,-363.01 320.74,-354.6 310.46,-357.15 314.3,-363.01"/>
+<text text-anchor="middle" x="211" y="-483.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">HTTPS Admin</text>
+</g>
+<!-- f66bcd50d69c41b88bc986f532330c00 -->
+<g id="node4" class="node">
+<title>f66bcd50d69c41b88bc986f532330c00</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/monitoring/prometheus.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="1057" y="-383.5"/>
+<text text-anchor="middle" x="1107.5" y="-267.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Prometheus</text>
+<text text-anchor="middle" x="1107.5" y="-253.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(Métricas p95 / CPU)</text>
+</g>
+<!-- c3520f59b0064953a687242e211ca5ad -->
+<g id="node5" class="node">
+<title>c3520f59b0064953a687242e211ca5ad</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/monitoring/grafana.png" width="101px" height="104.945px" preserveAspectRatio="xMinYMin meet" x="1213" y="-385.473"/>
+<text text-anchor="middle" x="1263.5" y="-267.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Grafana</text>
+<text text-anchor="middle" x="1263.5" y="-253.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(Dashboard Operador)</text>
+</g>
+<!-- f66bcd50d69c41b88bc986f532330c00&#45;&gt;c3520f59b0064953a687242e211ca5ad -->
+<g id="edge1" class="edge">
+<title>f66bcd50d69c41b88bc986f532330c00&#45;&gt;c3520f59b0064953a687242e211ca5ad</title>
+<path fill="none" stroke="#7b8894" d="M1158.07,-333C1172.29,-333 1187.94,-333 1202.71,-333"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="1202.75,-336.5 1212.75,-333 1202.75,-329.5 1202.75,-336.5"/>
+</g>
+<!-- fc3e827c8d4c4c81bbc950bd3c1073fc -->
+<g id="node7" class="node">
+<title>fc3e827c8d4c4c81bbc950bd3c1073fc</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/programming/framework/fastapi.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="664" y="-372.5"/>
+<text text-anchor="middle" x="714.5" y="-256.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">FastAPI Core</text>
+<text text-anchor="middle" x="714.5" y="-242.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(5 módulos de dominio)</text>
+</g>
+<!-- 38d4887f2a5d4f5db47d8c690371f350&#45;&gt;fc3e827c8d4c4c81bbc950bd3c1073fc -->
+<g id="edge5" class="edge">
+<title>38d4887f2a5d4f5db47d8c690371f350&#45;&gt;fc3e827c8d4c4c81bbc950bd3c1073fc</title>
+<path fill="none" stroke="#7b8894" d="M422.08,-322C483.45,-322 587.88,-322 653.65,-322"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="653.86,-325.5 663.86,-322 653.86,-318.5 653.86,-325.5"/>
+<text text-anchor="middle" x="510.5" y="-325.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">ASGI Reverse Proxy</text>
+</g>
+<!-- fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;f66bcd50d69c41b88bc986f532330c00 -->
+<g id="edge14" class="edge">
+<title>fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;f66bcd50d69c41b88bc986f532330c00</title>
+<path fill="none" stroke="#7b8894" stroke-dasharray="1,5" d="M765.02,-323.39C836.8,-325.41 969.59,-329.15 1046.72,-331.32"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="1046.67,-334.82 1056.77,-331.6 1046.87,-327.82 1046.67,-334.82"/>
+<text text-anchor="middle" x="943.5" y="-333.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">métricas /metrics</text>
+</g>
+<!-- 8e5ec66bdd444fb587d6de001d96fac1 -->
+<g id="node10" class="node">
+<title>8e5ec66bdd444fb587d6de001d96fac1</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/inmemory/redis.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="1057" y="-1042.5"/>
+<text text-anchor="middle" x="1107.5" y="-926.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Redis 7.x</text>
+<text text-anchor="middle" x="1107.5" y="-912.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(Streams + Caché Hash + Pub/Sub, AOF)</text>
+</g>
+<!-- fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;8e5ec66bdd444fb587d6de001d96fac1 -->
+<g id="edge6" class="edge">
+<title>fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;8e5ec66bdd444fb587d6de001d96fac1</title>
+<path fill="none" stroke="#7b8894" d="M765.14,-358.8C790.77,-378.36 822.21,-403.22 849,-427 852.76,-430.34 852.84,-432.18 857,-435 926.27,-481.86 978.6,-443.03 1030,-509 1076.09,-568.16 1095,-775.67 1102.29,-898.62"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="1098.81,-899 1102.88,-908.78 1105.8,-898.6 1098.81,-899"/>
+<text text-anchor="middle" x="943.5" y="-512.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">XADD (&lt;1ms)</text>
+</g>
+<!-- 572ba311e437494a8e11fe64b0181717 -->
+<g id="node11" class="node">
+<title>572ba311e437494a8e11fe64b0181717</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/database/postgresql.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="664" y="-1042.5"/>
+<text text-anchor="middle" x="714.5" y="-926.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">PostgreSQL 16 + PostGIS</text>
+<text text-anchor="middle" x="714.5" y="-912.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(Catálogo, Flota e Histórico)</text>
+</g>
+<!-- fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;572ba311e437494a8e11fe64b0181717 -->
+<g id="edge11" class="edge">
+<title>fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;572ba311e437494a8e11fe64b0181717</title>
+<path fill="none" stroke="#7b8894" d="M663.77,-351.81C635.83,-370.41 602.38,-396.57 580,-427 513.79,-517.03 473.73,-554.49 496,-664 515.05,-757.67 525.88,-783.2 580,-862 601.17,-892.82 630.5,-922.21 656.37,-945.23"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="654.1,-947.89 663.92,-951.85 658.71,-942.63 654.1,-947.89"/>
+<text text-anchor="middle" x="510.5" y="-653.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">catálogo / rutas</text>
+</g>
+<!-- ca436ee9599c4d7ca132a3b92e667d20 -->
+<g id="node13" class="node">
+<title>ca436ee9599c4d7ca132a3b92e667d20</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/network/internet.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="1057" y="-174.5"/>
+<text text-anchor="middle" x="1107.5" y="-58.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Web Push</text>
+<text text-anchor="middle" x="1107.5" y="-44.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(Notificaciones y alertas)</text>
+</g>
+<!-- fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;ca436ee9599c4d7ca132a3b92e667d20 -->
+<g id="edge16" class="edge">
+<title>fc3e827c8d4c4c81bbc950bd3c1073fc&#45;&gt;ca436ee9599c4d7ca132a3b92e667d20</title>
+<path fill="none" stroke="#7b8894" stroke-dasharray="5,2" d="M765.02,-296.92C837.1,-260.42 970.67,-192.78 1047.66,-153.79"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="1049.43,-156.83 1056.77,-149.19 1046.26,-150.58 1049.43,-156.83"/>
+<text text-anchor="middle" x="943.5" y="-249.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">despacha alertas</text>
+</g>
+<!-- 2379b86b57194f17864748fce013ec35 -->
+<g id="node8" class="node">
+<title>2379b86b57194f17864748fce013ec35</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/compute/server.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="664" y="-581.5"/>
+<text text-anchor="middle" x="714.5" y="-465.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Worker Geoespacial</text>
+<text text-anchor="middle" x="714.5" y="-451.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(asyncio.to_thread / Multiprocess)</text>
+</g>
+<!-- 2379b86b57194f17864748fce013ec35&#45;&gt;8e5ec66bdd444fb587d6de001d96fac1 -->
+<g id="edge8" class="edge">
+<title>2379b86b57194f17864748fce013ec35&#45;&gt;8e5ec66bdd444fb587d6de001d96fac1</title>
+<path fill="none" stroke="#7b8894" d="M765.15,-527.98C834.73,-526.66 960.51,-535.42 1030,-608 1069.09,-648.82 1089.67,-798.64 1099.3,-898.62"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="1095.83,-899.11 1100.25,-908.74 1102.8,-898.46 1095.83,-899.11"/>
+<text text-anchor="middle" x="943.5" y="-611.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">actualiza estado</text>
+</g>
+<!-- 420d3ca4de424d568be518752b1be339 -->
+<g id="node9" class="node">
+<title>420d3ca4de424d568be518752b1be339</title>
+<image xlink:href="/usr/local/lib/python3.13/dist-packages/resources/onprem/compute/server.png" width="101px" height="101px" preserveAspectRatio="xMinYMin meet" x="664" y="-790.5"/>
+<text text-anchor="middle" x="714.5" y="-674.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Batch Writer</text>
+<text text-anchor="middle" x="714.5" y="-660.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">(escritura en lote c/5s)</text>
+</g>
+<!-- 420d3ca4de424d568be518752b1be339&#45;&gt;572ba311e437494a8e11fe64b0181717 -->
+<g id="edge10" class="edge">
+<title>420d3ca4de424d568be518752b1be339&#45;&gt;572ba311e437494a8e11fe64b0181717</title>
+<path fill="none" stroke="#7b8894" d="M714.5,-823.21C714.5,-847.41 714.5,-873.99 714.5,-898.75"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="711,-898.87 714.5,-908.87 718,-898.87 711,-898.87"/>
+<text text-anchor="middle" x="704.5" y="-862.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">COPY c/5s</text>
+</g>
+<!-- 8e5ec66bdd444fb587d6de001d96fac1&#45;&gt;fc3e827c8d4c4c81bbc950bd3c1073fc -->
+<g id="edge13" class="edge">
+<title>8e5ec66bdd444fb587d6de001d96fac1&#45;&gt;fc3e827c8d4c4c81bbc950bd3c1073fc</title>
+<path fill="none" stroke="#7b8894" d="M1100.58,-908.74C1089.07,-757.09 1061.98,-447.99 1030,-411 1013.13,-391.49 861.61,-354.81 775.19,-335.18"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="775.77,-331.72 765.25,-332.93 774.23,-338.55 775.77,-331.72"/>
+<text text-anchor="middle" x="943.5" y="-414.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">Pub/Sub broadcast</text>
+</g>
+<!-- 8e5ec66bdd444fb587d6de001d96fac1&#45;&gt;2379b86b57194f17864748fce013ec35 -->
+<g id="edge7" class="edge">
+<title>8e5ec66bdd444fb587d6de001d96fac1&#45;&gt;2379b86b57194f17864748fce013ec35</title>
+<path fill="none" stroke="#7b8894" d="M1079.08,-908.7C1066.64,-876.98 1050.15,-841.41 1030,-812 959.32,-708.82 842.95,-618.24 773.32,-569.37"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="775.28,-566.46 765.07,-563.62 771.28,-572.21 775.28,-566.46"/>
+<text text-anchor="middle" x="943.5" y="-815.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">consume stream</text>
+</g>
+<!-- 8e5ec66bdd444fb587d6de001d96fac1&#45;&gt;420d3ca4de424d568be518752b1be339 -->
+<g id="edge9" class="edge">
+<title>8e5ec66bdd444fb587d6de001d96fac1&#45;&gt;420d3ca4de424d568be518752b1be339</title>
+<path fill="none" stroke="#7b8894" d="M1056.77,-959.95C984.42,-913.32 850.44,-826.97 773.64,-777.47"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="775.32,-774.39 765.02,-771.92 771.53,-780.28 775.32,-774.39"/>
+<text text-anchor="middle" x="943.5" y="-940.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">batch read</text>
+</g>
+<!-- 572ba311e437494a8e11fe64b0181717&#45;&gt;8e5ec66bdd444fb587d6de001d96fac1 -->
+<g id="edge12" class="edge">
+<title>572ba311e437494a8e11fe64b0181717&#45;&gt;8e5ec66bdd444fb587d6de001d96fac1</title>
+<path fill="none" stroke="#7b8894" stroke-dasharray="5,2" d="M765.02,-992C836.8,-992 969.59,-992 1046.72,-992"/>
+<polygon fill="#7b8894" stroke="#7b8894" points="1046.77,-995.5 1056.77,-992 1046.77,-988.5 1046.77,-995.5"/>
+<text text-anchor="middle" x="943.5" y="-995.6" font-family="Sans-Serif" font-size="13.00" fill="#2d3436">rehidrata estado al arrancar</text>
+</g>
+</g>
 </svg>

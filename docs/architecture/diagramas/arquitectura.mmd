@@ -20,7 +20,7 @@ flowchart TB
     end
 
     %% Capa de Almacenamiento y Estado
-    REDIS[("⚡ Redis en Memoria<br/><i>Redis Streams (buffer) + Caché estado buses + Pub/Sub</i>")]
+    REDIS[("⚡ Redis en Memoria<br/><i>Redis Streams (buffer) + Caché estado buses + Pub/Sub<br/>Persistencia AOF</i>")]
     DB[("🐘 PostgreSQL + PostGIS<br/><i>Esquemas: catálogo espacial, flota e histórico batch</i>")]
 
     %% Servicios Externos
@@ -28,7 +28,7 @@ flowchart TB
     PUSH["🔔 Servicio Web Push / Alertas<br/><i>(Notificaciones de desvío y congestión)</i>"]
 
     %% Relaciones de Actores con la API
-    BUS -->|"HTTP POST / Telemetría GPS (~30 req/s)"| API
+    BUS -->|"HTTP POST /telemetry (~30 req/s)<br/>POST /telemetry/batch tras corte de señal"| API
     PAS -->|"HTTPS / Consulta de catálogo y rutas"| API
     PAS <-->|"WebSocket / Flujo continuo de buses y ETA (≤15s)"| API
     OPE -->|"HTTPS / Dashboard de supervisión y gestión"| API
@@ -48,6 +48,7 @@ flowchart TB
     INF -->|"Escritura en lote consolidada c/5s"| DB
     M4 & M5 --> INF
     INF --> DB
+    DB -.->|"Rehidrata último estado al arrancar"| REDIS
     INF -.->|"Despacho de alertas masivas"| PUSH
 
     %% Consumo externo de mapas
