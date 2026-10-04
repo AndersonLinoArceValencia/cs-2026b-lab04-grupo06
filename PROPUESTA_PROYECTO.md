@@ -42,7 +42,7 @@ El diseño responde a las restricciones estrictas del proyecto: **1 mes de plazo
 3. **PostgreSQL con PostGIS:** Permite almacenamiento relacional confiable de rutas, paraderos, paradas oficiales y consultas geográficas avanzadas (`ST_DWithin`, distancias a paraderos y polígonos de ruta).
 4. **Leaflet + OpenStreetMap:** Evita costos de facturación por uso de Google Maps API, manteniendo el presupuesto en 0 para licencias de mapas.
 5. **Arquitectura Base:** Monolito Modular Asíncrono. Un único artefacto desplegable en Docker, pero separado lógicamente en 4 módulos desacoplados:
-   - `ingesta_gps`: Recepción de tramas GPS UDP/HTTP.
+   - `ingesta_gps`: Recepción de tramas GPS por HTTP (`/telemetry` y `/telemetry/batch` tras un corte de señal).
    - `catalogo_rutas`: Gestión de rutas, paraderos y frecuencias.
    - `estimacion_eta`: Cálculo dinámico de tiempos de llegada y detección de desvíos.
    - `notificaciones`: Distribución de eventos por WebSocket a pasajeros y operadores.
@@ -55,10 +55,13 @@ El diseño responde a las restricciones estrictas del proyecto: **1 mes de plazo
 cs-2026b-lab04-grupo06/
 ├── PROPUESTA_PROYECTO.md                    # Documento base de arquitectura y roles
 ├── README.md                                # E8: Portada, integración y reflexión
+├── .github/workflows/diagramas.yml          # Reto opcional: regenera los PNG de Mermaid en cada push
 └── docs/
+    ├── cuestionario.md                      # Sección IV: respuestas del cuestionario
     └── architecture/
         ├── drivers.md                       # E1: Drivers y escenarios de calidad
         ├── matriz-decision.md               # E2: 3 estilos y matriz ponderada
+        ├── demostracion-abogado-del-diablo.md  # E2: crítica adversarial y respuesta del equipo
         ├── bitacora-ia.md                   # E7: Registro de prompts y verificaciones
         ├── adr/                             # E4: Architecture Decision Records
         │   ├── 000-plantilla.md
@@ -68,6 +71,8 @@ cs-2026b-lab04-grupo06/
         └── diagramas/
             ├── arquitectura.mmd             # E3: Diagrama Mermaid (Elegida)
             ├── alternativa.puml             # E5: Diagrama PlantUML (Descartada)
-            ├── despliegue.py                # E6: Vista de despliegue (Diagrams)
+            ├── despliegue.py                # E6: Vista de despliegue (Diagrams + Graphviz)
+            ├── despliegue.puml              # Vista de despliegue complementaria en PlantUML
+            ├── matriz.py                    # E2: gráfico de la matriz ponderada (matplotlib)
             └── img/                         # Renders PNG/SVG
 ```
