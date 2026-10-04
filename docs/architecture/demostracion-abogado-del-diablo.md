@@ -14,6 +14,8 @@ Este documento profundiza en la crítica adversarial aplicada a las propuestas i
 * **El colapso de la base de datos:** Escribir cada posición GPS directo a la tabla con el ORM de Django generará más de 2,500,000 inserciones al día. En un VPS de bajo costo con almacenamiento compartido (I/O limitado), el disco se saturará al 100% de I/O wait en horas punta, elevando el tiempo de respuesta a más de 30 segundos y violando el driver crítico **QA-01**.
 * **El veredicto del Abogado:** Es fácil de arrancar, pero **inviable técnicamente** para tiempo real de alta frecuencia sin rediseñar por completo el motor de ingesta.
 
+> **⚠ Verificación del equipo (04/10/2026):** este ataque exagera. Por la Ley de Little, 30 req/s con unos 50 ms por trama dan 1,5 peticiones en curso, que 5 a 9 workers de Gunicorn atienden sin problema. Las 2,5 millones de inserciones diarias equivalen a solo 30 por segundo. Las cifras de "100 % de I/O wait" y "más de 30 segundos" no vienen de ninguna medición. El problema real de A es otro: no tiene empuje en tiempo real, y el polling de 1500 pasajeros (unas 300 req/s) o la incorporación de Django Channels le quitan su ventaja de simplicidad. Detalle en [matriz-decision.md](matriz-decision.md#afirmaciones-de-la-ia-verificadas).
+
 ---
 
 ### B. Ataque a la Alternativa B: Microservicios Distribuidos (FastAPI + RabbitMQ + Múltiples BD)
@@ -33,6 +35,8 @@ Este documento profundiza en la crítica adversarial aplicada a las propuestas i
 * **El riesgo mortal del Event Loop:** Python `asyncio` corre en un solo hilo por worker. Si una función hace un cálculo pesado de PostGIS/geometría para verificar desvíos de ruta ($>100$ m) y tarda 200 ms de CPU síncrona, **congela el bucle de eventos y detiene el procesamiento de los otros 299 buses y los WebSockets de todos los pasajeros**.
 * **El espejismo del orden modular:** Con 2 desarrolladores apurados por entregar en 1 mes, la separación modular suele ser una mentira de carpetas: empezarán a importar funciones directamente entre módulos bajo presión, convirtiéndolo en un monolito espagueti inmanejable.
 * **Punto único de fallo volátil:** Si todo el estado de los buses vive en la memoria de Redis y este proceso cae en el VPS, la pantalla de los paraderos se queda vacía de inmediato.
+
+> **Respuesta del equipo:** los tres riesgos se aceptan y se mitigan en [ADR-001](adr/001-estilo-arquitectonico.md): un worker en proceso separado para el cómputo geométrico, `import-linter` en la CI para proteger los límites de los módulos, y persistencia AOF en Redis con rehidratación desde PostgreSQL al arrancar.
 
 ---
 

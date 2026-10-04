@@ -11,11 +11,15 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 | **1** | 03/10/2026 | Antigravity AI | Análisis estructural de la Guía de Laboratorio 04 y mapeo de los requerimientos de entrega. | Resumen exhaustivo de los 8 entregables (E1-E8), rúbrica sobre 20 pts y desglose de los 10 casos propuestos. | Se revisó que las fechas y el formato correspondan a la UNSA (2026B). Se seleccionó formalmente el **Caso 6: RutaSIT Arequipa** identificando su atributo crítico de latencia. | **Aceptada** |
 | **2** | 03/10/2026 | Antigravity AI | Propuesta de división de roles para 2 integrantes (Anderson Arce y Freddy Carlos) y recomendación de stack estándar. | Distribución de tareas (Anderson: E1, E3, E5, E6; Freddy: E2, E4, E7, E8) y stack base (FastAPI, Redis, PostgreSQL/PostGIS, Leaflet PWA en 1 VPS). | **Corrección crítica:** Se descartó la sugerencia preliminar de microservicios con brokers pesados (Kafka/Kubernetes). Un equipo de 2 personas con entrega en 1 mes (R-01) en 1 VPS (R-03) colapsaría operativamente. Se fijó Monolito Modular Asíncrono. | **Corregida** |
 | **3** | 03/10/2026 | Antigravity AI | Redacción de Drivers arquitectónicos y escenarios de calidad de 6 partes según plantilla oficial (E1). | 6 RFs, 4 atributos de calidad ordenados por prioridad, 5 restricciones de proyecto y 3 escenarios con métricas numéricas. | Se verificó que ninguna métrica use términos ambiguos ("rápido", "óptimo"). Todas usan números medibles: p95 $\le 15$ s, pérdida $\le 0.1\%$, 0 tramas perdidas tras corte celular, esfuerzo $\le 1.5$ días-persona, 0 downtime. | **Aceptada** |
-| **4** | 03/10/2026 | Antigravity AI | **(E2 - Prompt 1)** Generación de 3 alternativas de estilo arquitectónico para sistema de transportes con alta concurrencia en 1 VPS. | Propuso: A) Monolito en capas (Django), B) Microservicios distribuidos (FastAPI + RabbitMQ), C) Monolito modular asíncrono (FastAPI + Redis). Recomendó la opción C. | **Verificación del equipo:** Se validó mediante cálculo de carga (300 buses $\times$ 1 trama/10 s = 30 req/s continuas). Un monolito síncrono WSGI saturaría hilos de ejecución rápidamente; y microservicios consumiría >4 GB de RAM solo en orquestación y colas, violando R-03. La recomendación C es la única viable. | **Aceptada** |
+| **4** | 03/10/2026 | Antigravity AI | **(E2 - Prompt 1)** Generación de 3 alternativas de estilo arquitectónico para sistema de transportes con alta concurrencia en 1 VPS. | Propuso: A) Monolito en capas (Django), B) Microservicios distribuidos (FastAPI + RabbitMQ), C) Monolito modular asíncrono (FastAPI + Redis). Recomendó la opción C. | **Verificación del equipo:** Se calculó la carga (300 buses $\times$ 1 trama/10 s = 30 req/s continuas). Microservicios exige 4 servicios, RabbitMQ y varias bases en un VPS de 4-8 GB para 2 personas en 1 mes, lo que excede R-01 y R-03. En ese momento también aceptamos que un monolito WSGI saturaría sus workers; después se comprobó que era exagerado (ver interacción 9). Se aceptó la recomendación C. | **Aceptada** |
 | **5** | 03/10/2026 | Antigravity AI | **(E2 - Prompt 2)** Crítica adversarial ("abogado del diablo") contra el Monolito Modular Asíncrono recomendado. | Señaló 5 riesgos críticos en producción: 1) Bloqueo del Event Loop por cómputo espacial, 2) Punto único de falla de Redis, 3) Erosión modular por prisas de entrega, 4) Agotamiento de sockets con pasajeros, 5) Agotamiento de conexiones a BD. | **Corrección crítica del equipo:** Se refutó la suposición ingenua de que un monolito asíncrono básico soporta la carga sin bloquearse. Se corrigió la propuesta inicial adoptando la *"Alternativa C Corregida"* (desacople de CPU mediante Redis Streams y workers en segundo plano) y se formalizaron las opciones en [`demostracion-abogado-del-diablo.md`](demostracion-abogado-del-diablo.md). | **Corregida** |
 | **6** | 03/10/2026 | Antigravity AI | **(E3)** Generación del código Diagram as Code en Mermaid (`arquitectura.mmd`) a partir de la matriz de decisión y drivers. | Diagrama con 3 actores, 5 módulos de dominio explícitos, capa de infraestructura asíncrona, Redis y PostgreSQL/PostGIS, más servicios externos (OpenStreetMap y Web Push). | Se verificó la correspondencia biunívoca con los RF de `drivers.md` (RF-01 a RF-06), el aislamiento por subgraphs y la dirección no circular de dependencias. Se exportaron imágenes PNG y SVG a `diagramas/img/`. | **Aceptada** |
-| **7** | 03/10/2026 | Antigravity AI | **(E5)** Modelado en PlantUML de la segunda mejor opción (`alternativa.puml`) con nota explicativa de descarte. | Diagrama de componentes de la Alternativa A (Monolito en capas Django) con nota técnica de descarte citando su puntaje (3.35/5.00). | Se verificó que la nota cumpla la extensión de 3 a 5 líneas de la guía, justificando el descarte por bloqueo de workers WSGI y saturación de I/O en BD. Se generaron las imágenes PNG y SVG en `diagramas/img/`. | **Aceptada** |
+| **7** | 03/10/2026 | Antigravity AI | **(E5)** Modelado en PlantUML de la segunda mejor opción (`alternativa.puml`) con nota explicativa de descarte. | Diagrama de componentes de la Alternativa A (Monolito en capas Django) con nota técnica de descarte citando su puntaje (3.35/5.00). | Se verificó que la nota cumpla la extensión de 3 a 5 líneas de la guía y se generaron las imágenes PNG y SVG en `diagramas/img/`. El argumento de la nota (workers WSGI e I/O saturados) y el puntaje 3.35 se corrigieron después: la nota actual cita 3.60 y el problema real del polling (ver interacción 9). | **Aceptada** |
 | **8** | 03/10/2026 | Antigravity AI | **(E6)** Script de vista de despliegue (`despliegue.py`) y diagrama PlantUML de topología física en VPS (`despliegue.puml`). | Topología en clusters: 300 buses, PWA de pasajeros, Nginx, FastAPI ASGI, Redis Streams, PostgreSQL/PostGIS, Prometheus/Grafana y servicios externos. | Al detectarse la ausencia de Graphviz/pip en el sistema, se implementó el fallback oficial E6.4 (elaborar la vista física con PlantUML y documentarlo en el README). Se generaron `despliegue.png` y `despliegue.svg` en `diagramas/img/`. | **Aceptada** |
+| **9** | 04/10/2026 | Claude | Revisión del repositorio completo contra la guía del Lab 04 para detectar entregables faltantes y errores. | Señaló que faltaban los ADR, el README y el cuestionario, y que la crítica contra la Alternativa A exageraba: "WSGI agota los workers con 30 req/s" y "2,5 millones de inserciones saturan el disco". | **Corrección con cálculo (Ley de Little):** $L = 30 \text{ req/s} \times 0.05 \text{ s} = 1.5$ peticiones en curso, que 5 a 9 workers de Gunicorn atienden sin problema; 2,5 millones de inserciones al día son 30 por segundo. Se subió el rendimiento de A de 2 a 3 (total 3.35 → 3.60) y la conclusión no cambió. También se retiró la cifra sin evidencia de "<1.5 GB de RAM". Ver [`matriz-decision.md`](matriz-decision.md#afirmaciones-de-la-ia-verificadas). | **Corregida** |
+| **10** | 04/10/2026 | Claude | **(E4)** Borradores de ADR-001 (estilo), ADR-002 (base de datos geovial) y ADR-003 (transmisión en tiempo real) con la plantilla de la sección 1.5. | Tres ADR en estado "Aceptado", cada uno con contexto que cita drivers, al menos 2 alternativas y consecuencias. Para ADR-003 sopesó SSE frente a WebSocket. | Se comprobó que todos los IDs citados (RF-01 a RF-06, QA-01 a QA-03, R-01 a R-05) existen en `drivers.md`, que cada ADR tiene consecuencias positivas y negativas y que los puntajes coinciden con la matriz. Se añadió como consecuencia negativa que un solo VPS limita la disponibilidad de 99,5 % de QA-02 (unas 3,6 h de caída al mes). | **Aceptada** |
+| **11** | 04/10/2026 | Claude | **(E6)** Ejecutar `despliegue.py` con Graphviz en lugar del plan B en PlantUML. | Corregir el docstring (instrucciones para Windows con `winget install graphviz`), generar PNG y SVG y usar líneas curvas para que las etiquetas no se crucen. | Se ejecutó `python docs/architecture/diagramas/despliegue.py` con Graphviz y se revisó la imagen: las etiquetas de las conexiones quedaban junto a la flecha equivocada con líneas ortogonales, así que se cambió a `splines=spline`. `despliegue.puml` queda como vista complementaria (`img/despliegue-plantuml.png`). Esto reemplaza el plan B de la interacción 8. | **Corregida** |
+| **12** | 04/10/2026 | Claude | Revisión de faltantes contra la rúbrica; implementar el reto opcional (GitHub Action con mermaid-cli) y el gráfico opcional de la matriz con matplotlib (E2.5). | Workflow `.github/workflows/diagramas.yml` que renderiza cada `.mmd` a PNG y SVG y hace commit de las imágenes; script `diagramas/matriz.py` con barras apiladas por criterio. | Al probar `mmdc` en local falló porque no encontraba el navegador de Puppeteer: en el runner de GitHub se descarga al instalar mermaid-cli, pero Chromium necesita `--no-sandbox`, así que se agregó un archivo de configuración. Los totales del gráfico (3.60, 2.35 y 4.45) se compararon con el cálculo manual de la matriz, y el script comprueba que los pesos sumen 100 %. | **Corregida** |
 
 ---
 
@@ -37,7 +41,9 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 * **Rol:** Arquitecto de Software Senior y Líder Técnico.
 * **Contexto:** Equipo de 2 estudiantes (Anderson Arce Valencia y Freddy Carlos Ccamaqque). Caso: RutaSIT Arequipa.
 * **Prompt emitido:**
-  > *"Número de grupo: 06. Integrantes: Arce Valencia Anderson Lino, Carlos Ccamaqque Wilson Freddy. ¿Cómo nos podemos separar los roles o actividades según la rúbrica? Y recomienda el stack tecnológico estándar y básico para este caso."*
+  > *"Número de grupo: 06. Integrantes: [integrante 1], [integrante 2]. ¿Cómo nos podemos separar los roles o actividades según la rúbrica? Y recomienda el stack tecnológico estándar y básico para este caso."*
+  >
+  > *(Nombres reemplazados en esta bitácora: la guía pide no incluir datos personales en los prompts.)*
 * **Respuesta de la IA:**
   Propuso roles diferenciados: Anderson Arce (Arquitecto Líder y Diagramador) y Freddy Carlos (Evaluador de Trade-offs y Redactor de ADRs). Propuso stack FastAPI + Redis + PostgreSQL/PostGIS + Leaflet PWA en Docker Compose.
 * **Validación humana / Corrección:**
@@ -108,7 +114,7 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 * **Respuesta de la IA:**
   Generó el diagrama de componentes en PlantUML estructurado en 3 capas secuenciales (Presentación, Lógica y ORM) hacia PostgreSQL único, con la nota técnica de descarte detallando la saturación de workers síncronos WSGI y el colapso de I/O en la base de datos.
 * **Validación humana:**
-  Se verificó que la nota técnica cite puntualmente el puntaje de 3.35 de `matriz-decision.md` y demuestre la inviabilidad ante el requerimiento crítico de latencia de 15 s (QA-01). Se exportaron las imágenes renderizadas (`alternativa.png` y `alternativa.svg`) a `diagramas/img/`. Decisión: **Aceptada**.
+  Se verificó que la nota técnica cite puntualmente el puntaje de 3.35 de `matriz-decision.md` y demuestre la inviabilidad ante el requerimiento crítico de latencia de 15 s (QA-01). *(Corregido el 04/10/2026: el puntaje pasó a 3.60 y la nota se reescribió; ver interacción 9.)* Se exportaron las imágenes renderizadas (`alternativa.png` y `alternativa.svg`) a `diagramas/img/`. Decisión: **Aceptada**.
 
 ---
 
@@ -122,5 +128,35 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 * **Validación humana:**
   Se verificó que todos los componentes esenciales para operar con 30 req/s y 1500 conexiones de pasajeros estuvieran claramente ubicados en el VPS. Se exportó `despliegue.png` y se realizó el commit `E6: vista de despliegue`. Decisión: **Aceptada**.
 
+---
 
+### Interacción 9: Revisión del repositorio y verificación de afirmaciones
+* **Herramienta:** Claude.
+* **Prompt emitido:**
+  > *"Quiero que revises este proyecto y que me digas que es lo que falta implementar"*
+* **Respuesta resumida de la IA:**
+  Listó lo que faltaba (carpeta `adr/`, README, cuestionario, commits y PR de ambos integrantes) y señaló como exageradas las afirmaciones contra la Alternativa A, con el cálculo de la Ley de Little.
+* **Validación humana / Corrección:**
+  Se rehízo el cálculo y se corrigieron la matriz, la nota de `alternativa.puml` y el documento del abogado del diablo. Decisión: **Corregida**.
 
+---
+
+### Interacciones 10 y 11: Redacción de ADR y vista de despliegue con Graphviz
+* **Herramienta:** Claude.
+* **Prompt emitido:**
+  > *"Quiero que desarrolles y hagas las correcciones"*
+* **Respuesta resumida de la IA:**
+  Redactó ADR-001 a ADR-003, el README y el cuestionario, agregó al diagrama Mermaid las tácticas de mitigación (persistencia AOF, rehidratación y endpoint `/telemetry/batch`) y ejecutó `despliegue.py` con Graphviz.
+* **Validación humana:**
+  Se revisaron los IDs citados en los ADR contra `drivers.md` y los diagramas se volvieron a renderizar con mermaid-cli, PlantUML y Graphviz sin errores. Decisiones: **Aceptada** (ADR) y **Corregida** (despliegue).
+
+---
+
+### Interacción 12: Reto opcional y gráfico de la matriz
+* **Herramienta:** Claude.
+* **Prompt emitido:**
+  > *"Queremos desarrollar la propuesta 6, ya creamos el git, ahora quiero verifiques que es lo que falta implementar. Revisa bien la estructura antes y empieza"*
+* **Respuesta resumida de la IA:**
+  Comparó el repositorio de GitHub con la copia local: los ADR, el cuestionario y las correcciones estaban sin commit, todos los commits eran de un solo integrante y no había Pull Requests. Propuso el workflow de mermaid-cli que ya figuraba en `PROPUESTA_PROYECTO.md` pero no existía, y el gráfico de la matriz con matplotlib.
+* **Validación humana / Corrección:**
+  Se renderizó `arquitectura.mmd` con mermaid-cli antes de confiar en el workflow; hubo que añadir la opción `--no-sandbox` para Chromium. Se ejecutó `matriz.py` y se comprobó que los totales coinciden con la tabla. Decisión: **Corregida**.
