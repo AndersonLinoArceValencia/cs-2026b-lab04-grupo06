@@ -1,0 +1,52 @@
+# Reto opcional del Lab 04: en cada push que modifique un archivo .mmd,
+# regenera las imagenes PNG y SVG con mermaid-cli y las sube al repositorio.
+name: Regenerar diagramas Mermaid
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/architecture/diagramas/**/*.mmd"
+      - ".github/workflows/diagramas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar mermaid-cli
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Renderizar los .mmd a PNG y SVG
+        run: |
+          echo '{"args": ["--no-sandbox"]}' > /tmp/puppeteer.json
+          mkdir -p docs/architecture/diagramas/img
+          for f in docs/architecture/diagramas/*.mmd; do
+            name=$(basename "$f" .mmd)
+            echo "Renderizando $f"
+            mmdc -p /tmp/puppeteer.json -i "$f" -o "docs/architecture/diagramas/img/$name.png" -b white -s 2
+            mmdc -p /tmp/puppeteer.json -i "$f" -o "docs/architecture/diagramas/img/$name.svg" -b white
+          done
+
+      - name: Subir las imagenes si cambiaron
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/architecture/diagramas/img/*.png docs/architecture/diagramas/img/*.svg
+          if git diff --cached --quiet; then
+            echo "Las imagenes ya estaban al dia."
+          else
+            git commit -m "ci: regenerar imagenes de diagramas Mermaid [skip ci]"
+            git push
+          fi
