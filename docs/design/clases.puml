@@ -2,9 +2,6 @@
 skinparam style strictuml
 skinparam classAttributeIconSize 0
 
-' ==========================================
-' Enumeración de Estados (E3)
-' ==========================================
 enum EstadoViaje {
     PROGRAMADO
     EN_RUTA
@@ -13,9 +10,6 @@ enum EstadoViaje {
     FINALIZADO
 }
 
-' ==========================================
-' Interfaces (Puertos para integraciones externas)
-' ==========================================
 interface IProveedorGPS <<interface>> {
     + obtenerCoordenadaActual(idBus: String): Coordenada
 }
@@ -24,9 +18,6 @@ interface IServicioMapas <<interface>> {
     + calcularETA(origen: Coordenada, destino: Coordenada): Integer
 }
 
-' ==========================================
-' Clases del Dominio
-' ==========================================
 class Pasajero {
     - idPasajero: String
     - ubicacionActual: Coordenada
@@ -68,17 +59,11 @@ class Coordenada <<datatype>> {
     - longitud: Double
 }
 
-' ==========================================
-' Servicios de Aplicación (Controlador/Caso de Uso)
-' ==========================================
 class ServicioMonitoreoSIT {
     + solicitarETA(pasajero: Pasajero, paradero: Paradero): Integer
     + procesarAlertaDesvio(viaje: Viaje): void
 }
 
-' ==========================================
-' Relaciones
-' ==========================================
 ServicioMonitoreoSIT ..> IProveedorGPS : usa >
 ServicioMonitoreoSIT ..> IServicioMapas : usa >
 
