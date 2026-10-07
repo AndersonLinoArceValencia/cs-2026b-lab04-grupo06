@@ -76,3 +76,24 @@ cs-2026b-lab04-grupo06/
             ├── matriz.py                    # E2: gráfico de la matriz ponderada (matplotlib)
             └── img/                         # Renders PNG/SVG
 ```
+
+---
+
+## 5. Distribución de Roles - Laboratorio 05 (Diseño UML)
+
+Para el Laboratorio 05 (Diseño Detallado UML), mantendremos el enfoque basado en los perfiles de los integrantes, asignando los entregables en la carpeta `docs/design/` de la siguiente manera:
+
+### 🧑‍💻 Arce Valencia Anderson Lino (Arquitecto Líder & Diagramador)
+**Enfoque: Diseño estructural, comportamiento y codificación.**
+* **E1:** Historia de usuario y diagrama de clases (`docs/design/historia.md` y `docs/design/clases.puml`).
+* **E2:** Diagrama de secuencia del flujo crítico (`docs/design/secuencia-consultar-tiempo.puml`).
+* **E3:** Máquina de estados de la entidad principal `Viaje` (`docs/design/estados-viaje.mmd`).
+* **E6:** Round-trip con IA / Ingeniería inversa (`src/monitoreo/` y `docs/design/round-trip.md`).
+* Revisión cruzada de Pull Requests.
+
+### 🕵️‍♂️ Carlos Ccamaqque Wilson Freddy (Evaluador & Verificador de IA)
+**Enfoque: Procesos de negocio, arquitectura de paquetes y QA.**
+* **E4:** Diagrama de actividades de detección de desvío (`docs/design/actividades-deteccion-desvio.puml`).
+* **E5:** Diagrama de paquetes (`docs/design/paquetes.puml`).
+* **E7:** Revisión de consistencia de diagramas y bitácora de IA (`docs/design/consistencia.md` y `docs/design/bitacora-ia.md`).
+* **E8:** Integración en README, revisión cruzada (PRs) y creación del tag `v0.5-diseno`.
