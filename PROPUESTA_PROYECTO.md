@@ -97,3 +97,26 @@ Para el Laboratorio 05 (Diseño Detallado UML), mantendremos el enfoque basado e
 * **E5:** Diagrama de paquetes (`docs/design/paquetes.puml`).
 * **E7:** Revisión de consistencia de diagramas y bitácora de IA (`docs/design/consistencia.md` y `docs/design/bitacora-ia.md`).
 * **E8:** Integración en README, revisión cruzada (PRs) y creación del tag `v0.5-diseno`.
+
+---
+
+## 6. Estructura de Carpetas - Laboratorio 05 (Diseño UML)
+
+Para el Laboratorio 05, se añadirá la siguiente estructura enfocada en el diseño detallado:
+
+```text
+cs-2026b-lab04-grupo06/
+├── docs/
+│   └── design/                               # Directorio principal del Lab 05
+│       ├── historia.md                       # E1: Historia y criterios de aceptación
+│       ├── clases.puml                       # E1: Diagrama de clases (PlantUML)
+│       ├── secuencia-consultar-tiempo.puml   # E2: Diagrama de secuencia (PlantUML)
+│       ├── estados-viaje.mmd                 # E3: Máquina de estados (Mermaid)
+│       ├── actividades-deteccion-desvio.puml # E4: Diagrama de actividades (PlantUML)
+│       ├── paquetes.puml                     # E5: Diagrama de paquetes (PlantUML)
+│       ├── round-trip.md                     # E6: Análisis de diferencias del código generado
+│       ├── consistencia.md                   # E7: Análisis de falsos positivos detectados por IA
+│       └── bitacora-ia.md                    # E7: Registro de prompts de diseño
+└── src/
+    └── monitoreo/                            # E6: Esqueleto de código Python generado
+```
