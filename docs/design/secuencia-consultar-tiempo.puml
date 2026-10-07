@@ -1,0 +1,48 @@
+@startuml
+skinparam style strictuml
+
+actor Pasajero
+boundary "App Pasajero" as UI
+control ServicioMonitoreoSIT
+entity Paradero
+entity Viaje
+boundary IServicioMapas
+
+Pasajero -> UI : consultarETA(paradero)
+activate UI
+
+UI -> ServicioMonitoreoSIT : solicitarETA(pasajero, paradero)
+activate ServicioMonitoreoSIT
+
+ServicioMonitoreoSIT -> Paradero : obtenerViajesProximos()
+activate Paradero
+Paradero -->> ServicioMonitoreoSIT : listaViajes
+deactivate Paradero
+
+alt listaViajes no está vacía
+    loop por cada viaje en listaViajes
+        ServicioMonitoreoSIT -> Viaje : calcularTiempoLlegada(paradero)
+        activate Viaje
+        
+        alt estado == EN_RUTA
+            Viaje -> IServicioMapas : calcularETA(ubicacionBus, paradero.ubicacion)
+            activate IServicioMapas
+            IServicioMapas -->> Viaje : tiempoMinutos
+            deactivate IServicioMapas
+            Viaje -->> ServicioMonitoreoSIT : tiempoMinutos
+        else estado == DESVIADO o DETENIDO
+            Viaje ->> ServicioMonitoreoSIT : procesarAlertaDesvio(this)
+            Viaje -->> ServicioMonitoreoSIT : null
+        end
+        deactivate Viaje
+    end
+    ServicioMonitoreoSIT -->> UI : tiempoMinutos (Actualizado)
+else listaViajes está vacía
+    ServicioMonitoreoSIT -->> UI : error("No hay buses disponibles")
+end
+
+UI -->> Pasajero : mostrarResultado()
+deactivate ServicioMonitoreoSIT
+deactivate UI
+
+@enduml
