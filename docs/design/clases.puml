@@ -1,0 +1,96 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+
+' ==========================================
+' Enumeración de Estados (E3)
+' ==========================================
+enum EstadoViaje {
+    PROGRAMADO
+    EN_RUTA
+    DESVIADO
+    DETENIDO
+    FINALIZADO
+}
+
+' ==========================================
+' Interfaces (Puertos para integraciones externas)
+' ==========================================
+interface IProveedorGPS <<interface>> {
+    + obtenerCoordenadaActual(idBus: String): Coordenada
+}
+
+interface IServicioMapas <<interface>> {
+    + calcularETA(origen: Coordenada, destino: Coordenada): Integer
+}
+
+' ==========================================
+' Clases del Dominio
+' ==========================================
+class Pasajero {
+    - idPasajero: String
+    - ubicacionActual: Coordenada
+    + consultarETA(paradero: Paradero): void
+}
+
+class Paradero {
+    - idParadero: String
+    - nombre: String
+    - ubicacion: Coordenada
+    + obtenerViajesProximos(): List<Viaje>
+}
+
+class Bus {
+    - idBus: String
+    - placa: String
+    - capacidad: Integer
+    + actualizarUbicacion(coord: Coordenada): void
+}
+
+class Ruta {
+    - idRuta: String
+    - nombre: String
+    - paraderos: List<Paradero>
+    + obtenerParaderos(): List<Paradero>
+}
+
+class Viaje {
+    - idViaje: String
+    - estado: EstadoViaje
+    - horaInicioProgramada: DateTime
+    + cambiarEstado(nuevoEstado: EstadoViaje): void
+    + calcularTiempoLlegada(destino: Paradero): Integer
+    + registrarContingencia(motivo: String): void
+}
+
+class Coordenada <<datatype>> {
+    - latitud: Double
+    - longitud: Double
+}
+
+' ==========================================
+' Servicios de Aplicación (Controlador/Caso de Uso)
+' ==========================================
+class ServicioMonitoreoSIT {
+    + solicitarETA(pasajero: Pasajero, paradero: Paradero): Integer
+    + procesarAlertaDesvio(viaje: Viaje): void
+}
+
+' ==========================================
+' Relaciones
+' ==========================================
+ServicioMonitoreoSIT ..> IProveedorGPS : usa >
+ServicioMonitoreoSIT ..> IServicioMapas : usa >
+
+Ruta "1" *-- "2..*" Paradero : contiene
+Bus "1" -- "0..*" Viaje : realiza >
+Ruta "1" -- "0..*" Viaje : tiene >
+Viaje "1" --> "1" EstadoViaje : se encuentra en
+
+ServicioMonitoreoSIT "1" -- "*" Viaje : monitorea >
+ServicioMonitoreoSIT "1" -- "*" Paradero : gestiona >
+
+Pasajero "1" ..> "1" ServicioMonitoreoSIT : consulta >
+Paradero "*" -- "*" Viaje : incluye <
+
+@enduml
