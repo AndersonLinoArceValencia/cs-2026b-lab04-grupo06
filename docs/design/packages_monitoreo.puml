@@ -1,0 +1,7 @@
+@startuml packages_monitoreo
+set namespaceSeparator none
+package "monitoreo" as monitoreo {
+}
+package "monitoreo.dominio" as monitoreo.dominio {
+}
+@enduml

@@ -1,0 +1,62 @@
+@startuml classes_monitoreo
+set namespaceSeparator none
+class "Bus" as monitoreo.dominio.Bus {
+  capacidad : int
+  id_bus : str
+  placa : str
+  actualizar_ubicacion(coord: Coordenada) -> None
+}
+class "Coordenada" as monitoreo.dominio.Coordenada {
+  latitud : float
+  longitud : float
+}
+class "EstadoViaje" as monitoreo.dominio.EstadoViaje {
+  name
+}
+class "IProveedorGPS" as monitoreo.dominio.IProveedorGPS {
+  {abstract}obtener_coordenada_actual(id_bus: str) -> Coordenada
+}
+class "IServicioMapas" as monitoreo.dominio.IServicioMapas {
+  {abstract}calcular_eta(origen: Coordenada, destino: Coordenada) -> int
+}
+class "Paradero" as monitoreo.dominio.Paradero {
+  id_paradero : str
+  nombre : str
+  ubicacion
+  obtener_viajes_proximos() -> List['Viaje']
+}
+class "Pasajero" as monitoreo.dominio.Pasajero {
+  id_pasajero : str
+  ubicacion_actual
+  consultar_eta(paradero: Paradero, servicio_monitoreo: 'ServicioMonitoreoSIT') -> Optional[int]
+}
+class "Ruta" as monitoreo.dominio.Ruta {
+  id_ruta : str
+  nombre : str
+  paraderos : List[Paradero]
+  obtener_paraderos() -> List[Paradero]
+}
+class "ServicioMonitoreoSIT" as monitoreo.dominio.ServicioMonitoreoSIT {
+  proveedor_gps
+  servicio_mapas
+  procesar_alerta_desvio(viaje: Viaje) -> None
+  solicitar_eta(pasajero: Pasajero, paradero: Paradero) -> Optional[int]
+}
+class "Viaje" as monitoreo.dominio.Viaje {
+  bus
+  estado
+  hora_inicio_programada : datetime
+  id_viaje : str
+  servicio_mapas
+  calcular_tiempo_llegada(destino: Paradero) -> Optional[int]
+  cambiar_estado(nuevo_estado: EstadoViaje) -> None
+  registrar_contingencia(motivo: str) -> None
+}
+monitoreo.dominio.Viaje --> monitoreo.dominio.Bus : bus
+monitoreo.dominio.Paradero --> monitoreo.dominio.Coordenada : ubicacion
+monitoreo.dominio.Pasajero --> monitoreo.dominio.Coordenada : ubicacion_actual
+monitoreo.dominio.Viaje --> monitoreo.dominio.EstadoViaje : estado
+monitoreo.dominio.Viaje --> monitoreo.dominio.IServicioMapas : servicio_mapas
+monitoreo.dominio.IProveedorGPS --o monitoreo.dominio.ServicioMonitoreoSIT : proveedor_gps
+monitoreo.dominio.IServicioMapas --o monitoreo.dominio.ServicioMonitoreoSIT : servicio_mapas
+@enduml
