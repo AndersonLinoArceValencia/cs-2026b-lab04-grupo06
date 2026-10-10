@@ -160,3 +160,25 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   Comparó el repositorio de GitHub con la copia local: los ADR, el cuestionario y las correcciones estaban sin commit, todos los commits eran de un solo integrante y no había Pull Requests. Propuso el workflow de mermaid-cli que ya figuraba en `PROPUESTA_PROYECTO.md` pero no existía, y el gráfico de la matriz con matplotlib.
 * **Validación humana / Corrección:**
   Se renderizó `arquitectura.mmd` con mermaid-cli antes de confiar en el workflow; hubo que añadir la opción `--no-sandbox` para Chromium. Se ejecutó `matriz.py` y se comprobó que los totales coinciden con la tabla. Decisión: **Corregida**.
+
+---
+
+## 3. Registro de Interacciones (Laboratorio 05 — Diseño UML)
+
+| N.º | Fecha | Herramienta | Actividad / Prompt | Propuesta de la IA | Verificación del Equipo (Reglas C1–C5) | Decisión |
+|:---:|:---:|:---:|---|---|---|:---:|
+| **13** | 07/10/2026 | Gemini 3.1 Pro | **(E1 — Prompt IA 1)** Adaptación del prompt para generar diagrama de clases a partir de `historia.md` y ADR-001. | Generó `clases.puml` con 7 clases, enumeración `EstadoViaje`, e interfaces (`IProveedorGPS`, `IServicioMapas`). | Se verificó que cumpliera con ADR-001 (puertos/adaptadores). Se validaron multiplicidades en ambos extremos (C5) y nombres de dominio correctos. | **Aceptada con ajustes** |
+
+---
+
+## 4. Anexo Lab 05: Detalle del Prompt IA 1 Adaptado
+
+### Interacción 13: Generación del Diagrama de Clases (E1)
+* **Fecha:** 07/10/2026
+* **Herramienta:** Gemini 3.1 Pro
+* **Prompt Adaptado:**
+  > "Actúa como diseñador de software orientado a objetos.  
+  > Contexto: Módulo de Monitoreo de RutaSIT Arequipa dentro de un monolito modular (ADR-001: puertos y adaptadores para integraciones externas con GPS y servicios de mapas).  
+  > Historia y criterios: [HU-01: Como pasajero del SIT quiero consultar el tiempo estimado de llegada (ETA) de un bus a mi paradero actual...]  
+  > Tarea: Genera un diagrama de clases en PlantUML con atributos tipados, operaciones, multiplicidades en ambos extremos, una enumeración para el estado del viaje y dos interfaces (puertos) para el proveedor GPS y mapas."
+* **Resultado:** Diagrama en PlantUML guardado en `docs/design/clases.puml` y renderizado en PNG.
