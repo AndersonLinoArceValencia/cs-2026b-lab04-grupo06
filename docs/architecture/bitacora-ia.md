@@ -167,11 +167,14 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 
 | N.º | Fecha | Herramienta | Actividad / Prompt | Propuesta de la IA | Verificación del Equipo (Reglas C1–C5) | Decisión |
 |:---:|:---:|:---:|---|---|---|:---:|
-| **13** | 07/10/2026 | Gemini 3.1 Pro | **(E1 — Prompt IA 1)** Adaptación del prompt para generar diagrama de clases a partir de `historia.md` y ADR-001. | Generó `clases.puml` con 7 clases, enumeración `EstadoViaje`, e interfaces (`IProveedorGPS`, `IServicioMapas`). | Se verificó que cumpliera con ADR-001 (puertos/adaptadores). Se validaron multiplicidades en ambos extremos (C5) y nombres de dominio correctos. | **Aceptada con ajustes** |
+| **13** | 07/10/2026 | Gemini 3.1 Pro | **(E1 — Prompt IA 1)** Adaptación del prompt para generar diagrama de clases a partir de `historia.md` y ADR-001. | Generó `clases.puml` con 7 clases, enumeración `EstadoViaje`, e interfaces (`IProveedorGPS`, `IServicioMapas`). | Se verificó que cumpliera con ADR-001 (puertos/adaptadores). Se validaron multiplicidades en ambos extremos (C5) y nombres de dominio correctos. Se removieron comentarios innecesarios a solicitud del equipo. | **Aceptada con ajustes** |
+| **14** | 07/10/2026 | Gemini 3.1 Pro | **(E2)** Generación de diagrama de secuencia del flujo crítico "Consultar tiempo de llegada del bus" (`secuencia-consultar-tiempo.puml`). | Diagrama con 6 líneas de vida (Pasajero, UI, Servicio, Paradero, Viaje, IServicioMapas), bloques `alt`, `loop` y mensaje asíncrono `->>`. | Cumple con la regla C1: cada mensaje corresponde exactamente a una operación de `clases.puml`. Incluye manejo de error cuando no hay buses y emisión asíncrona de alertas por desvío. | **Aceptada** |
+| **15** | 07/10/2026 | Gemini 3.1 Pro | **(E3)** Modelado de máquina de estados de la entidad principal `Viaje` en Mermaid (`estados-viaje.mmd`). | Diagrama con 5 estados (`PROGRAMADO`, `EN_RUTA`, `DESVIADO`, `DETENIDO`, `FINALIZADO`), estado inicial/final `[*]`, transiciones operacionales y guardas `[...]`. | Se verificó la regla C2: las transiciones están nombradas con métodos de la clase `Viaje`. Los estados coinciden con `EstadoViaje` y no hay estados huérfanos. | **Aceptada** |
+| **16** | 07/10/2026 | Gemini 3.1 Pro | **(E6 — Prompt IA 2)** Esqueleto en Python 3.10+ e ingeniería inversa con `pyreverse` (`round-trip.md`). | Código `src/monitoreo/dominio.py` con Dataclasses, Enum y ABC. Se ejecutó `pyreverse` en entorno virtual temporal y se comparó con `clases.puml`. | **Corrección técnica:** El entorno carecía de `pip`/`pyreverse` global; se aisló la ejecución en un venv para obtener `classes_monitoreo.puml`. Se documentaron 4 discrepancias reales: pérdida de interfaz, falta de relaciones en listas genéricas, omisión de constantes Enum y convención snake_case. | **Corregida** |
 
 ---
 
-## 4. Anexo Lab 05: Detalle del Prompt IA 1 Adaptado
+## 4. Anexo Lab 05: Detalle de Prompts y Verificación
 
 ### Interacción 13: Generación del Diagrama de Clases (E1)
 * **Fecha:** 07/10/2026
@@ -180,5 +183,39 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   > "Actúa como diseñador de software orientado a objetos.  
   > Contexto: Módulo de Monitoreo de RutaSIT Arequipa dentro de un monolito modular (ADR-001: puertos y adaptadores para integraciones externas con GPS y servicios de mapas).  
   > Historia y criterios: [HU-01: Como pasajero del SIT quiero consultar el tiempo estimado de llegada (ETA) de un bus a mi paradero actual...]  
-  > Tarea: Genera un diagrama de clases en PlantUML con atributos tipados, operaciones, multiplicidades en ambos extremos, una enumeración para el estado del viaje y dos interfaces (puertos) para el proveedor GPS y mapas."
-* **Resultado:** Diagrama en PlantUML guardado en `docs/design/clases.puml` y renderizado en PNG.
+  > Tarea: Genera un diagrama de clases en PlantUML con atributos tipados, operaciones, multiplicidades en ambos extremos, una enumeración para el estado del viaje (`EstadoViaje`) y dos interfaces (puertos) para el proveedor GPS y mapas."
+* **Resultado:** Diagrama en PlantUML guardado en `docs/design/clases.puml` y exportado a `docs/design/img/clases.png`.
+* **Verificación:** Cumple C1-C5. Se removieron los comentarios internos a solicitud del estudiante para mantener la sintaxis limpia.
+
+---
+
+### Interacción 14: Diagrama de Secuencia del Flujo Crítico (E2)
+* **Fecha:** 07/10/2026
+* **Herramienta:** Gemini 3.1 Pro
+* **Prompt Emitido:**
+  > "Genera el diagrama de secuencia en PlantUML del flujo crítico 'Consultar el tiempo de llegada del bus' en `secuencia-consultar-tiempo.puml`.  
+  > Requisitos: Al menos 5 líneas de vida, fragmento `alt` para éxito y error, fragmento `loop`, al menos un mensaje asíncrono (`->>`) y mensajes de retorno. Respeta la regla C1."
+* **Resultado:** Diagrama en `docs/design/secuencia-consultar-tiempo.puml` y renderizado en `docs/design/img/secuencia-consultar-tiempo.png`.
+* **Verificación:** Todas las operaciones llamadas coinciden con las firmas de `clases.puml` (ej. `solicitarETA`, `obtenerViajesProximos`, `calcularTiempoLlegada`). Decisión: **Aceptada**.
+
+---
+
+### Interacción 15: Máquina de Estados de la Entidad Viaje (E3)
+* **Fecha:** 07/10/2026
+* **Herramienta:** Gemini 3.1 Pro
+* **Prompt Emitido:**
+  > "Modela la máquina de estados de la entidad principal `Viaje` en Mermaid (`stateDiagram-v2`) en `docs/design/estados-viaje.mmd`.  
+  > Requisitos: 5 estados (`PROGRAMADO`, `EN_RUTA`, `DESVIADO`, `DETENIDO`, `FINALIZADO`), estado inicial `[*]`, final `[*]`, guardas entre corchetes y operaciones en cada transición que provocan el cambio."
+* **Resultado:** Archivo `docs/design/estados-viaje.mmd`.
+* **Verificación:** Se validó que las transiciones utilicen `cambiarEstado()` y `registrarContingencia()` (Regla C2) y que todas las rutas converjan al estado final `FINALIZADO`. Decisión: **Aceptada**.
+
+---
+
+### Interacción 16: Round-trip con IA e Ingeniería Inversa (E6)
+* **Fecha:** 07/10/2026
+* **Herramienta:** Gemini 3.1 Pro
+* **Prompt Adaptado (Prompt IA 2):**
+  > "Genera el esqueleto en Python 3.10+ (dataclasses y type hints) del diagrama de clases de RutaSIT en `src/monitoreo/dominio.py`.  
+  > Respeta nombres de clases, atributos y operaciones (en snake_case), enumeraciones, interfaces como clases abstractas (ABC) y multiplicidades. Implementa lógica mínima en `Viaje` y `ServicioMonitoreoSIT`; los adaptadores deben lanzar `NotImplementedError`."
+* **Resultado:** Código Python `src/monitoreo/dominio.py`. Posteriormente se instaló `pylint` en un entorno virtual aislado para ejecutar `pyreverse -o puml -p monitoreo src/monitoreo/`, generando `classes_monitoreo.puml`.
+* **Verificación / Corrección:** Se redactó `docs/design/round-trip.md` documentando 4 discrepancias fundamentales encontradas entre el diseño manual y el generado por ingeniería inversa. Decisión: **Corregida**.
