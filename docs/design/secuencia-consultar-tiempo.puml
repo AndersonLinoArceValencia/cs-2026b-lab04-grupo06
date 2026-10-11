@@ -1,48 +1,54 @@
-@startuml
+@startuml secuencia-consultar-tiempo
 skinparam style strictuml
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+autonumber
+title HU-01 — Consultar el tiempo de llegada del bus
 
 actor Pasajero
-boundary "App Pasajero" as UI
-control ServicioMonitoreoSIT
-entity Paradero
-entity Viaje
-boundary IServicioMapas
+participant "AppPasajero" as UI
+participant "ServicioMonitoreoSIT" as S
+participant "Paradero" as P
+participant "Viaje" as V
+participant "Bus" as B
+participant "IProveedorGPS" as G
+participant "IServicioMapas" as M
+participant "INotificador" as N
 
-Pasajero -> UI : consultarETA(paradero)
-activate UI
+Pasajero -> UI : selecciona paradero
+UI -> S : solicitarETA(pasajero, paradero)
+activate S
 
-UI -> ServicioMonitoreoSIT : solicitarETA(pasajero, paradero)
-activate ServicioMonitoreoSIT
-
-ServicioMonitoreoSIT -> Paradero : obtenerViajesProximos()
-activate Paradero
-Paradero -->> ServicioMonitoreoSIT : listaViajes
-deactivate Paradero
+S -> P : obtenerViajesProximos()
+P --> S : listaViajes
 
 alt listaViajes no está vacía
     loop por cada viaje en listaViajes
-        ServicioMonitoreoSIT -> Viaje : calcularTiempoLlegada(paradero)
-        activate Viaje
-        
+        S -> G : obtenerCoordenadaActual(idBus)
+        G --> S : coordenada
+        S -> B : actualizarUbicacion(coordenada)
+        S -> V : calcularTiempoLlegada(paradero)
+        activate V
         alt estado == EN_RUTA
-            Viaje -> IServicioMapas : calcularETA(ubicacionBus, paradero.ubicacion)
-            activate IServicioMapas
-            IServicioMapas -->> Viaje : tiempoMinutos
-            deactivate IServicioMapas
-            Viaje -->> ServicioMonitoreoSIT : tiempoMinutos
+            V -> M : calcularETA(ubicacionActual, paradero.ubicacion)
+            M --> V : tiempoMinutos
+            V --> S : tiempoMinutos
+            deactivate V
         else estado == DESVIADO o DETENIDO
-            Viaje ->> ServicioMonitoreoSIT : procesarAlertaDesvio(this)
-            Viaje -->> ServicioMonitoreoSIT : null
+            V --> S : null (retrasado)
+            deactivate V
+            S -> S : procesarAlertaDesvio(viaje)
+            S ->> N : notificarRetraso(viaje)
+            note right of N : asíncrono\n(no bloquea la respuesta)
         end
-        deactivate Viaje
     end
-    ServicioMonitoreoSIT -->> UI : tiempoMinutos (Actualizado)
+    S --> UI : tiempoMinutos o "Retrasado"
 else listaViajes está vacía
-    ServicioMonitoreoSIT -->> UI : error("No hay buses disponibles")
+    S --> UI : null ("No hay buses aproximándose")
 end
 
-UI -->> Pasajero : mostrarResultado()
-deactivate ServicioMonitoreoSIT
-deactivate UI
+UI -> UI : mostrarResultado(eta)
+UI --> Pasajero : muestra el resultado
+deactivate S
 
 @enduml

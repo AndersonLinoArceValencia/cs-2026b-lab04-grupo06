@@ -1,16 +1,21 @@
 stateDiagram-v2
-    [*] --> PROGRAMADO : iniciarPlanificacion()
-    
+    [*] --> PROGRAMADO : programar()
+
     PROGRAMADO --> EN_RUTA : cambiarEstado(EN_RUTA) [hora actual >= horaInicioProgramada]
-    
+
     EN_RUTA --> DETENIDO : registrarContingencia(motivo) [velocidad == 0]
     EN_RUTA --> DESVIADO : registrarContingencia(motivo) [fuera_de_ruta == true]
-    
+
     DETENIDO --> EN_RUTA : cambiarEstado(EN_RUTA) [problema_resuelto == true]
     DESVIADO --> EN_RUTA : cambiarEstado(EN_RUTA) [retorno_a_ruta == true]
-    
+
     DETENIDO --> FINALIZADO : cambiarEstado(FINALIZADO) [viaje_cancelado == true]
     DESVIADO --> FINALIZADO : cambiarEstado(FINALIZADO) [fin_de_recorrido == true]
     EN_RUTA --> FINALIZADO : cambiarEstado(FINALIZADO) [destino_alcanzado == true]
-    
+
     FINALIZADO --> [*]
+
+    note right of DESVIADO
+        Al entrar: procesarAlertaDesvio()
+        y notificarRetraso() al pasajero
+    end note
