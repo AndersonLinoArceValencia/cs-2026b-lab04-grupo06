@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - "docs/architecture/diagramas/**/*.mmd"
+      - "docs/design/*.mmd"
       - ".github/workflows/diagramas.yml"
   workflow_dispatch:
 
@@ -38,12 +39,18 @@ jobs:
             mmdc -p /tmp/puppeteer.json -i "$f" -o "docs/architecture/diagramas/img/$name.png" -b white -s 2
             mmdc -p /tmp/puppeteer.json -i "$f" -o "docs/architecture/diagramas/img/$name.svg" -b white
           done
+          mkdir -p docs/design/img
+          for f in docs/design/*.mmd; do
+            name=$(basename "$f" .mmd)
+            echo "Renderizando $f"
+            mmdc -p /tmp/puppeteer.json -i "$f" -o "docs/design/img/$name.png" -b white -s 2
+          done
 
       - name: Subir las imagenes si cambiaron
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/architecture/diagramas/img/*.png docs/architecture/diagramas/img/*.svg
+          git add docs/architecture/diagramas/img/*.png docs/architecture/diagramas/img/*.svg docs/design/img/*.png
           if git diff --cached --quiet; then
             echo "Las imagenes ya estaban al dia."
           else
