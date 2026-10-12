@@ -120,3 +120,43 @@ cs-2026b-lab04-grupo06/
 └── src/
     └── monitoreo/                            # E6: Esqueleto de código Python generado
 ```
+
+---
+
+## 7. Distribución de Roles — Laboratorio 06 (Modelo C4 con Structurizr DSL)
+
+Para el Laboratorio 06, se continúa el desarrollo arquitectónico de **RutaSIT Arequipa**, modelando el sistema completo bajo el enfoque de "Arquitectura como Código" con Structurizr DSL, integrando los artefactos de los Laboratorios 04 y 05:
+
+### 🧑‍💻 Arce Valencia Anderson Lino (Arquitecto Líder & Modelador C4)
+**Enfoque: Modelado estructural, jerarquía C4 y flujos dinámicos.**
+* **E1:** Inventario de elementos C4 y Diagrama de Contexto (`docs/architecture/c4/inventario.md` y `workspace.dsl`).
+* **E2:** Diagrama de Contenedores con tecnologías y protocolos en `workspace.dsl`.
+* **E3:** Diagrama de Componentes de la API FastAPI en `workspace.dsl`.
+* **E4:** Vista Dinámica del flujo crítico ("Consultar tiempo de llegada") y comparativa con secuencia UML (`comparacion.md`).
+* Revisión técnica de modelos y soporte de validación con Structurizr CLI.
+
+### 🕵️‍♂️ Carlos Ccamaqque Wilson Freddy (Evaluador, Auditor & Comunicador)
+**Enfoque: Despliegue físico, auditoría de calidad, comunicación y entrega.**
+* **E5:** Vista de Despliegue en entorno de Producción (VPS + Docker Compose) en `workspace.dsl`.
+* **E6:** Exportación a C4-PlantUML / Mermaid, renderizado PNG y contexto manual (`contexto-manual.puml`).
+* **E7:** Auditoría con checklist oficial de C4 (`revision-c4.md`), detección de falsos positivos con IA, redacción no técnica (`explicacion.md`) y bitácora de IA (`bitacora-ia.md`).
+* **E8:** Portada README con vista Mermaid C4, atención de issue de revisión cruzada y creación del tag `v0.6-c4`.
+
+---
+
+## 8. Estructura de Carpetas — Laboratorio 06 (Modelo C4)
+
+```text
+cs-2026b-lab04-grupo06/
+├── docs/
+│   └── architecture/
+│       └── c4/                               # Directorio de arquitectura C4 (Lab 06)
+│           ├── inventario.md                 # E1: Mapeo de elementos C4 y su origen
+│           ├── workspace.dsl                 # E1-E5: Modelo unificado en Structurizr DSL
+│           ├── contexto-manual.puml          # E6: Vista de contexto escrita a mano en C4-PlantUML
+│           ├── comparacion.md                # E4 y E6: Análisis comparativo (UML vs C4, DSL vs Manual)
+│           ├── revision-c4.md                # E7: Auditoría con lista de revisión oficial de c4model.com
+│           ├── explicacion.md                # E7: Resumen ejecutivo para público no técnico (<= 120 palabras)
+│           ├── export/                       # E6: Diagramas exportados (.puml y .mmd) por Structurizr
+│           └── img/                          # E6: Vistas exportadas y renderizadas a PNG
+```
