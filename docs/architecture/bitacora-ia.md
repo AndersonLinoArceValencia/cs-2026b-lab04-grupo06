@@ -219,3 +219,30 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   > Respeta nombres de clases, atributos y operaciones (en snake_case), enumeraciones, interfaces como clases abstractas (ABC) y multiplicidades. Implementa lógica mínima en `Viaje` y `ServicioMonitoreoSIT`; los adaptadores deben lanzar `NotImplementedError`."
 * **Resultado:** Código Python `src/monitoreo/dominio.py`. Posteriormente se instaló `pylint` en un entorno virtual aislado para ejecutar `pyreverse -o puml -p monitoreo src/monitoreo/`, generando `classes_monitoreo.puml`.
 * **Verificación / Corrección:** Se redactó `docs/design/round-trip.md` documentando 4 discrepancias fundamentales encontradas entre el diseño manual y el generado por ingeniería inversa. Decisión: **Corregida**.
+
+---
+
+## 5. Registro de Interacciones (Laboratorio 06 — Modelo C4)
+
+| N.º | Fecha | Herramienta | Actividad / Prompt | Propuesta de la IA | Verificación del Equipo (Checklist C4 / Reglas) | Decisión |
+|:---:|:---:|:---:|---|---|---|:---:|
+| **17** | 15/10/2026 | Gemini 3.8 Flash | **(E1 — Prompt IA 1)** Adaptación del prompt para generar el borrador de `workspace.dsl` (Nivel 1 Contexto) a partir de `inventario.md`, ADR-001 y `drivers.md`. | Generó el modelo Structurizr DSL con personas, sistema y dependencias externas. Inicialmente propuso una relación con el protocolo "HTTPS/JSON" y mencionó "FastAPI" en la descripción del sistema central. | **Corrección crítica (Regla C4 Nivel 1):** En el diagrama de contexto está prohibido mostrar tecnologías o protocolos internos para no confundir a públicos no técnicos. Se eliminó la mención de FastAPI del softwareSystem, se retiró el protocolo de la relación de contexto y se fijaron verbos de intención claros ("Consulta...", "Supervisa..."). Validado sin errores con `structurizr validate`. | **Corregida** |
+
+---
+
+## 6. Anexo Lab 06: Detalle del Prompt IA 1 Adaptado
+
+### Interacción 17: Borrador del Modelo en Structurizr DSL — Contexto (E1)
+* **Fecha:** 15/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Adaptado (Prompt IA 1 de la Guía):**
+  > "Actúa como arquitecto de software experto en el modelo C4 y en Structurizr DSL.  
+  > Contexto: Sistema RutaSIT Arequipa. Revisa el inventario de elementos en `inventario.md`, el estilo arquitectónico en `ADR-001` (monolito modular asíncrono) y los drivers en `drivers.md`.  
+  > Tarea: Escribe un workspace de Structurizr DSL con personas (Pasajero, Operador), el sistema de software principal (RutaSIT Arequipa), los sistemas externos etiquetados con 'Externo' (Dispositivos GPS en buses, Servidor OpenStreetMap, Servicio Web Push) y relaciones con verbos de intención activa.  
+  > Restricciones: Usa `!identifiers hierarchical`; en el Nivel 1 (Contexto) NO incluyas tecnologías internas (prohibido mencionar FastAPI, Redis o PostgreSQL en este nivel); no confundas contenedores con Docker; define la vista `systemContext` con título y descripción, e incluye estilos visuales con colores y formas estándar. Formato: solo el código DSL."
+* **Propuesta de la IA:** Código Structurizr DSL con la estructura del modelo, la vista `systemContext` y el bloque `styles`.
+* **Verificación y Corrección Humana:**
+  1. *Falso positivo de tecnología:* La IA había colocado en la descripción de RutaSIT que estaba construido con FastAPI; se corrigió para que describa únicamente la propuesta de valor del negocio (monitoreo en tiempo real, cálculo de ETA y detección de desvíos).
+  2. *Intención en relaciones:* Se verificó que ninguna flecha usara el verbo genérico "usa". Se asignaron verbos precisos: *"Consulta rutas, paraderos y tiempos estimados de llegada"*, *"Supervisa ubicación de flota, cumplimiento de frecuencias y alertas de desvío"*, *"Envía tramas continuas de telemetría y posición GPS de los buses"*.
+  3. *Validación CLI:* Se ejecutó `structurizr.sh validate -w docs/architecture/c4/workspace.dsl` con resultado exitoso (0 errores).
+* **Decisión:** **Corregida y aceptada**.
