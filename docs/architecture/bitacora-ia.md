@@ -230,6 +230,7 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 | **18** | 15/10/2026 | Gemini 3.8 Flash | **(E2)** Modelado del Diagrama de Contenedores en Structurizr DSL a partir de ADR-001, ADR-002, ADR-003 y `despliegue.py`. | Generó 6 contenedores (`pwa`, `panel`, `api`, `worker`, `redis`, `db`) con tecnologías concretas y relaciones con protocolos. | **Verificación del equipo:** Se verificó la lista oficial: ningún contenedor se llama "Docker", "servidor" o "nube". Todos los contenedores coinciden estrictamente con las decisiones de ADR-001/002/003. Se asignaron formas visuales (Database, Queue, WebBrowser) y protocolos explícitos (HTTPS/JSON, SQL/TCP, Redis protocol, WSS). Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
 | **19** | 15/10/2026 | Gemini 3.8 Flash | **(E3)** Modelado del Diagrama de Componentes de la API en Structurizr DSL a partir de `docs/design/paquetes.puml`. | Generó 5 componentes (`ingesta`, `eta`, `notificaciones`, `catalogo`, `supervision`) dentro del contenedor API Monolito Asíncrono. | **Verificación del equipo (Regla C4 sin ciclos):** Coherencia 1:1 con `paquetes.puml` del Lab 05. Se verificó que la dirección de dependencias no forme ciclos: `eta` consulta a `ingesta` y `catalogo`; `notificaciones` escucha eventos de `eta` y canaliza WebSockets; `supervision` solo realiza lecturas de `eta` y `catalogo`. Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
 | **20** | 15/10/2026 | Gemini 3.8 Flash | **(E4)** Modelado de la Vista Dinámica del flujo crítico ("Consultar tiempo de llegada") y análisis comparativo con UML en `comparacion.md`. | Generó la vista `dynamic` con 8 pasos numerados entre PWA, API, componentes internos, Redis y Web Push. | **Verificación del equipo:** Se comprobó que cada paso corresponda exactamente a una relación preexistente en el modelo (regla E4.2). Se redactó en `comparacion.md` la explicación de 3-5 líneas sobre los detalles omitidos (condicionales `alt`, bucles, firmas tipadas) y los públicos destinatarios (desarrolladores vs arquitectos). Validado con `structurizr validate` y exportado. | **Aceptada** |
+| **21** | 15/10/2026 | Gemini 3.8 Flash | **(E5)** Modelado de la Vista de Despliegue en entorno de Producción (MVP en 1 VPS) en Structurizr DSL a partir de `drivers.md` (R-03) y `despliegue.py`. | Generó el bloque `deploymentEnvironment "Producción"` con nodos anidados (Smartphone de Pasajeros, Estación del Centro de Control, VPS con Docker Compose) e instancias de los 6 contenedores. | **Verificación del equipo:** Se verificó que cada uno de los 6 contenedores del Nivel 2 posea una instancia (`containerInstance`). Se comprobó que las especificaciones del nodo VPS (Ubuntu 24.04 LTS, 4 vCPU, 8 GB RAM, $\le \$12$ USD/mes) respeten estrictamente la restricción presupuestaria R-03. Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
 
 ---
 
@@ -302,4 +303,22 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   1. *Correspondencia con el modelo:* Se verificó que cada uno de los 8 pasos coincida con las relaciones existentes en `workspace.dsl`.
   2. *Comparativa conceptual:* Se comprobó que el texto en `comparacion.md` responda con precisión al contraste de granularidad (diagrama de secuencia para desarrolladores/pruebas; vista dinámica C4 para arquitectura y comunicación de alto nivel).
   3. *Validación y Exportación:* Se ejecutó `structurizr validate` y `structurizr export` generando `structurizr-ConsultarTiempoLlegada.puml` y `structurizr-ConsultarTiempoLlegada.mmd`.
+* **Decisión:** **Aceptada**.
+
+---
+
+### Interacción 21: Vista de Despliegue en Producción (E5)
+* **Fecha:** 15/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Modela la vista de despliegue en entorno de Producción (MVP) para RutaSIT Arequipa en Structurizr DSL a partir de `drivers.md` (restricción R-03) y `despliegue.py`.  
+  > Requisitos:  
+  > 1. Define `deploymentEnvironment 'Producción'` con nodos anidados: Dispositivo del Pasajero (Smartphone / PWA), Estación del Centro de Control (PC / Panel) y Servidor VPS en la nube (Ubuntu 24.04 LTS, 4 vCPU, 8 GB RAM, <= $12 USD/mes) alojando Docker Compose.  
+  > 2. Coloca una `containerInstance` para cada uno de los 6 contenedores del nivel 2 (`pwa`, `panel`, `api`, `worker`, `redis`, `db`).  
+  > 3. Define la vista `deployment` con título y descripción."
+* **Propuesta de la IA:** Definición del entorno `produccion` en el modelo y la vista `deployment` en el bloque de vistas.
+* **Verificación y Corrección Humana:**
+  1. *Cobertura total de contenedores:* Se comprobó que ninguna de las 6 instancias quedara huérfana y que cada una esté asignada al nodo correcto.
+  2. *Coherencia presupuestaria:* Se verificó que el nodo del VPS declare explícitamente sus especificaciones (Ubuntu 24.04 LTS, 4 vCPU, 8 GB RAM, $\le \$12$ USD/mes), alineado con la restricción R-03 del proyecto.
+  3. *Validación y Exportación:* Se ejecutó `structurizr validate` (0 errores) y `structurizr export` generando `structurizr-Despliegue.puml` y `structurizr-Despliegue.mmd`.
 * **Decisión:** **Aceptada**.

@@ -74,6 +74,30 @@ workspace "RutaSIT Arequipa" "Modelo C4 del sistema de seguimiento y monitoreo e
         rutasit.api.supervision -> rutasit.api.catalogo "Consulta programación y frecuencias oficiales (solo lectura)"
 
         rutasit.api.catalogo -> rutasit.db "Consulta y persiste geometrías de paraderos y rutas" "SQL/TCP (PostGIS)"
+
+        # Entorno de Despliegue en Producción (MVP)
+        produccion = deploymentEnvironment "Producción" {
+            deploymentNode "Dispositivo del Pasajero" "" "Smartphone Android / iOS" {
+                deploymentNode "Navegador Web / PWA Engine" "" "Chrome / Safari / Service Worker" {
+                    containerInstance rutasit.pwa
+                }
+            }
+
+            deploymentNode "Estación del Centro de Control" "" "PC / Laptop de Operaciones" {
+                deploymentNode "Navegador Web" "" "Google Chrome / Firefox" {
+                    containerInstance rutasit.panel
+                }
+            }
+
+            deploymentNode "Servidor VPS en la Nube" "" "Ubuntu 24.04 LTS, 4 vCPU, 8 GB RAM (≤ $12 USD/mes)" {
+                deploymentNode "Docker Compose" "" "Docker Engine 27.x" {
+                    containerInstance rutasit.api
+                    containerInstance rutasit.worker
+                    containerInstance rutasit.redis
+                    containerInstance rutasit.db
+                }
+            }
+        }
     }
 
     views {
@@ -101,6 +125,11 @@ workspace "RutaSIT Arequipa" "Modelo C4 del sistema de seguimiento y monitoreo e
             rutasit.api.notificaciones -> rutasit.api.eta "6. Escucha cambios de estado y desvíos detectados"
             rutasit.api.notificaciones -> push "7. Despacha alertas críticas de retraso o desvío"
             rutasit.pwa -> rutasit.api.notificaciones "8. Recibe flujo continuo de posiciones y eventos de bus"
+            autolayout lr
+        }
+
+        deployment rutasit produccion "Despliegue" "Nivel 5: Vista de Despliegue en entorno de Producción (MVP en 1 VPS)." {
+            include *
             autolayout lr
         }
 

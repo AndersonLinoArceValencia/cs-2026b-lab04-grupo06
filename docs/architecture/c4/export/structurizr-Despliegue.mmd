@@ -1,0 +1,56 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Deployment View: RutaSIT Arequipa - Producción"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    subgraph 53 ["Dispositivo del Pasajero"]
+      style 53 fill:#ffffff,stroke:#444444,color:#444444
+
+      subgraph 54 ["Navegador Web / PWA Engine"]
+        style 54 fill:#ffffff,stroke:#444444,color:#444444
+
+        55["<div style='font-weight: bold'>Aplicación Web Progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + TypeScript + Leaflet]</div><div style='font-size: 80%; margin-top:10px'>Interfaz móvil y web para<br />pasajeros; consulta de rutas,<br />paraderos y tiempo de llegada<br />en vivo con Leaflet.</div>"]
+        style 55 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+    end
+
+    subgraph 56 ["Estación del Centro de Control"]
+      style 56 fill:#ffffff,stroke:#444444,color:#444444
+
+      subgraph 57 ["Navegador Web"]
+        style 57 fill:#ffffff,stroke:#444444,color:#444444
+
+        58["<div style='font-weight: bold'>Panel Web de Operaciones</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + Vite + TailwindCSS]</div><div style='font-size: 80%; margin-top:10px'>Panel para supervisores del<br />SIT; visualización de flota<br />en mapa, frecuencias y<br />gestión de contingencias.</div>"]
+        style 58 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+    end
+
+    subgraph 59 ["Servidor VPS en la Nube"]
+      style 59 fill:#ffffff,stroke:#444444,color:#444444
+
+      subgraph 60 ["Docker Compose"]
+        style 60 fill:#ffffff,stroke:#444444,color:#444444
+
+        61["<div style='font-weight: bold'>API Monolito Asíncrono</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python 3.11+ / FastAPI (ASGI)]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular que procesa<br />telemetría GPS, expone<br />endpoints REST y canaliza<br />WebSockets de tiempo real.</div>"]
+        style 61 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        64["<div style='font-weight: bold'>Worker Espacial y Batch</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Background Worker]</div><div style='font-size: 80%; margin-top:10px'>Proceso asíncrono para<br />cálculo geométrico de<br />geocercas, estimación de ETA<br />y persistencia en lote.</div>"]
+        style 64 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        65["<div style='font-weight: bold'>Caché y Buffer en Memoria</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis 7.x]</div><div style='font-size: 80%; margin-top:10px'>Buffer de telemetría<br />(Streams), caché de última<br />posición de buses (TTL) y<br />Pub/Sub de eventos.</div>"]
+        style 65 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        68[("<div style='font-weight: bold'>Base de Datos Geoespacial</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL 16 + PostGIS 3.4]</div><div style='font-size: 80%; margin-top:10px'>Almacén relacional con<br />extensión PostGIS para<br />catálogo vial (rutas,<br />paraderos) e histórico<br />consolidado.</div>")]
+        style 68 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      end
+
+    end
+
+    55-. "<div>Consulta catálogo REST y<br />recibe telemetría en vivo</div><div style='font-size: 70%'>[HTTPS / WSS]</div>" .->61
+    58-. "<div>Solicita métricas de flota y<br />recibe eventos de<br />contingencia</div><div style='font-size: 70%'>[HTTPS / WSS]</div>" .->61
+    61-. "<div>Encola telemetría en buffer<br />(Streams) y consulta última<br />posición de buses</div><div style='font-size: 70%'>[Redis protocol]</div>" .->65
+    64-. "<div>Consume telemetría (Streams)<br />y publica alertas/ETA<br />calculados (Pub/Sub)</div><div style='font-size: 70%'>[Redis protocol]</div>" .->65
+    61-. "<div>Consulta información de rutas<br />y paraderos</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->68
+    64-. "<div>Persiste histórico<br />consolidado de telemetría por<br />lotes cada 5 s</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->68
+
+  end

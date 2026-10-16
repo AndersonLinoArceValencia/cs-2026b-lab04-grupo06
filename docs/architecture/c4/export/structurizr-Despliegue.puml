@@ -1,0 +1,52 @@
+@startuml
+title <size:24>Deployment View: RutaSIT Arequipa - Producción</size>\n<size:24>Nivel 5: Vista de Despliegue en entorno de Producción (MVP en 1 VPS).</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Deployment>
+
+Deployment_Node(Producción.DispositivodelPasajero, "Dispositivo del Pasajero", $type="Smartphone Android / iOS", $descr="", $tags="", $link="") {
+  Deployment_Node(Producción.DispositivodelPasajero.NavegadorWebPWAEngine, "Navegador Web / PWA Engine", $type="Chrome / Safari / Service Worker", $descr="", $tags="", $link="") {
+    Container(Producción.DispositivodelPasajero.NavegadorWebPWAEngine.AplicaciónWebProgresiva_1, "Aplicación Web Progresiva", $techn="React + TypeScript + Leaflet", $descr="Interfaz móvil y web para pasajeros; consulta de rutas, paraderos y tiempo de llegada en vivo con Leaflet.", $tags="", $link="")
+  }
+
+}
+
+Deployment_Node(Producción.EstacióndelCentrodeControl, "Estación del Centro de Control", $type="PC / Laptop de Operaciones", $descr="", $tags="", $link="") {
+  Deployment_Node(Producción.EstacióndelCentrodeControl.NavegadorWeb, "Navegador Web", $type="Google Chrome / Firefox", $descr="", $tags="", $link="") {
+    Container(Producción.EstacióndelCentrodeControl.NavegadorWeb.PanelWebdeOperaciones_1, "Panel Web de Operaciones", $techn="React + Vite + TailwindCSS", $descr="Panel para supervisores del SIT; visualización de flota en mapa, frecuencias y gestión de contingencias.", $tags="", $link="")
+  }
+
+}
+
+Deployment_Node(Producción.ServidorVPSenlaNube, "Servidor VPS en la Nube", $type="Ubuntu 24.04 LTS, 4 vCPU, 8 GB RAM (≤ $12 USD/mes)", $descr="", $tags="", $link="") {
+  Deployment_Node(Producción.ServidorVPSenlaNube.DockerCompose, "Docker Compose", $type="Docker Engine 27.x", $descr="", $tags="", $link="") {
+    Container(Producción.ServidorVPSenlaNube.DockerCompose.APIMonolitoAsíncrono_1, "API Monolito Asíncrono", $techn="Python 3.11+ / FastAPI (ASGI)", $descr="Monolito modular que procesa telemetría GPS, expone endpoints REST y canaliza WebSockets de tiempo real.", $tags="", $link="")
+    Container(Producción.ServidorVPSenlaNube.DockerCompose.WorkerEspacialyBatch_1, "Worker Espacial y Batch", $techn="Python / Background Worker", $descr="Proceso asíncrono para cálculo geométrico de geocercas, estimación de ETA y persistencia en lote.", $tags="", $link="")
+    ContainerQueue(Producción.ServidorVPSenlaNube.DockerCompose.CachéyBufferenMemoria_1, "Caché y Buffer en Memoria", $techn="Redis 7.x", $descr="Buffer de telemetría (Streams), caché de última posición de buses (TTL) y Pub/Sub de eventos.", $tags="", $link="")
+    ContainerDb(Producción.ServidorVPSenlaNube.DockerCompose.BasedeDatosGeoespacial_1, "Base de Datos Geoespacial", $techn="PostgreSQL 16 + PostGIS 3.4", $descr="Almacén relacional con extensión PostGIS para catálogo vial (rutas, paraderos) e histórico consolidado.", $tags="", $link="")
+  }
+
+}
+
+Rel(Producción.DispositivodelPasajero.NavegadorWebPWAEngine.AplicaciónWebProgresiva_1, Producción.ServidorVPSenlaNube.DockerCompose.APIMonolitoAsíncrono_1, "Consulta catálogo REST y recibe telemetría en vivo", $techn="HTTPS / WSS", $tags="", $link="")
+Rel(Producción.EstacióndelCentrodeControl.NavegadorWeb.PanelWebdeOperaciones_1, Producción.ServidorVPSenlaNube.DockerCompose.APIMonolitoAsíncrono_1, "Solicita métricas de flota y recibe eventos de contingencia", $techn="HTTPS / WSS", $tags="", $link="")
+Rel(Producción.ServidorVPSenlaNube.DockerCompose.APIMonolitoAsíncrono_1, Producción.ServidorVPSenlaNube.DockerCompose.CachéyBufferenMemoria_1, "Encola telemetría en buffer (Streams) y consulta última posición de buses", $techn="Redis protocol", $tags="", $link="")
+Rel(Producción.ServidorVPSenlaNube.DockerCompose.WorkerEspacialyBatch_1, Producción.ServidorVPSenlaNube.DockerCompose.CachéyBufferenMemoria_1, "Consume telemetría (Streams) y publica alertas/ETA calculados (Pub/Sub)", $techn="Redis protocol", $tags="", $link="")
+Rel(Producción.ServidorVPSenlaNube.DockerCompose.APIMonolitoAsíncrono_1, Producción.ServidorVPSenlaNube.DockerCompose.BasedeDatosGeoespacial_1, "Consulta información de rutas y paraderos", $techn="SQL/TCP", $tags="", $link="")
+Rel(Producción.ServidorVPSenlaNube.DockerCompose.WorkerEspacialyBatch_1, Producción.ServidorVPSenlaNube.DockerCompose.BasedeDatosGeoespacial_1, "Persiste histórico consolidado de telemetría por lotes cada 5 s", $techn="SQL/TCP", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml
