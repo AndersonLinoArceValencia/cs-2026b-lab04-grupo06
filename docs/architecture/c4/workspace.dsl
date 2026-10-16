@@ -9,7 +9,13 @@ workspace "RutaSIT Arequipa" "Modelo C4 del sistema de seguimiento y monitoreo e
         rutasit = softwareSystem "RutaSIT Arequipa" "Permite el monitoreo en tiempo real de 300 buses, cálculo de tiempos de llegada (ETA) y detección de desvíos en el Sistema Integrado de Transporte de Arequipa." {
             pwa = container "Aplicación Web Progresiva" "Interfaz móvil y web para pasajeros; consulta de rutas, paraderos y tiempo de llegada en vivo con Leaflet." "React + TypeScript + Leaflet" "Web Browser"
             panel = container "Panel Web de Operaciones" "Panel para supervisores del SIT; visualización de flota en mapa, frecuencias y gestión de contingencias." "React + Vite + TailwindCSS" "Web Browser"
-            api = container "API Monolito Asíncrono" "Monolito modular que procesa telemetría GPS, expone endpoints REST y canaliza WebSockets de tiempo real." "Python 3.11+ / FastAPI (ASGI)"
+            api = container "API Monolito Asíncrono" "Monolito modular que procesa telemetría GPS, expone endpoints REST y canaliza WebSockets de tiempo real." "Python 3.11+ / FastAPI (ASGI)" {
+                ingesta = component "Módulo Ingesta GPS" "Recepciona y valida tramas de telemetría de 300 buses; realiza triage rápido y encola en Redis Streams." "FastAPI APIRouter"
+                eta = component "Módulo Estimación ETA y Geocercas" "Calcula tiempos estimados de arribo, verifica proximidad a paraderos y detecta desvíos de ruta." "Python Service (Spatial Engine)"
+                notificaciones = component "Módulo Notificaciones y Tiempo Real" "Canaliza eventos por WebSockets hacia la PWA y panel de operaciones, e invoca alertas push." "FastAPI WebSocket Manager"
+                catalogo = component "Módulo Catálogo SIT" "Gestiona información de rutas troncales/alimentadoras, paraderos oficiales y frecuencias programadas." "FastAPI APIRouter / SQL Repository"
+                supervision = component "Módulo Supervisión de Flota" "Consolida indicadores operativos, puntualidad, velocidades y monitoreo en vivo para operadores." "FastAPI APIRouter / Dashboard Service"
+            }
             worker = container "Worker Espacial y Batch" "Proceso asíncrono para cálculo geométrico de geocercas, estimación de ETA y persistencia en lote." "Python / Background Worker"
             redis = container "Caché y Buffer en Memoria" "Buffer de telemetría (Streams), caché de última posición de buses (TTL) y Pub/Sub de eventos." "Redis 7.x" "Queue"
             db = container "Base de Datos Geoespacial" "Almacén relacional con extensión PostGIS para catálogo vial (rutas, paraderos) e histórico consolidado." "PostgreSQL 16 + PostGIS 3.4" "Database"
@@ -44,6 +50,30 @@ workspace "RutaSIT Arequipa" "Modelo C4 del sistema de seguimiento y monitoreo e
 
         rutasit.pwa -> osm "Descarga teselas y capas cartográficas para el mapa" "HTTPS"
         rutasit.panel -> osm "Descarga teselas de mapa para visualización de flota" "HTTPS"
+
+        # Relaciones del Nivel 3 (Componentes de la API)
+        rutasit.pwa -> rutasit.api.catalogo "Consulta rutas y paraderos disponibles" "HTTPS/JSON"
+        rutasit.pwa -> rutasit.api.eta "Solicita cálculo de tiempo de llegada al paradero" "HTTPS/JSON"
+        rutasit.pwa -> rutasit.api.notificaciones "Recibe flujo continuo de posiciones y eventos de bus" "WSS"
+
+        rutasit.panel -> rutasit.api.supervision "Consulta indicadores y estado operativo de la flota" "HTTPS/JSON"
+        rutasit.panel -> rutasit.api.notificaciones "Recibe alertas de desvío y contingencias operativas" "WSS"
+
+        gps -> rutasit.api.ingesta "Envía tramas de telemetría cada 10 s" "HTTPS/JSON"
+
+        rutasit.api.ingesta -> rutasit.redis "Encola tramas crudas en buffer de telemetría" "Redis Streams (XADD)"
+        rutasit.api.eta -> rutasit.api.ingesta "Lee tramas de telemetría validadas (IProveedorGPS)"
+        rutasit.api.eta -> rutasit.api.catalogo "Consulta trazado de rutas y coordenadas de paraderos"
+        rutasit.api.eta -> rutasit.redis "Almacena última posición y ETA calculado" "Redis protocol"
+
+        rutasit.api.notificaciones -> rutasit.api.eta "Escucha cambios de estado y desvíos detectados"
+        rutasit.api.notificaciones -> rutasit.redis "Consume eventos del canal Pub/Sub" "Redis protocol"
+        rutasit.api.notificaciones -> push "Despacha alertas críticas de retraso o desvío" "HTTPS/JSON"
+
+        rutasit.api.supervision -> rutasit.api.eta "Consulta estado de viajes en curso (solo lectura)"
+        rutasit.api.supervision -> rutasit.api.catalogo "Consulta programación y frecuencias oficiales (solo lectura)"
+
+        rutasit.api.catalogo -> rutasit.db "Consulta y persiste geometrías de paraderos y rutas" "SQL/TCP (PostGIS)"
     }
 
     views {
@@ -53,6 +83,11 @@ workspace "RutaSIT Arequipa" "Modelo C4 del sistema de seguimiento y monitoreo e
         }
 
         container rutasit "Contenedores" "Nivel 2: Diagrama de Contenedores del sistema RutaSIT Arequipa." {
+            include *
+            autolayout lr
+        }
+
+        component rutasit.api "Componentes" "Nivel 3: Diagrama de Componentes del contenedor API Monolito Asíncrono." {
             include *
             autolayout lr
         }

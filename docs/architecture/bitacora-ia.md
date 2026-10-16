@@ -228,6 +228,7 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 |:---:|:---:|:---:|---|---|---|:---:|
 | **17** | 15/10/2026 | Gemini 3.8 Flash | **(E1 — Prompt IA 1)** Adaptación del prompt para generar el borrador de `workspace.dsl` (Nivel 1 Contexto) a partir de `inventario.md`, ADR-001 y `drivers.md`. | Generó el modelo Structurizr DSL con personas, sistema y dependencias externas. Inicialmente propuso una relación con el protocolo "HTTPS/JSON" y mencionó "FastAPI" en la descripción del sistema central. | **Corrección crítica (Regla C4 Nivel 1):** En el diagrama de contexto está prohibido mostrar tecnologías o protocolos internos para no confundir a públicos no técnicos. Se eliminó la mención de FastAPI del softwareSystem, se retiró el protocolo de la relación de contexto y se fijaron verbos de intención claros ("Consulta...", "Supervisa..."). Validado sin errores con `structurizr validate`. | **Corregida** |
 | **18** | 15/10/2026 | Gemini 3.8 Flash | **(E2)** Modelado del Diagrama de Contenedores en Structurizr DSL a partir de ADR-001, ADR-002, ADR-003 y `despliegue.py`. | Generó 6 contenedores (`pwa`, `panel`, `api`, `worker`, `redis`, `db`) con tecnologías concretas y relaciones con protocolos. | **Verificación del equipo:** Se verificó la lista oficial: ningún contenedor se llama "Docker", "servidor" o "nube". Todos los contenedores coinciden estrictamente con las decisiones de ADR-001/002/003. Se asignaron formas visuales (Database, Queue, WebBrowser) y protocolos explícitos (HTTPS/JSON, SQL/TCP, Redis protocol, WSS). Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
+| **19** | 15/10/2026 | Gemini 3.8 Flash | **(E3)** Modelado del Diagrama de Componentes de la API en Structurizr DSL a partir de `docs/design/paquetes.puml`. | Generó 5 componentes (`ingesta`, `eta`, `notificaciones`, `catalogo`, `supervision`) dentro del contenedor API Monolito Asíncrono. | **Verificación del equipo (Regla C4 sin ciclos):** Coherencia 1:1 con `paquetes.puml` del Lab 05. Se verificó que la dirección de dependencias no forme ciclos: `eta` consulta a `ingesta` y `catalogo`; `notificaciones` escucha eventos de `eta` y canaliza WebSockets; `supervision` solo realiza lecturas de `eta` y `catalogo`. Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
 
 ---
 
@@ -265,4 +266,22 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   1. *Lista de verificación C4:* Se comprobó que ningún contenedor represente infraestructura física ("Docker", "servidor" o "nube"), respetando que Docker es un entorno de ejecución para el Nivel 5 de despliegue.
   2. *Protocolos:* Se verificó que todas las relaciones entre contenedores tengan su protocolo (SQL/TCP hacia PostgreSQL, Redis protocol para encolado/caché, HTTPS/JSON para GPS).
   3. *Validación y Exportación:* Se ejecutó `structurizr validate` (0 errores) y `structurizr export` generando `structurizr-Contenedores.puml` y `structurizr-Contenedores.mmd`.
+* **Decisión:** **Aceptada**.
+
+---
+
+### Interacción 19: Modelado de Componentes de la API — Nivel 3 (E3)
+* **Fecha:** 15/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Modela en Structurizr DSL el Nivel 3 (Componentes) del contenedor principal `api` (API Monolito Asíncrono).  
+  > Requisitos:  
+  > 1. Agrega los componentes basándote en los paquetes de `docs/design/paquetes.puml`: `ingesta` (Módulo Ingesta GPS), `eta` (Módulo Estimación ETA y Geocercas), `notificaciones` (Módulo Notificaciones y Tiempo Real), `catalogo` (Módulo Catálogo SIT) y `supervision` (Módulo Supervisión de Flota).  
+  > 2. Modela las dependencias entre componentes y hacia contenedores y sistemas externos sin ciclos (Regla C4 del Lab 05).  
+  > 3. Define la vista `component` para `rutasit.api` con título y descripción."
+* **Propuesta de la IA:** Definición de los 5 componentes dentro de `api` y sus relaciones con `redis`, `db`, `push`, `pwa`, `panel` y `gps`.
+* **Verificación y Corrección Humana:**
+  1. *Trazabilidad:* Se comprobó correspondencia 1:1 con `paquetes.puml`. No se omitió ningún módulo del dominio.
+  2. *Ausencia de ciclos:* Se verificó que la regla de dependencias del ADR-001 se mantenga (comunicación mediante interfaces y fachadas, sin dependencias circulares).
+  3. *Validación y Exportación:* Se ejecutó `structurizr validate` (0 errores) y `structurizr export` generando `structurizr-Componentes.puml` y `structurizr-Componentes.mmd`.
 * **Decisión:** **Aceptada**.

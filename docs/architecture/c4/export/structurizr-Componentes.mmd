@@ -1,0 +1,57 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["Component View: RutaSIT Arequipa - API Monolito Asíncrono"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    15["<div style='font-weight: bold'>Dispositivos GPS Embarcados</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Equipos GPS instalados en 300<br />buses que emiten tramas de<br />telemetría y geolocalización<br />continua.</div>"]
+    style 15 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    17["<div style='font-weight: bold'>Servicio Web Push</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Plataforma de mensajería para<br />despacho de alertas masivas e<br />incidencias a pasajeros y<br />operadores.</div>"]
+    style 17 fill:#999999,stroke:#6b6b6b,color:#ffffff
+
+    subgraph 3 ["RutaSIT Arequipa"]
+      style 3 fill:#ffffff,stroke:#0b4884,color:#0b4884
+
+      subgraph 6 ["API Monolito Asíncrono"]
+        style 6 fill:#ffffff,stroke:#2e6295,color:#2e6295
+
+        10["<div style='font-weight: bold'>Módulo Catálogo SIT</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter / SQL Repository]</div><div style='font-size: 80%; margin-top:10px'>Gestiona información de rutas<br />troncales/alimentadoras,<br />paraderos oficiales y<br />frecuencias programadas.</div>"]
+        style 10 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        11["<div style='font-weight: bold'>Módulo Supervisión de Flota</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter / Dashboard Service]</div><div style='font-size: 80%; margin-top:10px'>Consolida indicadores<br />operativos, puntualidad,<br />velocidades y monitoreo en<br />vivo para operadores.</div>"]
+        style 11 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        7["<div style='font-weight: bold'>Módulo Ingesta GPS</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter]</div><div style='font-size: 80%; margin-top:10px'>Recepciona y valida tramas de<br />telemetría de 300 buses;<br />realiza triage rápido y<br />encola en Redis Streams.</div>"]
+        style 7 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        8["<div style='font-weight: bold'>Módulo Estimación ETA y Geocercas</div><div style='font-size: 70%; margin-top: 0px'>[Component: Python Service (Spatial Engine)]</div><div style='font-size: 80%; margin-top:10px'>Calcula tiempos estimados de<br />arribo, verifica proximidad a<br />paraderos y detecta desvíos<br />de ruta.</div>"]
+        style 8 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        9["<div style='font-weight: bold'>Módulo Notificaciones y Tiempo Real</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI WebSocket Manager]</div><div style='font-size: 80%; margin-top:10px'>Canaliza eventos por<br />WebSockets hacia la PWA y<br />panel de operaciones, e<br />invoca alertas push.</div>"]
+        style 9 fill:#85bbf0,stroke:#5d82a8,color:#000000
+      end
+
+      13["<div style='font-weight: bold'>Caché y Buffer en Memoria</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis 7.x]</div><div style='font-size: 80%; margin-top:10px'>Buffer de telemetría<br />(Streams), caché de última<br />posición de buses (TTL) y<br />Pub/Sub de eventos.</div>"]
+      style 13 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      14[("<div style='font-weight: bold'>Base de Datos Geoespacial</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL 16 + PostGIS 3.4]</div><div style='font-size: 80%; margin-top:10px'>Almacén relacional con<br />extensión PostGIS para<br />catálogo vial (rutas,<br />paraderos) e histórico<br />consolidado.</div>")]
+      style 14 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      4["<div style='font-weight: bold'>Aplicación Web Progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + TypeScript + Leaflet]</div><div style='font-size: 80%; margin-top:10px'>Interfaz móvil y web para<br />pasajeros; consulta de rutas,<br />paraderos y tiempo de llegada<br />en vivo con Leaflet.</div>"]
+      style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      5["<div style='font-weight: bold'>Panel Web de Operaciones</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + Vite + TailwindCSS]</div><div style='font-size: 80%; margin-top:10px'>Panel para supervisores del<br />SIT; visualización de flota<br />en mapa, frecuencias y<br />gestión de contingencias.</div>"]
+      style 5 fill:#438dd5,stroke:#2e6295,color:#ffffff
+    end
+
+    4-. "<div>Consulta rutas y paraderos<br />disponibles</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->10
+    4-. "<div>Solicita cálculo de tiempo de<br />llegada al paradero</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->8
+    4-. "<div>Recibe flujo continuo de<br />posiciones y eventos de bus</div><div style='font-size: 70%'>[WSS]</div>" .->9
+    5-. "<div>Consulta indicadores y estado<br />operativo de la flota</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->11
+    5-. "<div>Recibe alertas de desvío y<br />contingencias operativas</div><div style='font-size: 70%'>[WSS]</div>" .->9
+    15-. "<div>Envía tramas de telemetría<br />cada 10 s</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->7
+    7-. "<div>Encola tramas crudas en<br />buffer de telemetría</div><div style='font-size: 70%'>[Redis Streams (XADD)]</div>" .->13
+    8-. "<div>Lee tramas de telemetría<br />validadas (IProveedorGPS)</div><div style='font-size: 70%'></div>" .->7
+    8-. "<div>Consulta trazado de rutas y<br />coordenadas de paraderos</div><div style='font-size: 70%'></div>" .->10
+    8-. "<div>Almacena última posición y<br />ETA calculado</div><div style='font-size: 70%'>[Redis protocol]</div>" .->13
+    9-. "<div>Escucha cambios de estado y<br />desvíos detectados</div><div style='font-size: 70%'></div>" .->8
+    9-. "<div>Consume eventos del canal<br />Pub/Sub</div><div style='font-size: 70%'>[Redis protocol]</div>" .->13
+    9-. "<div>Despacha alertas críticas de<br />retraso o desvío</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->17
+    11-. "<div>Consulta estado de viajes en<br />curso (solo lectura)</div><div style='font-size: 70%'></div>" .->8
+    11-. "<div>Consulta programación y<br />frecuencias oficiales (solo<br />lectura)</div><div style='font-size: 70%'></div>" .->10
+    10-. "<div>Consulta y persiste<br />geometrías de paraderos y<br />rutas</div><div style='font-size: 70%'>[SQL/TCP (PostGIS)]</div>" .->14
+
+  end

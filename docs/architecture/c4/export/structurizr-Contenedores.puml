@@ -22,12 +22,12 @@ System(ServidorOpenStreetMap, "Servidor OpenStreetMap", $descr="Proveedor de car
 System(ServicioWebPush, "Servicio Web Push", $descr="Plataforma de mensajería para despacho de alertas masivas e incidencias a pasajeros y operadores.", $tags="", $link="")
 
 System_Boundary("RutaSITArequipa_boundary", "RutaSIT Arequipa", $tags="") {
-  Container(RutaSITArequipa.AplicaciónWebProgresiva, "Aplicación Web Progresiva", $techn="React + TypeScript + Leaflet", $descr="Interfaz móvil y web para pasajeros; consulta de rutas, paraderos y tiempo de llegada en vivo con Leaflet.", $tags="", $link="")
-  Container(RutaSITArequipa.PanelWebdeOperaciones, "Panel Web de Operaciones", $techn="React + Vite + TailwindCSS", $descr="Panel para supervisores del SIT; visualización de flota en mapa, frecuencias y gestión de contingencias.", $tags="", $link="")
-  Container(RutaSITArequipa.APIMonolitoAsíncrono, "API Monolito Asíncrono", $techn="Python 3.11+ / FastAPI (ASGI)", $descr="Monolito modular que procesa telemetría GPS, expone endpoints REST y canaliza WebSockets de tiempo real.", $tags="", $link="")
   Container(RutaSITArequipa.WorkerEspacialyBatch, "Worker Espacial y Batch", $techn="Python / Background Worker", $descr="Proceso asíncrono para cálculo geométrico de geocercas, estimación de ETA y persistencia en lote.", $tags="", $link="")
   ContainerQueue(RutaSITArequipa.CachéyBufferenMemoria, "Caché y Buffer en Memoria", $techn="Redis 7.x", $descr="Buffer de telemetría (Streams), caché de última posición de buses (TTL) y Pub/Sub de eventos.", $tags="", $link="")
   ContainerDb(RutaSITArequipa.BasedeDatosGeoespacial, "Base de Datos Geoespacial", $techn="PostgreSQL 16 + PostGIS 3.4", $descr="Almacén relacional con extensión PostGIS para catálogo vial (rutas, paraderos) e histórico consolidado.", $tags="", $link="")
+  Container(RutaSITArequipa.AplicaciónWebProgresiva, "Aplicación Web Progresiva", $techn="React + TypeScript + Leaflet", $descr="Interfaz móvil y web para pasajeros; consulta de rutas, paraderos y tiempo de llegada en vivo con Leaflet.", $tags="", $link="")
+  Container(RutaSITArequipa.PanelWebdeOperaciones, "Panel Web de Operaciones", $techn="React + Vite + TailwindCSS", $descr="Panel para supervisores del SIT; visualización de flota en mapa, frecuencias y gestión de contingencias.", $tags="", $link="")
+  Container(RutaSITArequipa.APIMonolitoAsíncrono, "API Monolito Asíncrono", $techn="Python 3.11+ / FastAPI (ASGI)", $descr="Monolito modular que procesa telemetría GPS, expone endpoints REST y canaliza WebSockets de tiempo real.", $tags="", $link="")
 }
 
 Rel(PasajerodelSIT, ServidorOpenStreetMap, "Descarga capas cartográficas y teselas de mapa para visualización", $techn="", $tags="", $link="")
@@ -43,6 +43,7 @@ Rel(RutaSITArequipa.WorkerEspacialyBatch, RutaSITArequipa.BasedeDatosGeoespacial
 Rel(RutaSITArequipa.WorkerEspacialyBatch, ServicioWebPush, "Despacha notificaciones de desvío y retrasos a pasajeros", $techn="HTTPS/JSON", $tags="", $link="")
 Rel(RutaSITArequipa.AplicaciónWebProgresiva, ServidorOpenStreetMap, "Descarga teselas y capas cartográficas para el mapa", $techn="HTTPS", $tags="", $link="")
 Rel(RutaSITArequipa.PanelWebdeOperaciones, ServidorOpenStreetMap, "Descarga teselas de mapa para visualización de flota", $techn="HTTPS", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono, ServicioWebPush, "Despacha alertas críticas de retraso o desvío", $techn="HTTPS/JSON", $tags="", $link="")
 
 SHOW_LEGEND(true)
 hide stereotypes
