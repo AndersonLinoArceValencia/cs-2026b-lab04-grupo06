@@ -227,10 +227,11 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 | N.º | Fecha | Herramienta | Actividad / Prompt | Propuesta de la IA | Verificación del Equipo (Checklist C4 / Reglas) | Decisión |
 |:---:|:---:|:---:|---|---|---|:---:|
 | **17** | 15/10/2026 | Gemini 3.8 Flash | **(E1 — Prompt IA 1)** Adaptación del prompt para generar el borrador de `workspace.dsl` (Nivel 1 Contexto) a partir de `inventario.md`, ADR-001 y `drivers.md`. | Generó el modelo Structurizr DSL con personas, sistema y dependencias externas. Inicialmente propuso una relación con el protocolo "HTTPS/JSON" y mencionó "FastAPI" en la descripción del sistema central. | **Corrección crítica (Regla C4 Nivel 1):** En el diagrama de contexto está prohibido mostrar tecnologías o protocolos internos para no confundir a públicos no técnicos. Se eliminó la mención de FastAPI del softwareSystem, se retiró el protocolo de la relación de contexto y se fijaron verbos de intención claros ("Consulta...", "Supervisa..."). Validado sin errores con `structurizr validate`. | **Corregida** |
+| **18** | 15/10/2026 | Gemini 3.8 Flash | **(E2)** Modelado del Diagrama de Contenedores en Structurizr DSL a partir de ADR-001, ADR-002, ADR-003 y `despliegue.py`. | Generó 6 contenedores (`pwa`, `panel`, `api`, `worker`, `redis`, `db`) con tecnologías concretas y relaciones con protocolos. | **Verificación del equipo:** Se verificó la lista oficial: ningún contenedor se llama "Docker", "servidor" o "nube". Todos los contenedores coinciden estrictamente con las decisiones de ADR-001/002/003. Se asignaron formas visuales (Database, Queue, WebBrowser) y protocolos explícitos (HTTPS/JSON, SQL/TCP, Redis protocol, WSS). Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
 
 ---
 
-## 6. Anexo Lab 06: Detalle del Prompt IA 1 Adaptado
+## 6. Anexo Lab 06: Detalle de Prompts y Verificación
 
 ### Interacción 17: Borrador del Modelo en Structurizr DSL — Contexto (E1)
 * **Fecha:** 15/10/2026
@@ -246,3 +247,22 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   2. *Intención en relaciones:* Se verificó que ninguna flecha usara el verbo genérico "usa". Se asignaron verbos precisos: *"Consulta rutas, paraderos y tiempos estimados de llegada"*, *"Supervisa ubicación de flota, cumplimiento de frecuencias y alertas de desvío"*, *"Envía tramas continuas de telemetría y posición GPS de los buses"*.
   3. *Validación CLI:* Se ejecutó `structurizr.sh validate -w docs/architecture/c4/workspace.dsl` con resultado exitoso (0 errores).
 * **Decisión:** **Corregida y aceptada**.
+
+---
+
+### Interacción 18: Modelado de Contenedores y Protocolos — Nivel 2 (E2)
+* **Fecha:** 15/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Modela en Structurizr DSL el Nivel 2 (Contenedores) del sistema RutaSIT Arequipa.  
+  > Requisitos:  
+  > 1. Agrega 6 contenedores dentro de `rutasit`: PWA Pasajeros (React/Leaflet), Panel Operador (React), API Monolito Asíncrono (FastAPI ASGI), Worker Espacial y Batch (Python Worker), Caché/Buffer (Redis 7.x Streams+PubSub) y Base de Datos (PostgreSQL 16 + PostGIS 3.4).  
+  > 2. Agrega las relaciones entre contenedores y con sistemas externos indicando tecnología y protocolo (HTTPS/JSON, SQL/TCP, Redis protocol, HTTPS/WSS).  
+  > 3. Usa etiquetas 'Database', 'Queue' y 'Web Browser'.  
+  > 4. Define la vista `container` con título y descripción."
+* **Propuesta de la IA:** Definición de los 6 contenedores y sus relaciones dentro del bloque `model`, más la vista `container` con `autolayout lr`.
+* **Verificación y Corrección Humana:**
+  1. *Lista de verificación C4:* Se comprobó que ningún contenedor represente infraestructura física ("Docker", "servidor" o "nube"), respetando que Docker es un entorno de ejecución para el Nivel 5 de despliegue.
+  2. *Protocolos:* Se verificó que todas las relaciones entre contenedores tengan su protocolo (SQL/TCP hacia PostgreSQL, Redis protocol para encolado/caché, HTTPS/JSON para GPS).
+  3. *Validación y Exportación:* Se ejecutó `structurizr validate` (0 errores) y `structurizr export` generando `structurizr-Contenedores.puml` y `structurizr-Contenedores.mmd`.
+* **Decisión:** **Aceptada**.

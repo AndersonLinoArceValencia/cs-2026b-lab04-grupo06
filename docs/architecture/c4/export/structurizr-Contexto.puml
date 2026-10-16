@@ -1,0 +1,33 @@
+@startuml
+title <size:24>System Context View: RutaSIT Arequipa</size>\n<size:24>Nivel 1: Contexto del sistema RutaSIT Arequipa y su entorno operativo.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+Person(PasajerodelSIT, "Pasajero del SIT", $descr="Usuario del transporte público de Arequipa que consulta rutas, paraderos y tiempo de llegada de buses.", $tags="", $link="")
+System(DispositivosGPSEmbarcados, "Dispositivos GPS Embarcados", $descr="Equipos GPS instalados en 300 buses que emiten tramas de telemetría y geolocalización continua.", $tags="", $link="")
+System(ServidorOpenStreetMap, "Servidor OpenStreetMap", $descr="Proveedor de cartografía abierta y teselas geográficas para visualización de mapas.", $tags="", $link="")
+System(ServicioWebPush, "Servicio Web Push", $descr="Plataforma de mensajería para despacho de alertas masivas e incidencias a pasajeros y operadores.", $tags="", $link="")
+Person(OperadordelCentrodeControl, "Operador del Centro de Control", $descr="Personal técnico del SIT que supervisa el cumplimiento de frecuencias, estado de flota y desvíos.", $tags="", $link="")
+System(RutaSITArequipa, "RutaSIT Arequipa", $descr="Permite el monitoreo en tiempo real de 300 buses, cálculo de tiempos de llegada (ETA) y detección de desvíos en el Sistema Integrado de Transporte de Arequipa.", $tags="", $link="")
+
+Rel(PasajerodelSIT, RutaSITArequipa, "Consulta rutas, paraderos y tiempos estimados de llegada", $techn="", $tags="", $link="")
+Rel(OperadordelCentrodeControl, RutaSITArequipa, "Supervisa ubicación de flota, cumplimiento de frecuencias y alertas de desvío", $techn="", $tags="", $link="")
+Rel(DispositivosGPSEmbarcados, RutaSITArequipa, "Envía tramas continuas de telemetría y posición GPS de los buses", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa, ServidorOpenStreetMap, "Solicita mapas base y teselas para georreferenciación de unidades y paraderos", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa, ServicioWebPush, "Solicita envío de notificaciones de contingencia y retrasos", $techn="", $tags="", $link="")
+Rel(PasajerodelSIT, ServidorOpenStreetMap, "Descarga capas cartográficas y teselas de mapa para visualización", $techn="", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

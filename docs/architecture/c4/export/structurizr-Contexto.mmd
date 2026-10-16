@@ -1,0 +1,27 @@
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["System Context View: RutaSIT Arequipa"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Pasajero del SIT</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Usuario del transporte<br />público de Arequipa que<br />consulta rutas, paraderos y<br />tiempo de llegada de buses.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+    10["<div style='font-weight: bold'>Dispositivos GPS Embarcados</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Equipos GPS instalados en 300<br />buses que emiten tramas de<br />telemetría y geolocalización<br />continua.</div>"]
+    style 10 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    11["<div style='font-weight: bold'>Servidor OpenStreetMap</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Proveedor de cartografía<br />abierta y teselas geográficas<br />para visualización de mapas.</div>"]
+    style 11 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    12["<div style='font-weight: bold'>Servicio Web Push</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Plataforma de mensajería para<br />despacho de alertas masivas e<br />incidencias a pasajeros y<br />operadores.</div>"]
+    style 12 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    2["<div style='font-weight: bold'>Operador del Centro de Control</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Personal técnico del SIT que<br />supervisa el cumplimiento de<br />frecuencias, estado de flota<br />y desvíos.</div>"]
+    style 2 fill:#08427b,stroke:#052e56,color:#ffffff
+    3["<div style='font-weight: bold'>RutaSIT Arequipa</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Permite el monitoreo en<br />tiempo real de 300 buses,<br />cálculo de tiempos de llegada<br />(ETA) y detección de desvíos<br />en el Sistema Integrado de<br />Transporte de Arequipa.</div>"]
+    style 3 fill:#1168bd,stroke:#0b4884,color:#ffffff
+
+    1-. "<div>Consulta rutas, paraderos y<br />tiempos estimados de llegada</div><div style='font-size: 70%'></div>" .->3
+    2-. "<div>Supervisa ubicación de flota,<br />cumplimiento de frecuencias y<br />alertas de desvío</div><div style='font-size: 70%'></div>" .->3
+    10-. "<div>Envía tramas continuas de<br />telemetría y posición GPS de<br />los buses</div><div style='font-size: 70%'></div>" .->3
+    3-. "<div>Solicita mapas base y teselas<br />para georreferenciación de<br />unidades y paraderos</div><div style='font-size: 70%'></div>" .->11
+    3-. "<div>Solicita envío de<br />notificaciones de<br />contingencia y retrasos</div><div style='font-size: 70%'></div>" .->12
+    1-. "<div>Descarga capas cartográficas<br />y teselas de mapa para<br />visualización</div><div style='font-size: 70%'></div>" .->11
+
+  end

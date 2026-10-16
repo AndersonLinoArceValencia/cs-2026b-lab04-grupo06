@@ -1,0 +1,49 @@
+@startuml
+title <size:24>Container View: RutaSIT Arequipa</size>\n<size:24>Nivel 2: Diagrama de Contenedores del sistema RutaSIT Arequipa.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+
+Person(PasajerodelSIT, "Pasajero del SIT", $descr="Usuario del transporte público de Arequipa que consulta rutas, paraderos y tiempo de llegada de buses.", $tags="", $link="")
+Person(OperadordelCentrodeControl, "Operador del Centro de Control", $descr="Personal técnico del SIT que supervisa el cumplimiento de frecuencias, estado de flota y desvíos.", $tags="", $link="")
+System(DispositivosGPSEmbarcados, "Dispositivos GPS Embarcados", $descr="Equipos GPS instalados en 300 buses que emiten tramas de telemetría y geolocalización continua.", $tags="", $link="")
+System(ServidorOpenStreetMap, "Servidor OpenStreetMap", $descr="Proveedor de cartografía abierta y teselas geográficas para visualización de mapas.", $tags="", $link="")
+System(ServicioWebPush, "Servicio Web Push", $descr="Plataforma de mensajería para despacho de alertas masivas e incidencias a pasajeros y operadores.", $tags="", $link="")
+
+System_Boundary("RutaSITArequipa_boundary", "RutaSIT Arequipa", $tags="") {
+  Container(RutaSITArequipa.AplicaciónWebProgresiva, "Aplicación Web Progresiva", $techn="React + TypeScript + Leaflet", $descr="Interfaz móvil y web para pasajeros; consulta de rutas, paraderos y tiempo de llegada en vivo con Leaflet.", $tags="", $link="")
+  Container(RutaSITArequipa.PanelWebdeOperaciones, "Panel Web de Operaciones", $techn="React + Vite + TailwindCSS", $descr="Panel para supervisores del SIT; visualización de flota en mapa, frecuencias y gestión de contingencias.", $tags="", $link="")
+  Container(RutaSITArequipa.APIMonolitoAsíncrono, "API Monolito Asíncrono", $techn="Python 3.11+ / FastAPI (ASGI)", $descr="Monolito modular que procesa telemetría GPS, expone endpoints REST y canaliza WebSockets de tiempo real.", $tags="", $link="")
+  Container(RutaSITArequipa.WorkerEspacialyBatch, "Worker Espacial y Batch", $techn="Python / Background Worker", $descr="Proceso asíncrono para cálculo geométrico de geocercas, estimación de ETA y persistencia en lote.", $tags="", $link="")
+  ContainerQueue(RutaSITArequipa.CachéyBufferenMemoria, "Caché y Buffer en Memoria", $techn="Redis 7.x", $descr="Buffer de telemetría (Streams), caché de última posición de buses (TTL) y Pub/Sub de eventos.", $tags="", $link="")
+  ContainerDb(RutaSITArequipa.BasedeDatosGeoespacial, "Base de Datos Geoespacial", $techn="PostgreSQL 16 + PostGIS 3.4", $descr="Almacén relacional con extensión PostGIS para catálogo vial (rutas, paraderos) e histórico consolidado.", $tags="", $link="")
+}
+
+Rel(PasajerodelSIT, ServidorOpenStreetMap, "Descarga capas cartográficas y teselas de mapa para visualización", $techn="", $tags="", $link="")
+Rel(PasajerodelSIT, RutaSITArequipa.AplicaciónWebProgresiva, "Consulta paraderos y visualiza buses en tiempo real", $techn="HTTPS", $tags="", $link="")
+Rel(OperadordelCentrodeControl, RutaSITArequipa.PanelWebdeOperaciones, "Monitorea flota en tiempo real y gestiona desvíos", $techn="HTTPS", $tags="", $link="")
+Rel(RutaSITArequipa.AplicaciónWebProgresiva, RutaSITArequipa.APIMonolitoAsíncrono, "Consulta catálogo REST y recibe telemetría en vivo", $techn="HTTPS / WSS", $tags="", $link="")
+Rel(RutaSITArequipa.PanelWebdeOperaciones, RutaSITArequipa.APIMonolitoAsíncrono, "Solicita métricas de flota y recibe eventos de contingencia", $techn="HTTPS / WSS", $tags="", $link="")
+Rel(DispositivosGPSEmbarcados, RutaSITArequipa.APIMonolitoAsíncrono, "Envía tramas de telemetría y coordenadas GPS cada 10 s (~30 req/s)", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono, RutaSITArequipa.CachéyBufferenMemoria, "Encola telemetría en buffer (Streams) y consulta última posición de buses", $techn="Redis protocol", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono, RutaSITArequipa.BasedeDatosGeoespacial, "Consulta información de rutas y paraderos", $techn="SQL/TCP", $tags="", $link="")
+Rel(RutaSITArequipa.WorkerEspacialyBatch, RutaSITArequipa.CachéyBufferenMemoria, "Consume telemetría (Streams) y publica alertas/ETA calculados (Pub/Sub)", $techn="Redis protocol", $tags="", $link="")
+Rel(RutaSITArequipa.WorkerEspacialyBatch, RutaSITArequipa.BasedeDatosGeoespacial, "Persiste histórico consolidado de telemetría por lotes cada 5 s", $techn="SQL/TCP", $tags="", $link="")
+Rel(RutaSITArequipa.WorkerEspacialyBatch, ServicioWebPush, "Despacha notificaciones de desvío y retrasos a pasajeros", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.AplicaciónWebProgresiva, ServidorOpenStreetMap, "Descarga teselas y capas cartográficas para el mapa", $techn="HTTPS", $tags="", $link="")
+Rel(RutaSITArequipa.PanelWebdeOperaciones, ServidorOpenStreetMap, "Descarga teselas de mapa para visualización de flota", $techn="HTTPS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml
