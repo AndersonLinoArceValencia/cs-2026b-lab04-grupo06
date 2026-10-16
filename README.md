@@ -1,11 +1,11 @@
-# RutaSIT Arequipa — Laboratorios 04 y 05: Arquitectura y diseño UML
+# RutaSIT Arequipa — Laboratorios 04, 05 y 06: Arquitectura, diseño UML y modelo C4
 Construcción de Software · EPIS-UNSA · 2026-B · Grupo 06
 
 ## Integrantes
-| Nombre | Rol en el laboratorio |
-|--------|-----------------------|
-| Arce Valencia Anderson Lino | Arquitecto líder y diagramador: drivers (E1), diagrama Mermaid (E3), alternativa en PlantUML (E5) y vista de despliegue (E6) |
-| Carlos Ccamaqque Wilson Freddy | Evaluador de trade-offs, redactor de ADR y verificador de IA: matriz de decisión (E2), ADR (E4), bitácora de IA (E7) y README (E8) |
+| Nombre | Rol en los laboratorios |
+|--------|-------------------------|
+| Arce Valencia Anderson Lino | Arquitecto líder y diagramador: drivers (Lab 04), diseño UML (Lab 05), modelo C4 en Structurizr DSL y vistas dinámica/despliegue (Lab 06) |
+| Carlos Ccamaqque Wilson Freddy | Evaluador de trade-offs, redactor de ADR y verificador de IA: matriz de decisión y ADRs (Lab 04), consistencia (Lab 05), inventario C4, revisión c4model y bitácora IA (Lab 06) |
 
 ## Caso
 **Caso 6 — RutaSIT Arequipa.** Sistema de seguimiento en tiempo real de los buses del Sistema Integrado de Transporte de Arequipa. Los 300 buses envían su posición GPS cada 10 segundos; el pasajero ve en un mapa dónde está su bus y cuánto falta para que llegue a su paradero, y el centro de control recibe alertas cuando un bus se desvía de su ruta o hay congestión. El MVP debe salir en 1 mes, con 2 desarrolladores y un único VPS de bajo costo.
@@ -146,7 +146,75 @@ Diagrama de clases:
 
 ![Diagrama de clases](docs/design/img/clases.png)
 
+## Arquitectura C4 (Lab 06)
+Modelo de arquitectura de software para **RutaSIT Arequipa** bajo el **modelo C4** (Contexto, Contenedores, Componentes y Código). Todo el modelo está formalizado como código utilizando **Structurizr DSL** (`workspace.dsl`) como **fuente única de verdad (Single Source of Truth)**, asegurando coherencia bidireccional con el [ADR-001](docs/architecture/adr/001-estilo-arquitectonico.md) (monolito modular asíncrono con FastAPI, Redis y PostgreSQL/PostGIS) y el diseño de componentes del [Laboratorio 05](docs/design/).
+
+### Diagrama de Contexto del Sistema (Nivel 1)
+
+El diagrama de contexto ubica a RutaSIT Arequipa en su entorno operacional, identificando a los actores directos (pasajeros y operadores de flota) y las interacciones con sistemas externos (sensores GPS en buses, mapas abiertos OSM y servicios push de contingencia):
+
+```mermaid
+graph LR
+  linkStyle default fill:#ffffff
+
+  subgraph diagram ["System Context View: RutaSIT Arequipa"]
+    style diagram fill:#ffffff,stroke:#ffffff
+
+    1["<div style='font-weight: bold'>Pasajero del SIT</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Usuario del transporte<br />público de Arequipa que<br />consulta rutas, paraderos y<br />tiempo de llegada de buses.</div>"]
+    style 1 fill:#08427b,stroke:#052e56,color:#ffffff
+    15["<div style='font-weight: bold'>Dispositivos GPS Embarcados</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Equipos GPS instalados en 300<br />buses que emiten tramas de<br />telemetría y geolocalización<br />continua.</div>"]
+    style 15 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    16["<div style='font-weight: bold'>Servidor OpenStreetMap</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Proveedor de cartografía<br />abierta y teselas geográficas<br />para visualización de mapas.</div>"]
+    style 16 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    17["<div style='font-weight: bold'>Servicio Web Push</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Plataforma de mensajería para<br />despacho de alertas masivas e<br />incidencias a pasajeros y<br />operadores.</div>"]
+    style 17 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    2["<div style='font-weight: bold'>Operador del Centro de Control</div><div style='font-size: 70%; margin-top: 0px'>[Person]</div><div style='font-size: 80%; margin-top:10px'>Personal técnico del SIT que<br />supervisa el cumplimiento de<br />frecuencias, estado de flota<br />y desvíos.</div>"]
+    style 2 fill:#08427b,stroke:#052e56,color:#ffffff
+    3["<div style='font-weight: bold'>RutaSIT Arequipa</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Permite el monitoreo en<br />tiempo real de 300 buses,<br />cálculo de tiempos de llegada<br />(ETA) y detección de desvíos<br />en el Sistema Integrado de<br />Transporte de Arequipa.</div>"]
+    style 3 fill:#1168bd,stroke:#0b4884,color:#ffffff
+
+    1-. "<div>Consulta rutas, paraderos y<br />tiempos estimados de llegada</div><div style='font-size: 70%'></div>" .->3
+    2-. "<div>Supervisa ubicación de flota,<br />cumplimiento de frecuencias y<br />alertas de desvío</div><div style='font-size: 70%'></div>" .->3
+    15-. "<div>Envía tramas continuas de<br />telemetría y posición GPS de<br />los buses</div><div style='font-size: 70%'></div>" .->3
+    3-. "<div>Solicita mapas base y teselas<br />para georreferenciación de<br />unidades y paraderos</div><div style='font-size: 70%'></div>" .->16
+    3-. "<div>Solicita envío de<br />notificaciones de<br />contingencia y retrasos</div><div style='font-size: 70%'></div>" .->17
+    1-. "<div>Descarga capas cartográficas<br />y teselas de mapa para<br />visualización</div><div style='font-size: 70%'></div>" .->16
+
+  end
+```
+
+### Vistas del Modelo C4
+
+A continuación se presentan los enlaces a las imágenes renderizadas de las cinco vistas obligatorias del modelo:
+
+| Nivel / Vista | Descripción | Imagen renderizada |
+|---|---|:---:|
+| **Nivel 1: Contexto del Sistema** | Zoom panorámico: Personas, RutaSIT y Sistemas Externos (`GPS`, `OSM`, `Web Push`). | [structurizr-Contexto.png](docs/architecture/c4/img/structurizr-Contexto.png) |
+| **Nivel 2: Contenedores** | Topología de 6 contenedores (`pwa`, `panel`, `api`, `worker`, `redis`, `db`), tecnologías y protocolos explícitos. | [structurizr-Contenedores.png](docs/architecture/c4/img/structurizr-Contenedores.png) |
+| **Nivel 3: Componentes** | Interior del contenedor API: Ingesta GPS, ETA/Geocercas, Notificaciones, Catálogo y Supervisión. | [structurizr-Componentes.png](docs/architecture/c4/img/structurizr-Componentes.png) |
+| **Vista Dinámica (HU-01)** | Flujo temporal de 8 pasos para consultar y recibir la actualización del tiempo de llegada del bus. | [structurizr-ConsultarTiempoLlegada.png](docs/architecture/c4/img/structurizr-ConsultarTiempoLlegada.png) |
+| **Vista de Despliegue (Producción)** | Nodos cliente (Smartphone, PC) y VPS Ubuntu 24.04 ($\le \$12$/mes) con contenedores Docker Compose. | [structurizr-Despliegue.png](docs/architecture/c4/img/structurizr-Despliegue.png) |
+
+#### Nivel 2: Diagrama de Contenedores
+![Vista de Contenedores C4](docs/architecture/c4/img/structurizr-Contenedores.png)
+
+### Entregables del Lab 06
+| Código | Archivo | Descripción del entregable |
+|:---:|---|---|
+| E1 | [inventario.md](docs/architecture/c4/inventario.md), [workspace.dsl](docs/architecture/c4/workspace.dsl) | Inventario de elementos C4 clasificados por origen y vista de Contexto N1 |
+| E2 | [workspace.dsl](docs/architecture/c4/workspace.dsl) | Vista de Contenedores con 6 contenedores, tecnologías y protocolos |
+| E3 | [workspace.dsl](docs/architecture/c4/workspace.dsl) | Vista de Componentes del contenedor API coherente con `docs/design/paquetes.puml` |
+| E4 | [workspace.dsl](docs/architecture/c4/workspace.dsl), [comparacion.md](docs/architecture/c4/comparacion.md) | Vista Dinámica de HU-01 (8 pasos) y comparación conceptual con Secuencia UML |
+| E5 | [workspace.dsl](docs/architecture/c4/workspace.dsl) | Vista de Despliegue en entorno "Producción" con Docker Compose en VPS de bajo costo |
+| E6 | [export/](docs/architecture/c4/export/), [img/](docs/architecture/c4/img/), [contexto-manual.puml](docs/architecture/c4/contexto-manual.puml), [comparacion.md](docs/architecture/c4/comparacion.md) | Exportación automática CLI (PlantUML/Mermaid), renderizado PNG, diagrama manual y comparativa |
+| E7 | [revision-c4.md](docs/architecture/c4/revision-c4.md), [explicacion.md](docs/architecture/c4/explicacion.md), [bitacora-ia.md](docs/architecture/bitacora-ia.md) | Lista de revisión c4model.com aplicada a las 5 vistas, falsos positivos de IA, explicación para no técnicos ($\le 120$ palabras) e interacciones registradas |
+| E8 | Este README, [cuestionario.md](docs/architecture/c4/cuestionario.md) y etiqueta `v0.6-c4` | Sección C4 en README, diagrama de contexto Mermaid, enlaces a las 5 vistas, cuestionario y tag de entrega |
+
+### Revisión Cruzada e Instrucciones de Entrega
+- **Revisión cruzada entre grupos:** Se revisa el diagrama de contenedores del grupo asignado utilizando la lista de revisión oficial de c4model.com (claridad de nombres, tecnologías explícitas, protocolos en flechas unidireccionales y justificación de límites) y se registran las observaciones mediante un *Issue* en GitHub. Las observaciones recibidas en nuestro repositorio se responden y corrigen de manera oportuna.
+- **Etiqueta de entrega:** Versión etiquetada con `v0.6-c4` en Git.
+
 ## Reflexión sobre el uso de la IA
 La IA nos ahorró mucho tiempo en lo mecánico: armar la estructura de los drivers, escribir la sintaxis de Mermaid, PlantUML y Diagrams, y proponer alternativas que no habíamos pensado, como la variante de Django con un ingestor aparte. Donde más nos sirvió fue como abogado del diablo, porque nos obligó a ver que nuestra opción favorita podía bloquear el event loop o perder el estado si Redis se caía.
-También cometió errores, y no siempre se notaban. Primero sugirió microservicios con brokers pesados para un equipo de 2 personas, y en la crítica a la Alternativa A dio cifras alarmantes ("agota los workers", "100 % de I/O") que no resistieron un cálculo simple con la Ley de Little.
+También cometió errores, y no siempre se notaban. Primero sugirió microservicios con brokers pesados para un equipo de 2 personas, y en la crítica a la Alternativa A dio cifras alarmantes ("agota los workers", "100 % de I/O") que no resistieron un cálculo simple con la Ley de Little. En el Laboratorio 06, sugirió eliminar la relación directa entre el worker y PostgreSQL bajo una falsa premisa de aislamiento de microservicios; fue descartada gracias a la lista de revisión oficial de c4model.com.
 Aprendimos a tratar cada número que da la IA como una hipótesis: pasarlo a carga por segundo, compararlo con las restricciones de `drivers.md` y no copiarlo a un documento sin una fuente o un cálculo. La IA propone, pero las decisiones y su defensa son nuestras.
