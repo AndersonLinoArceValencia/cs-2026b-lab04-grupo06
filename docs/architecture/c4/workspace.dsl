@@ -92,6 +92,18 @@ workspace "RutaSIT Arequipa" "Modelo C4 del sistema de seguimiento y monitoreo e
             autolayout lr
         }
 
+        dynamic rutasit.api "ConsultarTiempoLlegada" "Dinámico: consulta de tiempo estimado de llegada (ETA) de un bus a un paradero." {
+            rutasit.pwa -> rutasit.api.catalogo "1. Consulta paraderos y rutas disponibles"
+            rutasit.pwa -> rutasit.api.eta "2. Solicita cálculo de tiempo de llegada al paradero"
+            rutasit.api.eta -> rutasit.api.catalogo "3. Consulta trazado de rutas y coordenadas de paraderos"
+            rutasit.api.eta -> rutasit.api.ingesta "4. Lee tramas de telemetría validadas (IProveedorGPS)"
+            rutasit.api.eta -> rutasit.redis "5. Almacena última posición y ETA calculado"
+            rutasit.api.notificaciones -> rutasit.api.eta "6. Escucha cambios de estado y desvíos detectados"
+            rutasit.api.notificaciones -> push "7. Despacha alertas críticas de retraso o desvío"
+            rutasit.pwa -> rutasit.api.notificaciones "8. Recibe flujo continuo de posiciones y eventos de bus"
+            autolayout lr
+        }
+
         styles {
             element "Person" {
                 shape person

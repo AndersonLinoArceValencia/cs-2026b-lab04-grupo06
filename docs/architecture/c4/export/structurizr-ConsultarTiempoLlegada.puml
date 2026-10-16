@@ -1,0 +1,48 @@
+@startuml
+title <size:24>Dynamic View: RutaSIT Arequipa - API Monolito Asíncrono</size>\n<size:24>Dinámico: consulta de tiempo estimado de llegada (ETA) de un bus a un paradero.</size>
+
+set separator none
+left to right direction
+
+<style>
+  root {
+    BackgroundColor: #ffffff
+    FontColor: #444444
+  }
+</style>
+
+!include <C4/C4>
+!include <C4/C4_Context>
+!include <C4/C4_Container>
+!include <C4/C4_Component>
+
+System(ServicioWebPush, "Servicio Web Push", $descr="Plataforma de mensajería para despacho de alertas masivas e incidencias a pasajeros y operadores.", $tags="", $link="")
+
+System_Boundary("RutaSITArequipa_boundary", "RutaSIT Arequipa", $tags="") {
+  Container_Boundary("RutaSITArequipa.APIMonolitoAsíncrono_boundary", "API Monolito Asíncrono", $tags="") {
+    Component(RutaSITArequipa.APIMonolitoAsíncrono.MóduloCatálogoSIT, "Módulo Catálogo SIT", $techn="FastAPI APIRouter / SQL Repository", $descr="Gestiona información de rutas troncales/alimentadoras, paraderos oficiales y frecuencias programadas.", $tags="", $link="")
+    Component(RutaSITArequipa.APIMonolitoAsíncrono.MóduloIngestaGPS, "Módulo Ingesta GPS", $techn="FastAPI APIRouter", $descr="Recepciona y valida tramas de telemetría de 300 buses; realiza triage rápido y encola en Redis Streams.", $tags="", $link="")
+    Component(RutaSITArequipa.APIMonolitoAsíncrono.MóduloEstimaciónETAyGeocercas, "Módulo Estimación ETA y Geocercas", $techn="Python Service (Spatial Engine)", $descr="Calcula tiempos estimados de arribo, verifica proximidad a paraderos y detecta desvíos de ruta.", $tags="", $link="")
+    Component(RutaSITArequipa.APIMonolitoAsíncrono.MóduloNotificacionesyTiempoReal, "Módulo Notificaciones y Tiempo Real", $techn="FastAPI WebSocket Manager", $descr="Canaliza eventos por WebSockets hacia la PWA y panel de operaciones, e invoca alertas push.", $tags="", $link="")
+  }
+
+  ContainerQueue(RutaSITArequipa.CachéyBufferenMemoria, "Caché y Buffer en Memoria", $techn="Redis 7.x", $descr="Buffer de telemetría (Streams), caché de última posición de buses (TTL) y Pub/Sub de eventos.", $tags="", $link="")
+  Container(RutaSITArequipa.AplicaciónWebProgresiva, "Aplicación Web Progresiva", $techn="React + TypeScript + Leaflet", $descr="Interfaz móvil y web para pasajeros; consulta de rutas, paraderos y tiempo de llegada en vivo con Leaflet.", $tags="", $link="")
+}
+
+Container(RutaSITArequipa.AplicaciónWebProgresiva, "Aplicación Web Progresiva", $techn="React + TypeScript + Leaflet", $descr="Interfaz móvil y web para pasajeros; consulta de rutas, paraderos y tiempo de llegada en vivo con Leaflet.", $tags="", $link="")
+ContainerQueue(RutaSITArequipa.CachéyBufferenMemoria, "Caché y Buffer en Memoria", $techn="Redis 7.x", $descr="Buffer de telemetría (Streams), caché de última posición de buses (TTL) y Pub/Sub de eventos.", $tags="", $link="")
+System(ServicioWebPush, "Servicio Web Push", $descr="Plataforma de mensajería para despacho de alertas masivas e incidencias a pasajeros y operadores.", $tags="", $link="")
+
+Rel(RutaSITArequipa.AplicaciónWebProgresiva, RutaSITArequipa.APIMonolitoAsíncrono.MóduloCatálogoSIT, "1: 1. Consulta paraderos y rutas disponibles", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.AplicaciónWebProgresiva, RutaSITArequipa.APIMonolitoAsíncrono.MóduloEstimaciónETAyGeocercas, "2: 2. Solicita cálculo de tiempo de llegada al paradero", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono.MóduloEstimaciónETAyGeocercas, RutaSITArequipa.APIMonolitoAsíncrono.MóduloCatálogoSIT, "3: 3. Consulta trazado de rutas y coordenadas de paraderos", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono.MóduloEstimaciónETAyGeocercas, RutaSITArequipa.APIMonolitoAsíncrono.MóduloIngestaGPS, "4: 4. Lee tramas de telemetría validadas (IProveedorGPS)", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono.MóduloEstimaciónETAyGeocercas, RutaSITArequipa.CachéyBufferenMemoria, "5: 5. Almacena última posición y ETA calculado", $techn="Redis protocol", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono.MóduloNotificacionesyTiempoReal, RutaSITArequipa.APIMonolitoAsíncrono.MóduloEstimaciónETAyGeocercas, "6: 6. Escucha cambios de estado y desvíos detectados", $techn="", $tags="", $link="")
+Rel(RutaSITArequipa.APIMonolitoAsíncrono.MóduloNotificacionesyTiempoReal, ServicioWebPush, "7: 7. Despacha alertas críticas de retraso o desvío", $techn="HTTPS/JSON", $tags="", $link="")
+Rel(RutaSITArequipa.AplicaciónWebProgresiva, RutaSITArequipa.APIMonolitoAsíncrono.MóduloNotificacionesyTiempoReal, "8: 8. Recibe flujo continuo de posiciones y eventos de bus", $techn="WSS", $tags="", $link="")
+
+SHOW_LEGEND(true)
+hide stereotypes
+@enduml

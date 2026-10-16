@@ -229,6 +229,7 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 | **17** | 15/10/2026 | Gemini 3.8 Flash | **(E1 — Prompt IA 1)** Adaptación del prompt de la guía para generar el borrador de `workspace.dsl` a partir de `inventario.md`, ADR-001 y `despliegue.py`. | Generó el borrador de Structurizr DSL con personas, sistema, contenedores, componentes y dependencias externas. Inicialmente incluyó "FastAPI" en la descripción del sistema central y un protocolo en la relación de contexto. | **Corrección crítica (Regla C4 Nivel 1):** En el diagrama de contexto está prohibido mostrar tecnologías o protocolos internos para no confundir a públicos no técnicos. Se eliminó la mención de FastAPI del softwareSystem, se retiró el protocolo de la relación de contexto y se fijaron verbos de intención claros ("Consulta...", "Supervisa..."). Validado sin errores con `structurizr validate`. | **Corregida** |
 | **18** | 15/10/2026 | Gemini 3.8 Flash | **(E2)** Modelado del Diagrama de Contenedores en Structurizr DSL a partir de ADR-001, ADR-002, ADR-003 y `despliegue.py`. | Generó 6 contenedores (`pwa`, `panel`, `api`, `worker`, `redis`, `db`) con tecnologías concretas y relaciones con protocolos. | **Verificación del equipo:** Se verificó la lista oficial: ningún contenedor se llama "Docker", "servidor" o "nube". Todos los contenedores coinciden estrictamente con las decisiones de ADR-001/002/003. Se asignaron formas visuales (Database, Queue, WebBrowser) y protocolos explícitos (HTTPS/JSON, SQL/TCP, Redis protocol, WSS). Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
 | **19** | 15/10/2026 | Gemini 3.8 Flash | **(E3)** Modelado del Diagrama de Componentes de la API en Structurizr DSL a partir de `docs/design/paquetes.puml`. | Generó 5 componentes (`ingesta`, `eta`, `notificaciones`, `catalogo`, `supervision`) dentro del contenedor API Monolito Asíncrono. | **Verificación del equipo (Regla C4 sin ciclos):** Coherencia 1:1 con `paquetes.puml` del Lab 05. Se verificó que la dirección de dependencias no forme ciclos: `eta` consulta a `ingesta` y `catalogo`; `notificaciones` escucha eventos de `eta` y canaliza WebSockets; `supervision` solo realiza lecturas de `eta` y `catalogo`. Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
+| **20** | 15/10/2026 | Gemini 3.8 Flash | **(E4)** Modelado de la Vista Dinámica del flujo crítico ("Consultar tiempo de llegada") y análisis comparativo con UML en `comparacion.md`. | Generó la vista `dynamic` con 8 pasos numerados entre PWA, API, componentes internos, Redis y Web Push. | **Verificación del equipo:** Se comprobó que cada paso corresponda exactamente a una relación preexistente en el modelo (regla E4.2). Se redactó en `comparacion.md` la explicación de 3-5 líneas sobre los detalles omitidos (condicionales `alt`, bucles, firmas tipadas) y los públicos destinatarios (desarrolladores vs arquitectos). Validado con `structurizr validate` y exportado. | **Aceptada** |
 
 ---
 
@@ -284,4 +285,21 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   1. *Trazabilidad:* Se comprobó correspondencia 1:1 con `paquetes.puml`. No se omitió ningún módulo del dominio.
   2. *Ausencia de ciclos:* Se verificó que la regla de dependencias del ADR-001 se mantenga (comunicación mediante interfaces y fachadas, sin dependencias circulares).
   3. *Validación y Exportación:* Se ejecutó `structurizr validate` (0 errores) y `structurizr export` generando `structurizr-Componentes.puml` y `structurizr-Componentes.mmd`.
+* **Decisión:** **Aceptada**.
+
+---
+
+### Interacción 20: Vista Dinámica del Flujo Crítico y Comparación UML (E4)
+* **Fecha:** 15/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Modela la vista dynamic del flujo crítico 'Consultar tiempo de llegada del bus' en Structurizr DSL y redacta la comparativa en `comparacion.md`.  
+  > Requisitos:  
+  > 1. Modela en `dynamic rutasit.api` 4 o más pasos numerados basados en el flujo de `secuencia-consultar-tiempo.puml`. Cada paso debe corresponder a una relación existente en el modelo.  
+  > 2. En `comparacion.md`, redacta de 3 a 5 líneas explicando qué detalles muestra la secuencia UML que la vista dinámica omite y para qué público sirve cada una."
+* **Propuesta de la IA:** Definición de la vista dynamic con 8 pasos de interacción y redacción de la comparativa en `comparacion.md`.
+* **Verificación y Corrección Humana:**
+  1. *Correspondencia con el modelo:* Se verificó que cada uno de los 8 pasos coincida con las relaciones existentes en `workspace.dsl`.
+  2. *Comparativa conceptual:* Se comprobó que el texto en `comparacion.md` responda con precisión al contraste de granularidad (diagrama de secuencia para desarrolladores/pruebas; vista dinámica C4 para arquitectura y comunicación de alto nivel).
+  3. *Validación y Exportación:* Se ejecutó `structurizr validate` y `structurizr export` generando `structurizr-ConsultarTiempoLlegada.puml` y `structurizr-ConsultarTiempoLlegada.mmd`.
 * **Decisión:** **Aceptada**.
