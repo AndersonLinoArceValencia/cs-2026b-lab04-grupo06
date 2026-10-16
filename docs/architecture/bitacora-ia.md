@@ -231,6 +231,8 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
 | **19** | 15/10/2026 | Gemini 3.8 Flash | **(E3)** Modelado del Diagrama de Componentes de la API en Structurizr DSL a partir de `docs/design/paquetes.puml`. | Generó 5 componentes (`ingesta`, `eta`, `notificaciones`, `catalogo`, `supervision`) dentro del contenedor API Monolito Asíncrono. | **Verificación del equipo (Regla C4 sin ciclos):** Coherencia 1:1 con `paquetes.puml` del Lab 05. Se verificó que la dirección de dependencias no forme ciclos: `eta` consulta a `ingesta` y `catalogo`; `notificaciones` escucha eventos de `eta` y canaliza WebSockets; `supervision` solo realiza lecturas de `eta` y `catalogo`. Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
 | **20** | 15/10/2026 | Gemini 3.8 Flash | **(E4)** Modelado de la Vista Dinámica del flujo crítico ("Consultar tiempo de llegada") y análisis comparativo con UML en `comparacion.md`. | Generó la vista `dynamic` con 8 pasos numerados entre PWA, API, componentes internos, Redis y Web Push. | **Verificación del equipo:** Se comprobó que cada paso corresponda exactamente a una relación preexistente en el modelo (regla E4.2). Se redactó en `comparacion.md` la explicación de 3-5 líneas sobre los detalles omitidos (condicionales `alt`, bucles, firmas tipadas) y los públicos destinatarios (desarrolladores vs arquitectos). Validado con `structurizr validate` y exportado. | **Aceptada** |
 | **21** | 15/10/2026 | Gemini 3.8 Flash | **(E5)** Modelado de la Vista de Despliegue en entorno de Producción (MVP en 1 VPS) en Structurizr DSL a partir de `drivers.md` (R-03) y `despliegue.py`. | Generó el bloque `deploymentEnvironment "Producción"` con nodos anidados (Smartphone de Pasajeros, Estación del Centro de Control, VPS con Docker Compose) e instancias de los 6 contenedores. | **Verificación del equipo:** Se verificó que cada uno de los 6 contenedores del Nivel 2 posea una instancia (`containerInstance`). Se comprobó que las especificaciones del nodo VPS (Ubuntu 24.04 LTS, 4 vCPU, 8 GB RAM, $\le \$12$ USD/mes) respeten estrictamente la restricción presupuestaria R-03. Validado con `structurizr validate` y exportado a PlantUML y Mermaid. | **Aceptada** |
+| **22** | 15/10/2026 | Gemini 3.8 Flash | **(E7 — Prompt IA 2)** Auditoría con lista de revisión oficial de c4model.com sobre las 5 vistas y detección de falsos positivos en `revision-c4.md`. | Evaluó las 5 vistas e identificó 2 observaciones críticas: ausencia de protocolos en contexto y ausencia de Docker Compose en contenedores. | **Corrección crítica (Detección de Falsos Positivos):** Se identificaron 2 falsos positivos de la IA: 1) El Nivel 1 prohíbe taxativamente protocolos técnicos para mantener comprensión de negocio; 2) Docker Compose es infraestructura (despliegue), no un contenedor C4. Se fundamentó la refutación en `revision-c4.md`. | **Corregida** |
+| **23** | 15/10/2026 | Gemini 3.8 Flash | **(E7 — Prompt IA 3)** Redacción de explicación ejecutiva del sistema para público no técnico (120 palabras o menos) en `explicacion.md`. | Generó una síntesis de 117 palabras explicando qué hace el sistema, quién lo usa y de qué servicios depende, sin jerga técnica. | **Verificación del equipo:** Se comprobó que el conteo de palabras sea estrictamente $\le 120$ palabras (117 palabras exactas), libre de tecnicismos y 100% verídico según el modelo C4 y drivers de RutaSIT Arequipa. | **Aceptada** |
 
 ---
 
@@ -321,4 +323,33 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   1. *Cobertura total de contenedores:* Se comprobó que ninguna de las 6 instancias quedara huérfana y que cada una esté asignada al nodo correcto.
   2. *Coherencia presupuestaria:* Se verificó que el nodo del VPS declare explícitamente sus especificaciones (Ubuntu 24.04 LTS, 4 vCPU, 8 GB RAM, $\le \$12$ USD/mes), alineado con la restricción R-03 del proyecto.
   3. *Validación y Exportación:* Se ejecutó `structurizr validate` (0 errores) y `structurizr export` generando `structurizr-Despliegue.puml` y `structurizr-Despliegue.mmd`.
+* **Decisión:** **Aceptada**.
+
+---
+
+### Interacción 22: Auditoría con Lista Oficial y Falsos Positivos — Prompt IA 2 (E7)
+* **Fecha:** 15/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido (Prompt IA 2 oficial de la Guía adaptado a RutaSIT):**
+  > "Actúa como revisor de diagramas de arquitectura. Evalúa estas vistas exportadas de un modelo C4 (`structurizr-Contexto`, `structurizr-Contenedores`, `structurizr-Componentes`, `structurizr-ConsultarTiempoLlegada` y `structurizr-Despliegue`) con la lista de revisión de c4model.com: generales, elementos y relaciones.  
+  > Responde en una tabla (vista, pregunta de la lista, cumple sí/no, evidencia, corrección sugerida).  
+  > No inventes problemas: si algo cumple, indícalo."
+* **Propuesta de la IA:** Tabla de auditoría señalando dos supuestos incumplimientos: ausencia de protocolos en las flechas de contexto y ausencia de Docker Compose como contenedor en el nivel 2.
+* **Verificación y Corrección Humana (Detección de Falsos Positivos):**
+  1. *Falso Positivo 1 (Protocolos en Contexto):* Refutado con la regla de oro de C4 Nivel 1. El contexto es para usuarios de negocio y tiene prohibido mostrar jerga técnica como HTTPS o JSON.
+  2. *Falso Positivo 2 (Docker Compose en Contenedores):* Refutado con la definición de Contenedor C4 (unidad de software/almacén de datos). Docker Compose es infraestructura de soporte y pertenece a la vista de despliegue.
+  3. Ambas refutaciones técnicas se documentaron en `docs/architecture/c4/revision-c4.md`.
+* **Decisión:** **Corregida (Falsos positivos detectados y rechazados)**.
+
+---
+
+### Interacción 23: Explicación para Público No Técnico — Prompt IA 3 (E7)
+* **Fecha:** 15/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Adaptado (Prompt IA 3 oficial de la Guía adaptado a RutaSIT):**
+  > "Explica el siguiente diagrama de contexto al Gerente de Transporte Urbano de Arequipa (o al comité del SIT), que no es técnico, en máximo 120 palabras: qué hace el sistema, quién lo usa y de qué servicios externos depende. Evita la jerga técnica. [structurizr-Contexto.puml]"
+* **Propuesta de la IA:** Texto narrativo de 117 palabras resumiendo la propuesta de valor, los usuarios (pasajeros y operadores) y las dependencias externas (GPS de buses, OpenStreetMap y avisos a celulares).
+* **Verificación y Corrección Humana:**
+  1. *Conteo estricto:* Se ejecutó validación programática obteniendo exactamente 117 palabras ($\le 120$ palabras).
+  2. *Fidelidad al modelo:* Se verificó que ninguna afirmación contradiga los drivers ni el diagrama de contexto. Guardado en `docs/architecture/c4/explicacion.md`.
 * **Decisión:** **Aceptada**.
