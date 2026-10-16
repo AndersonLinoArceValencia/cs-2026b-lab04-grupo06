@@ -1,0 +1,33 @@
+@startuml paquetes
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+title RutaSIT Arequipa — Paquetes del monolito modular (vista de desarrollo, ADR-001)
+
+package "rutasit" {
+  package "ingesta_gps" as ING
+  package "eta_geocercas" as ETA
+  package "notificaciones" as NOT
+  package "catalogo" as CAT
+  package "supervision" as SUP
+  package "compartido" as COM
+}
+
+ETA ..> ING : lee tramas\n(IProveedorGPS)
+ETA ..> CAT : usa Ruta y Paradero
+NOT ..> ETA : implementa INotificador\n(inversión de dependencia)
+SUP ..> ETA : solo lectura\n(Viaje, EstadoViaje)
+SUP ..> CAT : solo lectura
+ING ..> COM : Coordenada
+ETA ..> COM : Coordenada
+CAT ..> COM : Coordenada
+NOT ..> COM
+
+note bottom of NOT
+  Regla (ADR-001): cada módulo expone solo su
+  fachada service.py; sin dependencias cíclicas.
+  El puerto INotificador vive en eta_geocercas y
+  su adaptador en notificaciones: eta_geocercas
+  NO depende de notificaciones (ver ADR-004).
+end note
+@enduml

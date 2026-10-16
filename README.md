@@ -1,4 +1,4 @@
-# RutaSIT Arequipa — Laboratorio 04: Fundamentos de arquitectura de software
+# RutaSIT Arequipa — Laboratorios 04 y 05: Arquitectura y diseño UML
 Construcción de Software · EPIS-UNSA · 2026-B · Grupo 06
 
 ## Integrantes
@@ -92,6 +92,7 @@ flowchart TB
 - [ADR-001: Estilo arquitectónico — monolito modular asíncrono con búfer en Redis](docs/architecture/adr/001-estilo-arquitectonico.md)
 - [ADR-002: Base de datos geovial — PostgreSQL + PostGIS y Redis para el estado en vivo](docs/architecture/adr/002-base-de-datos-geovial.md)
 - [ADR-003: Transmisión en tiempo real — WebSocket con Redis Pub/Sub](docs/architecture/adr/003-transmision-tiempo-real.md)
+- [ADR-004: Puerto INotificador en eta_geocercas y adaptador en notificaciones (sin ciclos)](docs/architecture/adr/004-puerto-notificador-sin-ciclos.md)
 
 ## Entregables
 | Código | Archivo |
@@ -110,6 +111,40 @@ flowchart TB
 **Sobre la vista de despliegue:** `despliegue.py` se ejecutó con la librería Diagrams y Graphviz (`python docs/architecture/diagramas/despliegue.py` desde la raíz). El archivo `despliegue.puml` es una vista complementaria del mismo despliegue hecha en PlantUML ([imagen](docs/architecture/diagramas/img/despliegue-plantuml.png)); no reemplaza al script.
 
 **Reto opcional:** la GitHub Action [`diagramas.yml`](.github/workflows/diagramas.yml) se ejecuta en cada push a `main` que modifique un archivo `.mmd` (o a mano desde la pestaña *Actions*). Instala mermaid-cli, vuelve a renderizar `arquitectura.mmd` en `diagramas/img/` y, si la imagen cambió, la sube con un commit de `github-actions[bot]`.
+
+## Diseño UML (Lab 05)
+Diseño detallado del módulo de monitoreo para la historia [HU-01: consultar el tiempo de llegada del bus](docs/design/historia.md), coherente con el ADR-001. Los diagramas están escritos como código (PlantUML y Mermaid) y versionados en `docs/design/`.
+
+### Máquina de estados del Viaje (E3)
+```mermaid
+stateDiagram-v2
+    [*] --> PROGRAMADO : programar()
+    PROGRAMADO --> EN_RUTA : cambiarEstado(EN_RUTA) [hora actual >= horaInicioProgramada]
+    EN_RUTA --> DETENIDO : registrarContingencia(motivo) [velocidad == 0]
+    EN_RUTA --> DESVIADO : registrarContingencia(motivo) [fuera_de_ruta == true]
+    DETENIDO --> EN_RUTA : cambiarEstado(EN_RUTA) [problema_resuelto == true]
+    DESVIADO --> EN_RUTA : cambiarEstado(EN_RUTA) [retorno_a_ruta == true]
+    DETENIDO --> FINALIZADO : cambiarEstado(FINALIZADO) [viaje_cancelado == true]
+    DESVIADO --> FINALIZADO : cambiarEstado(FINALIZADO) [fin_de_recorrido == true]
+    EN_RUTA --> FINALIZADO : cambiarEstado(FINALIZADO) [destino_alcanzado == true]
+    FINALIZADO --> [*]
+```
+
+### Entregables del Lab 05
+| Código | Archivo | Imagen |
+|:---:|---|---|
+| E1 | [historia.md](docs/design/historia.md), [clases.puml](docs/design/clases.puml) | [clases.png](docs/design/img/clases.png) |
+| E2 | [secuencia-consultar-tiempo.puml](docs/design/secuencia-consultar-tiempo.puml) | [secuencia-consultar-tiempo.png](docs/design/img/secuencia-consultar-tiempo.png) |
+| E3 | [estados-viaje.mmd](docs/design/estados-viaje.mmd) | [estados-viaje.png](docs/design/img/estados-viaje.png) |
+| E4 | [actividades-deteccion-desvio.puml](docs/design/actividades-deteccion-desvio.puml) | [actividades-deteccion-desvio.png](docs/design/img/actividades-deteccion-desvio.png) |
+| E5 | [paquetes.puml](docs/design/paquetes.puml), [ADR-004](docs/architecture/adr/004-puerto-notificador-sin-ciclos.md) | [paquetes.png](docs/design/img/paquetes.png) |
+| E6 | [src/monitoreo/dominio.py](src/monitoreo/dominio.py), [round-trip.md](docs/design/round-trip.md), [classes_monitoreo.puml](docs/design/classes_monitoreo.puml) | [classes_monitoreo.png](docs/design/img/classes_monitoreo.png) |
+| E7 | [consistencia.md](docs/design/consistencia.md), [bitacora-ia.md](docs/design/bitacora-ia.md) | — |
+| E8 | Esta sección, [cuestionario-lab05.md](docs/design/cuestionario-lab05.md) y la etiqueta `v0.5-diseno` | — |
+
+Diagrama de clases:
+
+![Diagrama de clases](docs/design/img/clases.png)
 
 ## Reflexión sobre el uso de la IA
 La IA nos ahorró mucho tiempo en lo mecánico: armar la estructura de los drivers, escribir la sintaxis de Mermaid, PlantUML y Diagrams, y proponer alternativas que no habíamos pensado, como la variante de Django con un ingestor aparte. Donde más nos sirvió fue como abogado del diablo, porque nos obligó a ver que nuestra opción favorita podía bloquear el event loop o perder el estado si Redis se caía.

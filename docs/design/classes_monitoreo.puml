@@ -1,48 +1,63 @@
 @startuml classes_monitoreo
 set namespaceSeparator none
-class "Bus" as monitoreo.dominio.Bus {
+class "AppPasajero" as dominio.AppPasajero {
+  pasajero
+  servicio_monitoreo
+  consultar_eta(paradero: Paradero) -> None
+  mostrar_resultado(eta: Optional[int]) -> None
+}
+class "Bus" as dominio.Bus {
   capacidad : int
   id_bus : str
   placa : str
+  ubicacion_actual : Optional[Coordenada]
   actualizar_ubicacion(coord: Coordenada) -> None
 }
-class "Coordenada" as monitoreo.dominio.Coordenada {
+class "Coordenada" as dominio.Coordenada {
   latitud : float
   longitud : float
 }
-class "EstadoViaje" as monitoreo.dominio.EstadoViaje {
+class "EstadoViaje" as dominio.EstadoViaje {
   name
 }
-class "IProveedorGPS" as monitoreo.dominio.IProveedorGPS {
+class "INotificador" as dominio.INotificador {
+  {abstract}notificar_retraso(viaje: 'Viaje') -> None
+}
+class "IProveedorGPS" as dominio.IProveedorGPS {
   {abstract}obtener_coordenada_actual(id_bus: str) -> Coordenada
 }
-class "IServicioMapas" as monitoreo.dominio.IServicioMapas {
+class "IServicioMapas" as dominio.IServicioMapas {
   {abstract}calcular_eta(origen: Coordenada, destino: Coordenada) -> int
 }
-class "Paradero" as monitoreo.dominio.Paradero {
+class "Paradero" as dominio.Paradero {
   id_paradero : str
   nombre : str
   ubicacion
   obtener_viajes_proximos() -> List['Viaje']
 }
-class "Pasajero" as monitoreo.dominio.Pasajero {
+class "Pasajero" as dominio.Pasajero {
   id_pasajero : str
   ubicacion_actual
-  consultar_eta(paradero: Paradero, servicio_monitoreo: 'ServicioMonitoreoSIT') -> Optional[int]
 }
-class "Ruta" as monitoreo.dominio.Ruta {
+class "ProveedorGPSAdapter" as dominio.ProveedorGPSAdapter {
+  {abstract}obtener_coordenada_actual(id_bus: str) -> Coordenada
+}
+class "Ruta" as dominio.Ruta {
   id_ruta : str
   nombre : str
   paraderos : List[Paradero]
   obtener_paraderos() -> List[Paradero]
 }
-class "ServicioMonitoreoSIT" as monitoreo.dominio.ServicioMonitoreoSIT {
+class "ServicioMapasAdapter" as dominio.ServicioMapasAdapter {
+  {abstract}calcular_eta(origen: Coordenada, destino: Coordenada) -> int
+}
+class "ServicioMonitoreoSIT" as dominio.ServicioMonitoreoSIT {
+  notificador
   proveedor_gps
-  servicio_mapas
   procesar_alerta_desvio(viaje: Viaje) -> None
   solicitar_eta(pasajero: Pasajero, paradero: Paradero) -> Optional[int]
 }
-class "Viaje" as monitoreo.dominio.Viaje {
+class "Viaje" as dominio.Viaje {
   bus
   estado
   hora_inicio_programada : datetime
@@ -50,13 +65,22 @@ class "Viaje" as monitoreo.dominio.Viaje {
   servicio_mapas
   calcular_tiempo_llegada(destino: Paradero) -> Optional[int]
   cambiar_estado(nuevo_estado: EstadoViaje) -> None
+  programar() -> None
   registrar_contingencia(motivo: str) -> None
 }
-monitoreo.dominio.Viaje --> monitoreo.dominio.Bus : bus
-monitoreo.dominio.Paradero --> monitoreo.dominio.Coordenada : ubicacion
-monitoreo.dominio.Pasajero --> monitoreo.dominio.Coordenada : ubicacion_actual
-monitoreo.dominio.Viaje --> monitoreo.dominio.EstadoViaje : estado
-monitoreo.dominio.Viaje --> monitoreo.dominio.IServicioMapas : servicio_mapas
-monitoreo.dominio.IProveedorGPS --o monitoreo.dominio.ServicioMonitoreoSIT : proveedor_gps
-monitoreo.dominio.IServicioMapas --o monitoreo.dominio.ServicioMonitoreoSIT : servicio_mapas
+class "WebPushAdapter" as dominio.WebPushAdapter {
+  {abstract}notificar_retraso(viaje: 'Viaje') -> None
+}
+dominio.ProveedorGPSAdapter --|> dominio.IProveedorGPS
+dominio.ServicioMapasAdapter --|> dominio.IServicioMapas
+dominio.WebPushAdapter --|> dominio.INotificador
+dominio.Viaje --> dominio.Bus : bus
+dominio.Paradero --> dominio.Coordenada : ubicacion
+dominio.Pasajero --> dominio.Coordenada : ubicacion_actual
+dominio.Viaje --> dominio.EstadoViaje : estado
+dominio.Viaje --> dominio.IServicioMapas : servicio_mapas
+dominio.INotificador --o dominio.ServicioMonitoreoSIT : notificador
+dominio.IProveedorGPS --o dominio.ServicioMonitoreoSIT : proveedor_gps
+dominio.Pasajero --o dominio.AppPasajero : pasajero
+dominio.ServicioMonitoreoSIT --o dominio.AppPasajero : servicio_monitoreo
 @enduml

@@ -1,6 +1,8 @@
-@startuml
+@startuml clases-monitoreo
 skinparam style strictuml
 skinparam classAttributeIconSize 0
+skinparam shadowing false
+title RutaSIT Arequipa — Diagrama de clases del módulo de monitoreo (HU-01)
 
 enum EstadoViaje {
     PROGRAMADO
@@ -10,18 +12,32 @@ enum EstadoViaje {
     FINALIZADO
 }
 
-interface IProveedorGPS <<interface>> {
+' Puertos (ADR-001: integraciones externas mediante interfaces)
+interface IProveedorGPS <<puerto>> {
     + obtenerCoordenadaActual(idBus: String): Coordenada
 }
 
-interface IServicioMapas <<interface>> {
+interface IServicioMapas <<puerto>> {
     + calcularETA(origen: Coordenada, destino: Coordenada): Integer
+}
+
+interface INotificador <<puerto>> {
+    + notificarRetraso(viaje: Viaje): void
+}
+
+' Adaptadores que realizan los puertos
+class ProveedorGPSAdapter <<adaptador>>
+class ServicioMapasAdapter <<adaptador>>
+class WebPushAdapter <<adaptador>>
+
+class AppPasajero <<interfaz de usuario>> {
+    + consultarETA(paradero: Paradero): void
+    + mostrarResultado(eta: Integer): void
 }
 
 class Pasajero {
     - idPasajero: String
     - ubicacionActual: Coordenada
-    + consultarETA(paradero: Paradero): void
 }
 
 class Paradero {
@@ -35,13 +51,13 @@ class Bus {
     - idBus: String
     - placa: String
     - capacidad: Integer
+    - ubicacionActual: Coordenada
     + actualizarUbicacion(coord: Coordenada): void
 }
 
 class Ruta {
     - idRuta: String
     - nombre: String
-    - paraderos: List<Paradero>
     + obtenerParaderos(): List<Paradero>
 }
 
@@ -49,6 +65,7 @@ class Viaje {
     - idViaje: String
     - estado: EstadoViaje
     - horaInicioProgramada: DateTime
+    + programar(): void
     + cambiarEstado(nuevoEstado: EstadoViaje): void
     + calcularTiempoLlegada(destino: Paradero): Integer
     + registrarContingencia(motivo: String): void
@@ -59,23 +76,29 @@ class Coordenada <<datatype>> {
     - longitud: Double
 }
 
-class ServicioMonitoreoSIT {
+class ServicioMonitoreoSIT <<servicio>> {
     + solicitarETA(pasajero: Pasajero, paradero: Paradero): Integer
     + procesarAlertaDesvio(viaje: Viaje): void
 }
 
+' Realizaciones (puerto <- adaptador)
+IProveedorGPS <|.. ProveedorGPSAdapter
+IServicioMapas <|.. ServicioMapasAdapter
+INotificador <|.. WebPushAdapter
+
+' Dependencias de uso
+AppPasajero ..> ServicioMonitoreoSIT : usa >
 ServicioMonitoreoSIT ..> IProveedorGPS : usa >
-ServicioMonitoreoSIT ..> IServicioMapas : usa >
+ServicioMonitoreoSIT ..> INotificador : usa >
+Viaje ..> IServicioMapas : usa >
 
-Ruta "1" *-- "2..*" Paradero : contiene
+' Asociaciones con multiplicidad en ambos extremos
+Pasajero "1" -- "0..*" AppPasajero : utiliza >
+Ruta "1" o-- "2..*" Paradero : recorre >
 Bus "1" -- "0..*" Viaje : realiza >
-Ruta "1" -- "0..*" Viaje : tiene >
-Viaje "1" --> "1" EstadoViaje : se encuentra en
-
-ServicioMonitoreoSIT "1" -- "*" Viaje : monitorea >
-ServicioMonitoreoSIT "1" -- "*" Paradero : gestiona >
-
-Pasajero "1" ..> "1" ServicioMonitoreoSIT : consulta >
-Paradero "*" -- "*" Viaje : incluye <
+Ruta "1" -- "0..*" Viaje : define >
+Viaje "0..*" --> "1" EstadoViaje : se encuentra en >
+Paradero "0..*" -- "0..*" Viaje : es atendido por >
+ServicioMonitoreoSIT "1" -- "0..*" Viaje : monitorea >
 
 @enduml

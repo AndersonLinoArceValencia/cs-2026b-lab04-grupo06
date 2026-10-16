@@ -1,0 +1,39 @@
+@startuml actividades-deteccion-desvio
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ActivityBackgroundColor #EEF2F8
+skinparam ActivityBorderColor #1A3A5C
+title RutaSIT — Detección y aviso de un desvío
+
+|Bus GPS|
+start
+:Envía trama GPS\n(cada 10 s);
+|Sistema|
+:Valida la trama y la agrega\nal Redis Stream (XADD);
+:Worker calcula la distancia\na la ruta (geocerca);
+if (¿Fuera de la ruta\nmás de 50 m?) then (sí)
+  :Cambia el viaje a DESVIADO\n(registrarContingencia);
+  if (¿Hay pasajeros esperando\nen paraderos siguientes?) then (sí)
+    fork
+      :Notifica retraso a los\npasajeros (notificarRetraso);
+    fork again
+      :Emite alerta al\ncentro de control;
+    end fork
+  else (no)
+    :Solo registra el evento\nen el histórico;
+  endif
+  |Operador|
+  :Revisa la alerta en el panel;
+  if (¿Desvío autorizado?) then (sí)
+    :Marca el desvío como\nautorizado;
+  else (no)
+    :Contacta al conductor\ny registra la incidencia;
+  endif
+else (no)
+  |Sistema|
+  :Actualiza la posición\ny recalcula el ETA;
+endif
+|Sistema|
+:Persiste el estado del viaje\n(lote cada 5 s);
+stop
+@enduml
