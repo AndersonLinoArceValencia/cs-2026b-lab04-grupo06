@@ -10,7 +10,7 @@ Este documento registra el inventario completo de elementos que componen el mode
 | :--- | :--- | :--- | :--- |
 | **Pasajero del SIT** | Persona | Usuario del transporte público de Arequipa que consulta rutas, paraderos y tiempo de llegada de buses. | `drivers.md` (RF-02), `historia.md` (HU-01), `clases.puml` |
 | **Operador del Centro de Control** | Persona | Personal técnico del SIT que supervisa el cumplimiento de frecuencias, estado de flota y desvíos. | `drivers.md` (RF-05), `arquitectura.mmd`, `PROPUESTA_PROYECTO.md` |
-| **Conductor del Bus** | Persona | Conductor que opera la unidad de transporte en ruta oficial. | `drivers.md`, `bitacora-ia.md` |
+| **Conductor del Bus** | Persona (no modelada) | Conductor que opera la unidad de transporte; se omite del DSL porque no interactúa con el sistema (el GPS embarcado emite la telemetría). | `drivers.md`, `bitacora-ia.md` |
 | **RutaSIT Arequipa** | Sistema de software | Sistema central de seguimiento y monitoreo en tiempo real para 300 buses del SIT de Arequipa. | `PROPUESTA_PROYECTO.md`, `drivers.md`, `matriz-decision.md` |
 | **Dispositivos GPS Embarcados** | Sistema externo | Dispositivos GPS instalados en 300 buses que emiten tramas de telemetría HTTP cada 10 s (~30 req/s). | `drivers.md` (RF-01, QA-01), `ADR-003`, `arquitectura.mmd` |
 | **Servidor OpenStreetMap / CDN Tiles** | Sistema externo | Proveedor de cartografía abierta y teselas de mapa para visualización sin costos de licenciamiento. | `ADR-002`, `drivers.md` (R-04), `arquitectura.mmd` |
