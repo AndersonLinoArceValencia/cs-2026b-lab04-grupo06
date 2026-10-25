@@ -71,3 +71,13 @@ Al contrastar la observación con la lista de revisión oficial de c4model.com (
 - Forzar al `worker` a consultar el catálogo de paraderos a través de llamadas HTTP a la API REST introduciría latencia de red innecesaria, serialización JSON redundante y sobrecarga al event loop de FastAPI.
 - El `worker` y el `api` comparten el mismo modelo de dominio y la misma base de datos relacional de catálogo.
 Por lo tanto, se catalogó y descartó formalmente el hallazgo de la IA como un **falso positivo** arquitectural, preservando la relación directa `worker -> db` con `SQL/asyncpg`.
+
+
+---
+
+## 8. ¿Cómo adaptaría la explicación de su arquitectura para un docente evaluador, un inversionista y un nuevo developer del equipo?
+La arquitectura es la misma; cambia el nivel de zoom y lo que se destaca en cada caso.
+
+- **Docente evaluador:** se presenta el modelo completo con trazabilidad. Se parte de `workspace.dsl` como fuente única, se recorren las cinco vistas y se muestra cómo cada contenedor se justifica con el ADR-001 y cada componente coincide con `paquetes.puml` del Lab 05. Se agrega `revision-c4.md` (lista oficial aplicada, con falsos positivos de la IA) y `bitacora-ia.md` como evidencia del proceso.
+- **Inversionista:** solo el Nivel 1 y el despliegue. Se explica qué problema resuelve (pasajeros sin información de llegada de los buses), quién lo usa, de qué servicios externos depende (GPS, OpenStreetMap, notificaciones push) y que el MVP corre en un solo VPS de hasta 12 USD al mes, con salida en un mes. Sin protocolos ni nombres de tecnologías, tal como en `explicacion.md`.
+- **Nuevo developer:** se entra por el Nivel 2 y el Nivel 3. Se indica qué hace cada contenedor (API, worker, Redis, PostgreSQL/PostGIS), cómo se comunican y con qué protocolo, y cómo se sigue el flujo "Consultar tiempo de llegada" en la vista dinámica. Luego se le remite al diagrama de clases del Lab 05 (nivel 4) y se le pide levantar Structurizr Lite para navegar el modelo.
