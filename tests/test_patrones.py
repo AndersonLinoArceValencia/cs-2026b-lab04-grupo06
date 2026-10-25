@@ -187,3 +187,90 @@ def test_state_transicion_invalida_lanza_excepcion():
         viaje.registrar_detencion("Avería mecánica")
     assert "No se puede registrar detención desde el estado FINALIZADO" in str(exc_info4.value)
 
+
+# ==============================================================================
+# Pruebas E4: Patrones Observer y Decorator
+# ==============================================================================
+
+def test_observer_nuevo_suscriptor_sin_tocar_el_servicio():
+    """Demuestra el patrón Observer: se añade un nuevo suscriptor de auditoría municipal
+
+    que escucha eventos en tiempo real sin modificar ServicioMonitoreoSIT.
+    """
+    from src.monitoreo.eventos import ISuscriptor
+
+    class AuditoriaMunicipalObserver(ISuscriptor):
+        def __init__(self):
+            self.bitacora = []
+
+        def actualizar(self, tipo_evento: str, datos: dict) -> None:
+            if tipo_evento == "ETA_CALCULADO":
+                self.bitacora.append(
+                    f"AUDITORIA: SIT monitoreó bus {datos['id_bus']} con ETA={datos['eta_minutos']}m"
+                )
+
+    servicio = ServicioMonitoreoSIT()
+    auditor = AuditoriaMunicipalObserver()
+
+    # 1. Suscripción dinámica
+    servicio.publicador.suscribir("ETA_CALCULADO", auditor)
+
+    # 2. Ejecutar flujo crítico
+    viaje = crear_viaje(id_bus="B-555", distancia_km=5.0)
+    servicio.consultar_tiempo_llegada(viaje)
+
+    # 3. Comprobar que el observador recibió el evento
+    assert len(auditor.bitacora) == 1
+    assert "AUDITORIA: SIT monitoreó bus B-555 con ETA=10m" in auditor.bitacora[0]
+
+
+def test_decorator_cache_evita_llamadas_repetidas():
+    """Demuestra el patrón Decorator: CacheETADecorator memoriza cálculos idénticos
+
+    reduciendo la carga computacional en consultas consecutivas.
+    """
+    from src.monitoreo.estrategias import ETALinealStrategy
+    from src.monitoreo.decoradores import CacheETADecorator
+
+    estrategia_base = ETALinealStrategy()
+    cache_decorator = CacheETADecorator(estrategia_base)
+
+    # Primera llamada: cálculo real (5 km a 30 km/h = 10 min)
+    res1 = cache_decorator.calcular_eta(5.0, 30.0)
+    assert res1 == 10
+    assert cache_decorator.llamadas_reales == 1
+
+    # Segunda y tercera llamada con los mismos argumentos: provienen de caché
+    res2 = cache_decorator.calcular_eta(5.0, 30.0)
+    res3 = cache_decorator.calcular_eta(5.0, 30.0)
+    assert res2 == 10
+    assert res3 == 10
+    assert cache_decorator.llamadas_reales == 1  # No volvió a invocar la estrategia base
+
+    # Argumentos distintos: provoca cómputo nuevo
+    res4 = cache_decorator.calcular_eta(10.0, 30.0)
+    assert res4 == 20
+    assert cache_decorator.llamadas_reales == 2
+
+
+def test_decorator_reintentos_gps_sobre_adaptador():
+    """Demuestra el patrón Decorator: ReintentoGPSDecorator añade tolerancia a fallos
+
+    sobre cualquier proveedor GPS sin modificar el código del adaptador.
+    """
+    from src.monitoreo.adaptadores import GPSOperadorAAdapter
+    from src.monitoreo.externos import GPSOperadorASDK
+    from src.monitoreo.decoradores import ReintentoGPSDecorator
+
+    # SDK que falla las 2 primeras veces
+    sdk_inestable = GPSOperadorASDK(fallas=2)
+    adaptador_base = GPSOperadorAAdapter(sdk_inestable)
+    decorador_reintentos = ReintentoGPSDecorator(adaptador_base, max_intentos=3)
+
+    telemetria = decorador_reintentos.obtener_posicion("BUS-777")
+
+    assert telemetria.id_unidad == "BUS-777"
+    assert telemetria.velocidad_kmh == 30.0
+    assert decorador_reintentos.intentos_realizados == 3
+
+

@@ -8,6 +8,13 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 
 from src.monitoreo.externos import GPSOperadorASDK, GPSOperadorBSDK, ServicioWebPushExterno
+from src.monitoreo.decoradores import ReintentoGPSDecorator
+from src.monitoreo.eventos import (
+    PublicadorEventos,
+    NotificadorPasajeroObserver,
+    MonitorCentroControlObserver,
+    NotificadorWebPushObserver,
+)
 from src.monitoreo.estados import (
     EstadoViajeState,
     ProgramadoState,
@@ -120,20 +127,28 @@ class ServicioMonitoreoSIT:
         web_push: Optional[ServicioWebPushExterno] = None,
         fabrica_gps: Optional[FabricaProveedoresGPS] = None,
         fabrica_eta: Optional[FabricaEstrategiasETA] = None,
+        publicador: Optional[PublicadorEventos] = None,
     ):
         # Si se inyectan SDKs específicos (como en pruebas), se adaptan en la fábrica
         if fabrica_gps is not None:
             self.fabrica_gps = fabrica_gps
         else:
             proveedores = {
-                "OPERADOR_A": GPSOperadorAAdapter(gps_a),
-                "OPERADOR_B": GPSOperadorBAdapter(gps_b),
+                "OPERADOR_A": ReintentoGPSDecorator(GPSOperadorAAdapter(gps_a)),
+                "OPERADOR_B": ReintentoGPSDecorator(GPSOperadorBAdapter(gps_b)),
             }
             self.fabrica_gps = FabricaProveedoresGPS(proveedores)
 
         self.fabrica_eta = fabrica_eta or FabricaEstrategiasETA()
         self.web_push = web_push or ServicioWebPushExterno()
         self.eventos: List[str] = []
+        self.publicador = publicador or PublicadorEventos()
+
+        # Suscriptores desacoplados del sistema (Observer)
+        self.publicador.suscribir("ETA_CALCULADO", NotificadorPasajeroObserver(self.eventos))
+        self.publicador.suscribir("ETA_CALCULADO", MonitorCentroControlObserver(self.eventos))
+        self.publicador.suscribir("GPS_TIMEOUT", MonitorCentroControlObserver(self.eventos))
+        self.publicador.suscribir("ETA_CALCULADO", NotificadorWebPushObserver(self.web_push))
 
     def consultar_tiempo_llegada(self, viaje: Viaje, tipo_algoritmo: str = "LINEAL") -> Dict[str, Any]:
         """Flujo crítico refactorizado: delega telemetría a Adapter y cálculo a Strategy."""
@@ -148,22 +163,24 @@ class ServicioMonitoreoSIT:
         try:
             telemetria: DatosTelemetria = proveedor.obtener_posicion(viaje.bus.id_bus)
         except TimeoutError:
-            self.eventos.append(f"alerta:gps_timeout:{viaje.bus.id_bus}")
+            self.publicador.publicar("GPS_TIMEOUT", {"id_bus": viaje.bus.id_bus})
             raise
 
         # 3. Cálculo de ETA mediante Factory y Strategy (sin if/elif por algoritmo)
         estrategia: IEstrategiaETA = self.fabrica_eta.crear(tipo_algoritmo)
         eta_min: int = estrategia.calcular_eta(viaje.distancia_km, telemetria.velocidad_kmh)
 
-        # 4. Emisión de eventos y notificación externa
-        self.eventos.append(f"pasajero:bus_{viaje.bus.id_bus}:ETA_{eta_min}_min")
-        self.eventos.append(f"control:flota:bus_{viaje.bus.id_bus}:lat_{telemetria.latitud:.5f}:lon_{telemetria.longitud:.5f}")
-
-        self.web_push.enviar_alerta(
-            canal="pasajeros",
-            titulo=f"Bus {viaje.bus.placa} aproximándose",
-            cuerpo=f"Tiempo estimado: {eta_min} min al paradero {viaje.paradero_destino.nombre}"
-        )
+        # 4. Emisión de eventos delegada al patrón Observer (sin concatenación a mano ni acoplamiento a push)
+        self.publicador.publicar("ETA_CALCULADO", {
+            "id_viaje": viaje.id_viaje,
+            "id_bus": viaje.bus.id_bus,
+            "placa": viaje.bus.placa,
+            "paradero": viaje.paradero_destino.nombre,
+            "eta_minutos": eta_min,
+            "latitud": telemetria.latitud,
+            "longitud": telemetria.longitud,
+            "velocidad_kmh": telemetria.velocidad_kmh,
+        })
 
         return {
             "id_viaje": viaje.id_viaje,

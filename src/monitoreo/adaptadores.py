@@ -38,20 +38,15 @@ class GPSOperadorAAdapter(IProveedorGPS):
         self.sdk = sdk or GPSOperadorASDK()
 
     def obtener_posicion(self, id_bus: str) -> DatosTelemetria:
-        for intento in range(3):
-            try:
-                resp = self.sdk.obtener_posicion(id_bus)
-                if resp.get("ok"):
-                    return DatosTelemetria(
-                        latitud=resp["lat"],
-                        longitud=resp["lon"],
-                        velocidad_kmh=resp["velocidad_kmh"],
-                        id_unidad=resp.get("id_unidad", id_bus)
-                    )
-            except TimeoutError:
-                if intento == 2:
-                    raise TimeoutError("No se pudo obtener la posición GPS del Operador A tras 3 intentos")
-        raise TimeoutError("No se pudo obtener la posición GPS del Operador A tras 3 intentos")
+        resp = self.sdk.obtener_posicion(id_bus)
+        if resp.get("ok"):
+            return DatosTelemetria(
+                latitud=resp["lat"],
+                longitud=resp["lon"],
+                velocidad_kmh=resp["velocidad_kmh"],
+                id_unidad=resp.get("id_unidad", id_bus)
+            )
+        raise ValueError(f"Respuesta inválida del Operador A para unidad {id_bus}")
 
 
 class GPSOperadorBAdapter(IProveedorGPS):
@@ -64,20 +59,15 @@ class GPSOperadorBAdapter(IProveedorGPS):
         self.sdk = sdk or GPSOperadorBSDK()
 
     def obtener_posicion(self, id_bus: str) -> DatosTelemetria:
-        for intento in range(3):
-            try:
-                codigo, lat_micro, lon_micro, speed_cm = self.sdk.query_location(int(id_bus))
-                if codigo == 200:
-                    return DatosTelemetria(
-                        latitud=lat_micro / 1_000_000.0,
-                        longitud=lon_micro / 1_000_000.0,
-                        velocidad_kmh=speed_cm * 0.036,
-                        id_unidad=id_bus
-                    )
-            except TimeoutError:
-                if intento == 2:
-                    raise TimeoutError("No se pudo obtener la posición GPS del Operador B tras 3 intentos")
-        raise TimeoutError("No se pudo obtener la posición GPS del Operador B tras 3 intentos")
+        codigo, lat_micro, lon_micro, speed_cm = self.sdk.query_location(int(id_bus))
+        if codigo == 200:
+            return DatosTelemetria(
+                latitud=lat_micro / 1_000_000.0,
+                longitud=lon_micro / 1_000_000.0,
+                velocidad_kmh=speed_cm * 0.036,
+                id_unidad=id_bus
+            )
+        raise ValueError(f"Error {codigo} al consultar telemetría del Operador B")
 
 
 class FabricaProveedoresGPS:
