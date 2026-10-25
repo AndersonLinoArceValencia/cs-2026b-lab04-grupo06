@@ -8,6 +8,16 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 
 from src.monitoreo.externos import GPSOperadorASDK, GPSOperadorBSDK, ServicioWebPushExterno
+from src.monitoreo.estados import (
+    EstadoViajeState,
+    ProgramadoState,
+    EnRutaState,
+    DetenidoState,
+    DesviadoState,
+    FinalizadoState,
+    TransicionInvalidaError,
+    crear_estado_desde_string,
+)
 from src.monitoreo.adaptadores import (
     DatosTelemetria,
     IProveedorGPS,
@@ -42,13 +52,62 @@ class Bus:
     operador: str  # "OPERADOR_A", "OPERADOR_B", etc.
 
 
-@dataclass
 class Viaje:
-    id_viaje: str
-    bus: Bus
-    paradero_destino: Paradero
-    estado: str  # "PROGRAMADO", "EN_RUTA", "DETENIDO", "DESVIADO", "FINALIZADO"
-    distancia_km: float = 0.0
+    """Entidad principal de viaje que delega su ciclo de vida al patrón State."""
+
+    def __init__(
+        self,
+        id_viaje: str,
+        bus: Bus,
+        paradero_destino: Paradero,
+        estado: Any = "EN_RUTA",
+        distancia_km: float = 0.0
+    ):
+        self.id_viaje = id_viaje
+        self.bus = bus
+        self.paradero_destino = paradero_destino
+        self.distancia_km = distancia_km
+        self.motivo_contingencia: Optional[str] = None
+
+        if isinstance(estado, EstadoViajeState):
+            self._estado = estado
+        elif isinstance(estado, str):
+            self._estado = crear_estado_desde_string(estado)
+        else:
+            self._estado = crear_estado_desde_string(str(estado))
+
+    @property
+    def estado(self) -> str:
+        """Propiedad de compatibilidad que retorna el nombre en texto del estado."""
+        return self._estado.nombre
+
+    @property
+    def estado_obj(self) -> EstadoViajeState:
+        return self._estado
+
+    def cambiar_a(self, nuevo_estado: EstadoViajeState) -> None:
+        self._estado = nuevo_estado
+
+    def iniciar_recorrido(self) -> None:
+        self._estado.iniciar_recorrido(self)
+
+    def registrar_detencion(self, motivo: str) -> None:
+        self._estado.registrar_detencion(self, motivo)
+
+    def registrar_desvio(self, motivo: str) -> None:
+        self._estado.registrar_desvio(self, motivo)
+
+    def reanudar_recorrido(self) -> None:
+        self._estado.reanudar_recorrido(self)
+
+    def retornar_a_ruta(self) -> None:
+        self._estado.retornar_a_ruta(self)
+
+    def finalizar_recorrido(self) -> None:
+        self._estado.finalizar_recorrido(self)
+
+    def validar_disponibilidad_eta(self, eventos: List[str]) -> None:
+        self._estado.validar_disponibilidad_eta(self, eventos)
 
 
 class ServicioMonitoreoSIT:
@@ -78,20 +137,8 @@ class ServicioMonitoreoSIT:
 
     def consultar_tiempo_llegada(self, viaje: Viaje, tipo_algoritmo: str = "LINEAL") -> Dict[str, Any]:
         """Flujo crítico refactorizado: delega telemetría a Adapter y cálculo a Strategy."""
-        # 1. Validación de estado (State será aplicado en E3)
-        if viaje.estado != "EN_RUTA":
-            if viaje.estado == "PROGRAMADO":
-                raise ValueError("El viaje está en estado PROGRAMADO y aún no inicia recorrido")
-            elif viaje.estado == "DETENIDO":
-                self.eventos.append(f"alerta:contingencia:viaje_{viaje.id_viaje}_detenido")
-                raise ValueError("El viaje está DETENIDO por contingencia en la vía")
-            elif viaje.estado == "DESVIADO":
-                self.eventos.append(f"alerta:desvio:viaje_{viaje.id_viaje}_fuera_de_ruta")
-                raise ValueError("El viaje está DESVIADO de su ruta oficial")
-            elif viaje.estado == "FINALIZADO":
-                raise ValueError("El viaje ya ha FINALIZADO")
-            else:
-                raise ValueError(f"Estado de viaje no reconocido: {viaje.estado}")
+        # 1. Validación de estado delegada al objeto State (polimorfismo sin if/elif)
+        viaje.validar_disponibilidad_eta(self.eventos)
 
         if viaje.distancia_km <= 0.0:
             raise ValueError("La distancia al paradero debe ser mayor a 0 km")

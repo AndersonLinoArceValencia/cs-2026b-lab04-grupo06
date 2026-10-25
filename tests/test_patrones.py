@@ -101,3 +101,89 @@ def test_adaptadores_convierten_correctamente_sin_reglas_de_negocio():
     assert isinstance(telemetria_b, DatosTelemetria)
     assert telemetria_a.velocidad_kmh == 30.0
     assert round(telemetria_b.velocidad_kmh, 1) == 30.0
+
+
+# ==============================================================================
+# Pruebas E3: Patrón State para el ciclo de vida del Viaje
+# ==============================================================================
+
+def test_state_transiciones_validas_ciclo_completo():
+    """Valida el ciclo de vida completo del viaje respetando estados-viaje.mmd:
+    PROGRAMADO -> EN_RUTA -> DETENIDO -> EN_RUTA -> DESVIADO -> EN_RUTA -> FINALIZADO.
+    """
+    from src.monitoreo.estados import (
+        ProgramadoState,
+        EnRutaState,
+        DetenidoState,
+        DesviadoState,
+        FinalizadoState,
+    )
+
+    viaje = crear_viaje()
+    viaje.cambiar_a(ProgramadoState())
+    assert viaje.estado == "PROGRAMADO"
+    assert isinstance(viaje.estado_obj, ProgramadoState)
+
+    # 1. Iniciar recorrido
+    viaje.iniciar_recorrido()
+    assert viaje.estado == "EN_RUTA"
+    assert isinstance(viaje.estado_obj, EnRutaState)
+
+    # 2. Registrar contingencia (detención)
+    viaje.registrar_detencion("Tráfico pesado en Av. Cayma")
+    assert viaje.estado == "DETENIDO"
+    assert isinstance(viaje.estado_obj, DetenidoState)
+    assert viaje.motivo_contingencia == "Tráfico pesado en Av. Cayma"
+
+    # 3. Reanudar marcha
+    viaje.reanudar_recorrido()
+    assert viaje.estado == "EN_RUTA"
+    assert viaje.motivo_contingencia is None
+
+    # 4. Registrar desvío de ruta
+    viaje.registrar_desvio("Obras de asfaltado en calle Mercaderes")
+    assert viaje.estado == "DESVIADO"
+    assert isinstance(viaje.estado_obj, DesviadoState)
+
+    # 5. Retornar a la ruta
+    viaje.retornar_a_ruta()
+    assert viaje.estado == "EN_RUTA"
+
+    # 6. Finalizar viaje
+    viaje.finalizar_recorrido()
+    assert viaje.estado == "FINALIZADO"
+    assert isinstance(viaje.estado_obj, FinalizadoState)
+
+
+def test_state_transicion_invalida_lanza_excepcion():
+    """Verifica que transiciones prohibidas por la máquina de estados
+    sean rechazadas por construcción mediante TransicionInvalidaError.
+    """
+    from src.monitoreo.estados import (
+        ProgramadoState,
+        FinalizadoState,
+        TransicionInvalidaError,
+    )
+
+    viaje = crear_viaje()
+    viaje.cambiar_a(ProgramadoState())
+
+    # No se puede reanudar ni finalizar un viaje que todavía no inicia
+    with pytest.raises(TransicionInvalidaError) as exc_info1:
+        viaje.reanudar_recorrido()
+    assert "No se puede reanudar recorrido desde el estado PROGRAMADO" in str(exc_info1.value)
+
+    with pytest.raises(TransicionInvalidaError) as exc_info2:
+        viaje.finalizar_recorrido()
+    assert "No se puede finalizar recorrido desde el estado PROGRAMADO" in str(exc_info2.value)
+
+    # Un viaje FINALIZADO es un estado terminal que prohíbe cualquier transición posterior
+    viaje.cambiar_a(FinalizadoState())
+    with pytest.raises(TransicionInvalidaError) as exc_info3:
+        viaje.iniciar_recorrido()
+    assert "No se puede iniciar recorrido desde el estado FINALIZADO" in str(exc_info3.value)
+
+    with pytest.raises(TransicionInvalidaError) as exc_info4:
+        viaje.registrar_detencion("Avería mecánica")
+    assert "No se puede registrar detención desde el estado FINALIZADO" in str(exc_info4.value)
+
