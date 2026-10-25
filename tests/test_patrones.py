@@ -274,3 +274,108 @@ def test_decorator_reintentos_gps_sobre_adaptador():
     assert decorador_reintentos.intentos_realizados == 3
 
 
+# ==============================================================================
+# Pruebas E5: Componente de IA Aislado (Strategy/Adapter + Decorator + Guardrails)
+# ==============================================================================
+
+def test_ia_proveedor_mock_genera_explicacion_valida():
+    """Valida la generación de explicaciones en lenguaje natural para el pasajero
+
+    utilizando el adaptador simulado MockLLMAdapter (sin depender de API externa).
+    """
+    from src.monitoreo.ia import ServicioExplicacionIA, MockLLMAdapter
+
+    servicio_ia = ServicioExplicacionIA(proveedor=MockLLMAdapter())
+
+    # Retraso por congestión
+    texto_trafico = servicio_ia.explicar_retraso("Congestión vehicular intensa en Av. Ejército", 15)
+    assert "congestión vehicular" in texto_trafico
+    assert "15 min" in texto_trafico
+
+    # Sin retraso
+    texto_normal = servicio_ia.explicar_retraso("Ninguno", 0)
+    assert "itinerario normal" in texto_normal
+
+
+def test_ia_cache_decorator_evita_llamadas_repetidas():
+    """Valida el patrón Decorator: CacheIADecorator evita invocar al modelo
+
+    ante peticiones idénticas de explicación de contingencias.
+    """
+    from src.monitoreo.ia import ServicioExplicacionIA, MockLLMAdapter, CacheIADecorator
+
+    mock_llm = MockLLMAdapter()
+    cache_llm = CacheIADecorator(mock_llm)
+    servicio_ia = ServicioExplicacionIA(proveedor=cache_llm, usar_cache=False)
+
+    # 1. Primera consulta: invoca al mock
+    res1 = servicio_ia.explicar_retraso("Lluvia y congestión", 10)
+    assert cache_llm.llamadas_reales == 1
+    assert mock_llm.llamadas == 1
+
+    # 2. Consultas subsecuentes con los mismos datos: resueltas desde caché
+    res2 = servicio_ia.explicar_retraso("Lluvia y congestión", 10)
+    res3 = servicio_ia.explicar_retraso("Lluvia y congestión", 10)
+    assert res1 == res2 == res3
+    assert cache_llm.llamadas_reales == 1
+    assert mock_llm.llamadas == 1  # No hubo llamadas adicionales al LLM
+
+
+def test_ia_guardrail_consistencia_bloquea_alucinaciones():
+    """Valida Chain of Responsibility: GuardrailConsistenciaTelemetria bloquea respuestas
+
+    del LLM que alucinan incidentes graves no respaldados por la telemetría real.
+    """
+    import pytest
+    from src.monitoreo.ia import (
+        ServicioExplicacionIA,
+        MockLLMAdapter,
+        ViolacionGuardrailError,
+    )
+
+    # Simulamos un LLM que alucina que el motor explotó cuando la telemetría solo reportó tráfico
+    llm_alucinador = MockLLMAdapter(
+        respuesta_forzada="Estimado pasajero: lamentamos informar que el motor de la unidad explotó."
+    )
+    servicio_ia = ServicioExplicacionIA(proveedor=llm_alucinador, usar_cache=False)
+
+    with pytest.raises(ViolacionGuardrailError) as exc_info:
+        servicio_ia.explicar_retraso("Tráfico denso en hora punta", 10)
+
+    assert "Guardrail de Consistencia" in str(exc_info.value)
+    assert "alucinó 'motor'" in str(exc_info.value)
+
+
+def test_ia_guardrail_longitud_y_tono_bloquea_alarmismo():
+    """Valida Chain of Responsibility: GuardrailLongitudYTono bloquea respuestas
+
+    que exceden los 250 caracteres o emplean expresiones alarmistas.
+    """
+    import pytest
+    from src.monitoreo.ia import (
+        ServicioExplicacionIA,
+        MockLLMAdapter,
+        ViolacionGuardrailError,
+    )
+
+    # 1. Prueba de lenguaje alarmista
+    llm_alarmista = MockLLMAdapter(
+        respuesta_forzada="¡Alerta máxima! Se ha desatado una catástrofe en la avenida principal."
+    )
+    servicio_ia1 = ServicioExplicacionIA(proveedor=llm_alarmista, usar_cache=False)
+
+    with pytest.raises(ViolacionGuardrailError) as exc_tono:
+        servicio_ia1.explicar_retraso("Accidente menor", 15)
+    assert "Guardrail de Tono" in str(exc_tono.value)
+
+    # 2. Prueba de longitud excesiva (> 250 caracteres)
+    texto_largo = "Información para pasajeros: " + ("texto de relleno explicativo muy largo " * 8)
+    llm_verboso = MockLLMAdapter(respuesta_forzada=texto_largo)
+    servicio_ia2 = ServicioExplicacionIA(proveedor=llm_verboso, usar_cache=False)
+
+    with pytest.raises(ViolacionGuardrailError) as exc_len:
+        servicio_ia2.explicar_retraso("Demora", 10)
+    assert "Guardrail de Longitud" in str(exc_len.value)
+
+
+

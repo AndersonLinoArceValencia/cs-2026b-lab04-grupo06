@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 
 from src.monitoreo.externos import GPSOperadorASDK, GPSOperadorBSDK, ServicioWebPushExterno
+from src.monitoreo.ia import ServicioExplicacionIA
 from src.monitoreo.decoradores import ReintentoGPSDecorator
 from src.monitoreo.eventos import (
     PublicadorEventos,
@@ -128,6 +129,7 @@ class ServicioMonitoreoSIT:
         fabrica_gps: Optional[FabricaProveedoresGPS] = None,
         fabrica_eta: Optional[FabricaEstrategiasETA] = None,
         publicador: Optional[PublicadorEventos] = None,
+        servicio_ia: Optional[ServicioExplicacionIA] = None,
     ):
         # Si se inyectan SDKs específicos (como en pruebas), se adaptan en la fábrica
         if fabrica_gps is not None:
@@ -143,6 +145,7 @@ class ServicioMonitoreoSIT:
         self.web_push = web_push or ServicioWebPushExterno()
         self.eventos: List[str] = []
         self.publicador = publicador or PublicadorEventos()
+        self.servicio_ia = servicio_ia or ServicioExplicacionIA()
 
         # Suscriptores desacoplados del sistema (Observer)
         self.publicador.suscribir("ETA_CALCULADO", NotificadorPasajeroObserver(self.eventos))
@@ -195,14 +198,5 @@ class ServicioMonitoreoSIT:
         }
 
     def explicar_retraso(self, motivo: str, minutos_retraso: int) -> str:
-        """Explicación simple con condicionales para pasajeros (a refactorizar con IA en E5)."""
-        if minutos_retraso <= 0:
-            return "El bus se encuentra operando dentro del itinerario normal."
-        if "tráfico" in motivo.lower() or "congestión" in motivo.lower():
-            return f"Retraso de aprox. {minutos_retraso} min debido a congestión vehicular en la vía."
-        elif "choque" in motivo.lower() or "accidente" in motivo.lower():
-            return f"Retraso de aprox. {minutos_retraso} min por atención de incidente vial reportado."
-        elif "desvío" in motivo.lower() or "obra" in motivo.lower():
-            return f"Retraso de aprox. {minutos_retraso} min por desvío temporal de ruta debido a obras."
-        else:
-            return f"Retraso estimado de {minutos_retraso} min por contingencia operativa en ruta."
+        """Explicación generada por el componente de IA aislado, protegido con caché y guardrails."""
+        return self.servicio_ia.explicar_retraso(motivo, minutos_retraso)
