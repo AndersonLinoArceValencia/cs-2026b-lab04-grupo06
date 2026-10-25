@@ -12,9 +12,9 @@ import pytest
 from src.monitoreo.externos import GPSOperadorASDK, GPSOperadorBSDK, ServicioWebPushExterno
 
 
-@pytest.fixture(params=["src.monitoreo.antes.servicio"])
+@pytest.fixture(params=["src.monitoreo.antes.servicio", "src.monitoreo.servicio"])
 def m(request):
-    """Carga dinámicamente el módulo a probar (antes y posteriormente después del refactor)."""
+    """Carga dinámicamente el módulo a probar: evalúa tanto la versión antes como la refactorizada."""
     return importlib.import_module(request.param)
 
 
