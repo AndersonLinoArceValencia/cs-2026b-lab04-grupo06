@@ -1,4 +1,26 @@
 # RutaSIT Arequipa — Laboratorios 04, 05 y 06: Arquitectura, diseño UML y modelo C4
+
+## Patrones de diseño (Laboratorio 07)
+
+El flujo `consultar_tiempo_llegada` tiene una versión inicial conservada en `src/monitoreo/antes/servicio.py` y una versión distribuida en `src/monitoreo/`. Los commits E1–E5 registran la implementación de Anderson; la revisión de Wilson con Codex está en [su bitácora](docs/design/patrones/bitacora-wilson-codex.md), las [métricas](docs/design/patrones/metricas.md), el [cuestionario](docs/design/patrones/cuestionario-lab07.md) y el [ADR-005 propuesto](docs/architecture/adr/005-patrones-de-diseno.md).
+
+| Olor inicial | Patrón | Prueba representativa |
+|---|---|---|
+| `if/elif` de algoritmos ETA | Strategy + fábrica registrable | `test_open_closed_nueva_estrategia_sin_modificar_servicio` |
+| SDK GPS con formatos distintos | Adapter + fábrica registrable | `test_adaptadores_convierten_correctamente_sin_reglas_de_negocio` |
+| Condicionales del estado del viaje | State | `test_state_transicion_invalida_lanza_excepcion` |
+| Emisión manual de avisos | Observer | `test_observer_nuevo_suscriptor_sin_tocar_el_servicio` |
+| Reintentos y caché transversales | Decorator | `test_decorator_reintentos_gps_sobre_adaptador` |
+| Validaciones secuenciales de salida IA | Chain of Responsibility | `test_ia_guardrail_consistencia_bloquea_alucinaciones` |
+
+| Radon 6.0.1 | Antes | Después |
+|---|---:|---:|
+| Complejidad de `consultar_tiempo_llegada` | D (25) | A (3) |
+| Promedio de `servicio.py` | B (6,75) | A (1,68) |
+| SLOC de `servicio.py` | 124 | 152 |
+| Pruebas en la suite actual | — | 40 aprobadas |
+
+Fuentes de los siete diagramas de patrones: [docs/design/patrones/](docs/design/patrones/). La etiqueta `v0.7-patrones` y la revisión por Pull Request aún no constan en este checkout.
 Construcción de Software · EPIS-UNSA · 2026-B · Grupo 06
 
 ## Integrantes
