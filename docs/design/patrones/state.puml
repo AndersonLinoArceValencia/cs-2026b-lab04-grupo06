@@ -1,0 +1,16 @@
+@startuml
+title State: ciclo de Viaje
+class Viaje <<Context>>
+abstract class EstadoViajeState <<State>>
+class ProgramadoState <<ConcreteState>>
+class EnRutaState <<ConcreteState>>
+class DetenidoState <<ConcreteState>>
+class DesviadoState <<ConcreteState>>
+class FinalizadoState <<ConcreteState>>
+Viaje --> EstadoViajeState : estado_obj
+EstadoViajeState <|-- ProgramadoState
+EstadoViajeState <|-- EnRutaState
+EstadoViajeState <|-- DetenidoState
+EstadoViajeState <|-- DesviadoState
+EstadoViajeState <|-- FinalizadoState
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+title Observer: eventos de ETA
+class PublicadorEventos <<Subject>> {
+  +suscribir(tipo, suscriptor)
+  +publicar(tipo, datos)
+}
+interface ISuscriptor <<Observer>> {
+  +actualizar(tipo, datos)
+}
+class NotificadorPasajeroObserver <<ConcreteObserver>>
+class MonitorCentroControlObserver <<ConcreteObserver>>
+class NotificadorWebPushObserver <<ConcreteObserver>>
+PublicadorEventos o--> ISuscriptor
+ISuscriptor <|.. NotificadorPasajeroObserver
+ISuscriptor <|.. MonitorCentroControlObserver
+ISuscriptor <|.. NotificadorWebPushObserver
+@enduml

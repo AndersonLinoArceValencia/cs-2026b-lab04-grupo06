@@ -1,104 +1,71 @@
-@startuml clases-monitoreo
-skinparam style strictuml
+@startuml
+title RutaSIT Arequipa - Monitoreo refactorizado (Lab 07)
 skinparam classAttributeIconSize 0
 skinparam shadowing false
-title RutaSIT Arequipa — Diagrama de clases del módulo de monitoreo (HU-01)
-
-enum EstadoViaje {
-    PROGRAMADO
-    EN_RUTA
-    DESVIADO
-    DETENIDO
-    FINALIZADO
+class Bus
+class Paradero
+class Viaje <<Context>> {
+  +estado: str
+  +validar_disponibilidad_eta(eventos)
 }
-
-' Puertos (ADR-001: integraciones externas mediante interfaces)
-interface IProveedorGPS <<puerto>> {
-    + obtenerCoordenadaActual(idBus: String): Coordenada
+class ServicioMonitoreoSIT <<Service>> {
+  +consultar_tiempo_llegada(viaje, tipo_algoritmo)
+  +explicar_retraso(motivo, minutos_retraso)
 }
-
-interface IServicioMapas <<puerto>> {
-    + calcularETA(origen: Coordenada, destino: Coordenada): Integer
-}
-
-interface INotificador <<puerto>> {
-    + notificarRetraso(viaje: Viaje): void
-}
-
-' Adaptadores que realizan los puertos
-class ProveedorGPSAdapter <<adaptador>>
-class ServicioMapasAdapter <<adaptador>>
-class WebPushAdapter <<adaptador>>
-
-class AppPasajero <<interfaz de usuario>> {
-    + consultarETA(paradero: Paradero): void
-    + mostrarResultado(eta: Integer): void
-}
-
-class Pasajero {
-    - idPasajero: String
-    - ubicacionActual: Coordenada
-}
-
-class Paradero {
-    - idParadero: String
-    - nombre: String
-    - ubicacion: Coordenada
-    + obtenerViajesProximos(): List<Viaje>
-}
-
-class Bus {
-    - idBus: String
-    - placa: String
-    - capacidad: Integer
-    - ubicacionActual: Coordenada
-    + actualizarUbicacion(coord: Coordenada): void
-}
-
-class Ruta {
-    - idRuta: String
-    - nombre: String
-    + obtenerParaderos(): List<Paradero>
-}
-
-class Viaje {
-    - idViaje: String
-    - estado: EstadoViaje
-    - horaInicioProgramada: DateTime
-    + programar(): void
-    + cambiarEstado(nuevoEstado: EstadoViaje): void
-    + calcularTiempoLlegada(destino: Paradero): Integer
-    + registrarContingencia(motivo: String): void
-}
-
-class Coordenada <<datatype>> {
-    - latitud: Double
-    - longitud: Double
-}
-
-class ServicioMonitoreoSIT <<servicio>> {
-    + solicitarETA(pasajero: Pasajero, paradero: Paradero): Integer
-    + procesarAlertaDesvio(viaje: Viaje): void
-}
-
-' Realizaciones (puerto <- adaptador)
-IProveedorGPS <|.. ProveedorGPSAdapter
-IServicioMapas <|.. ServicioMapasAdapter
-INotificador <|.. WebPushAdapter
-
-' Dependencias de uso
-AppPasajero ..> ServicioMonitoreoSIT : usa >
-ServicioMonitoreoSIT ..> IProveedorGPS : usa >
-ServicioMonitoreoSIT ..> INotificador : usa >
-Viaje ..> IServicioMapas : usa >
-
-' Asociaciones con multiplicidad en ambos extremos
-Pasajero "1" -- "0..*" AppPasajero : utiliza >
-Ruta "1" o-- "2..*" Paradero : recorre >
-Bus "1" -- "0..*" Viaje : realiza >
-Ruta "1" -- "0..*" Viaje : define >
-Viaje "0..*" --> "1" EstadoViaje : se encuentra en >
-Paradero "0..*" -- "0..*" Viaje : es atendido por >
-ServicioMonitoreoSIT "1" -- "0..*" Viaje : monitorea >
-
+interface IEstrategiaETA <<Strategy>>
+class ETALinealStrategy
+class ETAHoraPuntaStrategy
+class ETAParadasIntermediasStrategy
+class FabricaEstrategiasETA <<Factory>>
+interface IProveedorGPS <<Target>>
+class GPSOperadorAAdapter <<Adapter>>
+class GPSOperadorBAdapter <<Adapter>>
+class FabricaProveedoresGPS <<Factory>>
+class ReintentoGPSDecorator <<Decorator>>
+abstract class EstadoViajeState <<State>>
+class ProgramadoState
+class EnRutaState
+class DetenidoState
+class DesviadoState
+class FinalizadoState
+class PublicadorEventos <<Subject>>
+interface ISuscriptor <<Observer>>
+class ServicioExplicacionIA
+interface IProveedorLLM <<Strategy>>
+class MockLLMAdapter <<Adapter>>
+class CacheIADecorator <<Decorator>>
+abstract class IGuardrail <<Handler>>
+class GuardrailConsistenciaTelemetria
+class GuardrailLongitudYTono
+Viaje --> Bus
+Viaje --> Paradero
+Viaje --> EstadoViajeState
+ServicioMonitoreoSIT --> Viaje
+ServicioMonitoreoSIT --> FabricaEstrategiasETA
+ServicioMonitoreoSIT --> FabricaProveedoresGPS
+ServicioMonitoreoSIT --> PublicadorEventos
+ServicioMonitoreoSIT --> ServicioExplicacionIA
+FabricaEstrategiasETA ..> IEstrategiaETA
+IEstrategiaETA <|.. ETALinealStrategy
+IEstrategiaETA <|.. ETAHoraPuntaStrategy
+IEstrategiaETA <|.. ETAParadasIntermediasStrategy
+FabricaProveedoresGPS ..> IProveedorGPS
+IProveedorGPS <|.. GPSOperadorAAdapter
+IProveedorGPS <|.. GPSOperadorBAdapter
+IProveedorGPS <|.. ReintentoGPSDecorator
+ReintentoGPSDecorator o--> IProveedorGPS
+EstadoViajeState <|-- ProgramadoState
+EstadoViajeState <|-- EnRutaState
+EstadoViajeState <|-- DetenidoState
+EstadoViajeState <|-- DesviadoState
+EstadoViajeState <|-- FinalizadoState
+PublicadorEventos o--> ISuscriptor
+ServicioExplicacionIA --> IProveedorLLM
+ServicioExplicacionIA --> IGuardrail
+IProveedorLLM <|.. MockLLMAdapter
+IProveedorLLM <|.. CacheIADecorator
+CacheIADecorator o--> IProveedorLLM
+IGuardrail <|-- GuardrailConsistenciaTelemetria
+IGuardrail <|-- GuardrailLongitudYTono
+IGuardrail o--> IGuardrail : siguiente
 @enduml

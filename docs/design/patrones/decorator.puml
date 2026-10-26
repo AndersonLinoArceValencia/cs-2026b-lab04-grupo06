@@ -1,0 +1,15 @@
+@startuml
+title Decorator: reintento GPS y caché IA
+interface IProveedorGPS <<Component>>
+class GPSOperadorAAdapter <<ConcreteComponent>>
+class ReintentoGPSDecorator <<Decorator>>
+interface IProveedorLLM <<Component>>
+class MockLLMAdapter <<ConcreteComponent>>
+class CacheIADecorator <<Decorator>>
+IProveedorGPS <|.. GPSOperadorAAdapter
+IProveedorGPS <|.. ReintentoGPSDecorator
+ReintentoGPSDecorator o--> IProveedorGPS
+IProveedorLLM <|.. MockLLMAdapter
+IProveedorLLM <|.. CacheIADecorator
+CacheIADecorator o--> IProveedorLLM
+@enduml
