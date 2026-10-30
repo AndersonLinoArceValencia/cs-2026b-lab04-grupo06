@@ -353,3 +353,72 @@ Esta bitácora registra las interacciones con asistentes de Inteligencia Artific
   1. *Conteo estricto:* Se ejecutó validación programática obteniendo exactamente 117 palabras ($\le 120$ palabras).
   2. *Fidelidad al modelo:* Se verificó que ninguna afirmación contradiga los drivers ni el diagrama de contexto. Guardado en `docs/architecture/c4/explicacion.md`.
 * **Decisión:** **Aceptada**.
+
+
+---
+
+# Laboratorio 08: Diseño de la Arquitectura Guiada por Atributos de Calidad (ADD, Tácticas, ATAM-Lite y Fitness Functions)
+
+### Interacción 24: Escenarios para el Árbol de Utilidad — Prompt IA 1 (E1)
+* **Fecha:** 27/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido (Prompt IA 1 de la Guía adaptado a RutaSIT):**
+  > "Actúa como arquitecto de software senior especializado en sistemas de transporte inteligente (ITS). Contexto: Caso 6 RutaSIT Arequipa (1200 buses, 50,000 consultas concurrentes en hora punta, concesión con múltiples operadores privados). Tarea: propone 8 escenarios medibles para el árbol de utilidad cubriendo rendimiento, disponibilidad, seguridad y modificabilidad. Cada escenario debe tener: estímulo, fuente, entorno, artefacto, respuesta y medida numérica. Califícalos con (importancia, dificultad)."
+* **Propuesta de la IA:** 8 escenarios candidatos con métricas numéricas. Calificó QA-05 (aislamiento de consorcios) como (Media, Alta), aduciendo que la prioridad principal era solo la ingesta de telemetría GPS.
+* **Verificación y Corrección Humana (Detección y Corrección):**
+  1. *Corrección de Prioridad:* El equipo corrigió la calificación de QA-05 a **(Alta, Alta)**. En el marco legal del SIT Arequipa, la fuga de datos telemétricos, choferes o infracciones entre consorcios competidores acarrea sanciones contractuales y multas graves impuestas por la Municipalidad Provincial de Arequipa.
+  2. *Validación de Métricas:* Se verificó que ningún escenario usara adjetivos vagos ("rápido", "seguro"), fijando umbrales numéricos ($p95 \le 150\text{ ms}$, 0 eventos perdidos, etc.).
+* **Decisión:** **Corregida y Aprobada**. Registrada en `docs/architecture/utilidad/arbol.dot` y renderizada en `arbol.png`.
+
+---
+
+### Interacción 25: Tácticas Candidatas para Rendimiento (QA-01) — Prompt IA 2 (E2)
+* **Fecha:** 27/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Para el escenario QA-01 (50,000 consultas de tiempo de llegada en hora punta con p95 <= 150 ms para 1200 buses), propón 4 tácticas candidatas del catálogo de Bass et al. Para cada una indica: qué mejora, qué empeora, costo aproximado y complejidad para un equipo de 2 desarrolladores con FastAPI en 1 mes. Respeta el ADR-001 (monolito modular en 1 VPS); si recomiendas cambiar el estilo, justifícalo con números."
+* **Propuesta de la IA:** Propuso como primera opción descomponer el monolito en microservicios independientes desplegados en Kubernetes (EKS/GKE) con Auto-scaling.
+* **Verificación y Corrección Humana (Rechazo con Evidencia Cuantitativa):**
+  1. *Falso Positivo de Arquitectura:* La IA sugirió una solución desproporcionada que violaba la restricción de plazo (1 mes) y presupuesto ($12 USD/mes en un VPS).
+  2. *Evidencia Cuantitativa:* Ejecutamos la simulación M/G/c en `fitness/rendimiento.py`. Se demostró que con solo aplicar un índice compuesto en PostgreSQL y una caché LRU de 10 segundos, el $p95$ baja a **$21.3\text{ ms}$**, resolviendo el problema con $7\times$ de holgura dentro del mismo monolito modular sin incurrir en costos de cloud computing.
+* **Decisión:** **Rechazada la migración a Kubernetes; Aceptada la combinación de Índice + Caché (ADR-006)**.
+
+---
+
+### Interacción 26: Resiliencia ante Desconexión Celular y Falso Positivo de Redis (E4)
+* **Fecha:** 28/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Diseña una táctica para el escenario QA-03 (pérdida de conectividad 4G en zonas periféricas de Arequipa como Cayma Alto y Cono Norte durante 15 minutos). Necesitamos 0 eventos de telemetría perdidos y evitar el bloqueo de workers por llamadas colgadas."
+* **Propuesta de la IA:** Sugirió implementar un Circuit Breaker que, al abrirse, coloque los eventos en una lista en memoria Redis (`LPUSH telemetria_pendientes`).
+* **Verificación y Corrección Humana (Detección de Falso Positivo Crítico):**
+  1. *Identificación de Falla:* Si el VPS experimenta un reinicio del servicio Redis o un fallo de memoria sin persistencia AOF síncrona configurada, todas las tramas encoladas se pierden irremediablemente, violando la garantía estricta de 0 pérdidas de QA-03.
+  2. *Solución Robusta:* El equipo sustituyó Redis por el **Patrón Outbox Transaccional** en PostgreSQL (`tabla outbox_telemetria`), respaldado por las garantías ACID del motor relacional.
+  3. *Validación con Simulación:* La simulación Monte Carlo (`fitness/disponibilidad.py`) confirmó 0 eventos perdidos y 96.6% menos llamadas al enlace caído.
+* **Decisión:** **Corregida y Aprobada (ADR-007)**.
+
+---
+
+### Interacción 27: Evaluación ATAM-Lite con Evaluador Adversario — Prompt IA 3 (E3/E7)
+* **Fecha:** 28/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Actúa como evaluador ATAM escéptico y hostil. Te paso el árbol de utilidad, los ADR-006 a 008, la vista de contenedores y los resultados de las simulaciones de RutaSIT Arequipa. Encuentra: 2 puntos de sensibilidad, 2 trade-offs y 2 riesgos no mitigados (uno de ellos en la zona crítica probabilidad alta/impacto alto). Cita la evidencia técnica de por qué consideras que son riesgos."
+* **Propuesta de la IA:** Generó 2 sensibilidades (hit rate de caché y tiempo de inserción en cola), 2 trade-offs (latencia vs. consistencia de 10s; disponibilidad vs. complejidad de outbox) y 2 riesgos (R1: Cache stampede por reinicio simultáneo; R2: saturación de workers por fallas 4G en zonas periféricas).
+* **Verificación y Corrección Humana:**
+  1. *Mitigación de R1:* Se incorporó bloqueo probabilístico (XFetch) y el índice compuesto que garantiza $p95 \le 33\text{ ms}$ aún con $0\%$ de aciertos.
+  2. *Mitigación de R2:* Se implementó el Circuit Breaker con Outbox en la Iteración 2 de ADD.
+* **Decisión:** **Aceptada e integrada en `docs/architecture/atam-lite.md`**.
+
+---
+
+### Interacción 28: Generación de Fitness Functions en Python e Import-Linter (E5)
+* **Fecha:** 29/10/2026
+* **Herramienta:** Gemini 3.8 Flash
+* **Prompt Emitido:**
+  > "Escribe la configuración de .importlinter para garantizar que el monolito modular de monitoreo respete las capas (servicio -> decoradores -> adaptadores -> dominio) y que el dominio y el módulo de IA permanezcan aislados. Escribe además la suite tests/test_fitness.py con pruebas de regresión cuantitativas para p95 <= 150 ms, 0 telemetrías perdidas y aislamiento de consorcios con RLS."
+* **Propuesta de la IA:** Archivos `.importlinter` y `tests/test_fitness.py`.
+* **Verificación y Corrección Humana:**
+  1. *Prueba de fallo controlado:* Se introdujo intencionalmente un `import` prohibido desde `dominio.py` hacia `externos.py`. Se ejecutó `lint-imports` y se verificó que el contrato `FF-02` falló con estado `BROKEN`. Luego se revirtió a verde.
+  2. *Ejecución de pruebas de calidad:* `pytest -v tests/test_fitness.py` ejecutó las 4 pruebas pasando al 100% en 0.32s.
+* **Decisión:** **Aprobada**. Versionada en commit `E5: fitness functions y CI`.
