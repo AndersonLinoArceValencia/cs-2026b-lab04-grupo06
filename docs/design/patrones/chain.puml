@@ -1,0 +1,17 @@
+@startuml
+title Chain of Responsibility: guardrails de IA
+abstract class IGuardrail <<Handler>> {
+  +enlazar(siguiente)
+  +procesar(contexto)
+  +validar(contexto)
+}
+class GuardrailConsistenciaTelemetria <<ConcreteHandler>>
+class GuardrailLongitudYTono <<ConcreteHandler>>
+class ContextoExplicacion
+class ServicioExplicacionIA
+IGuardrail o--> IGuardrail : siguiente
+IGuardrail <|-- GuardrailConsistenciaTelemetria
+IGuardrail <|-- GuardrailLongitudYTono
+ServicioExplicacionIA --> IGuardrail
+IGuardrail ..> ContextoExplicacion
+@enduml

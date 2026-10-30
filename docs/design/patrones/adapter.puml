@@ -1,0 +1,16 @@
+@startuml
+title Adapter: formatos GPS
+interface IProveedorGPS <<Target>> {
+  +obtener_posicion(id_bus)
+}
+class GPSOperadorAAdapter <<Adapter>>
+class GPSOperadorBAdapter <<Adapter>>
+class GPSOperadorASDK <<Adaptee>>
+class GPSOperadorBSDK <<Adaptee>>
+class DatosTelemetria
+IProveedorGPS <|.. GPSOperadorAAdapter
+IProveedorGPS <|.. GPSOperadorBAdapter
+GPSOperadorAAdapter --> GPSOperadorASDK
+GPSOperadorBAdapter --> GPSOperadorBSDK
+IProveedorGPS ..> DatosTelemetria : devuelve
+@enduml

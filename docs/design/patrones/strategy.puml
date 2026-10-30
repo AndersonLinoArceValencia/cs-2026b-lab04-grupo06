@@ -1,0 +1,14 @@
+@startuml
+title Strategy: cálculo de ETA
+interface IEstrategiaETA <<Strategy>> {
+  +calcular_eta(distancia_km, velocidad_kmh)
+}
+class ETALinealStrategy <<ConcreteStrategy>>
+class ETAHoraPuntaStrategy <<ConcreteStrategy>>
+class ETAParadasIntermediasStrategy <<ConcreteStrategy>>
+class ServicioMonitoreoSIT <<Context>>
+IEstrategiaETA <|.. ETALinealStrategy
+IEstrategiaETA <|.. ETAHoraPuntaStrategy
+IEstrategiaETA <|.. ETAParadasIntermediasStrategy
+ServicioMonitoreoSIT ..> IEstrategiaETA : calcula ETA
+@enduml

@@ -1,0 +1,15 @@
+@startuml
+title Factory: registros extensibles
+class FabricaEstrategiasETA <<Factory>> {
+  +registrar(tipo, estrategia_cls)
+  +crear(tipo)
+}
+class FabricaProveedoresGPS <<Factory>> {
+  +registrar(operador, proveedor)
+  +obtener_proveedor(operador)
+}
+interface IEstrategiaETA
+interface IProveedorGPS
+FabricaEstrategiasETA ..> IEstrategiaETA : crea
+FabricaProveedoresGPS ..> IProveedorGPS : entrega
+@enduml
