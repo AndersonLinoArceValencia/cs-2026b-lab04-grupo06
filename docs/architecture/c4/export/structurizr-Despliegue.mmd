@@ -4,53 +4,53 @@ graph LR
   subgraph diagram ["Deployment View: RutaSIT Arequipa - Producción"]
     style diagram fill:#ffffff,stroke:#ffffff
 
-    subgraph 53 ["Dispositivo del Pasajero"]
-      style 53 fill:#ffffff,stroke:#444444,color:#444444
+    subgraph 49 ["Dispositivo del Pasajero"]
+      style 49 fill:#ffffff,stroke:#444444,color:#444444
 
-      subgraph 54 ["Navegador Web / PWA Engine"]
-        style 54 fill:#ffffff,stroke:#444444,color:#444444
+      subgraph 50 ["Navegador Web / PWA Engine"]
+        style 50 fill:#ffffff,stroke:#444444,color:#444444
 
-        55["<div style='font-weight: bold'>Aplicación Web Progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + TypeScript + Leaflet]</div><div style='font-size: 80%; margin-top:10px'>Interfaz móvil y web para<br />pasajeros; consulta de rutas,<br />paraderos y tiempo de llegada<br />en vivo con Leaflet.</div>"]
-        style 55 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        51["<div style='font-weight: bold'>Aplicación Web Progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + TypeScript + Leaflet]</div><div style='font-size: 80%; margin-top:10px'>Interfaz móvil y web para<br />pasajeros; consulta paraderos<br />y tiempo de llegada en vivo<br />con Leaflet y caché offline<br />IndexedDB [QA-01, QA-03].</div>"]
+        style 51 fill:#438dd5,stroke:#2e6295,color:#ffffff
       end
 
     end
 
-    subgraph 56 ["Estación del Centro de Control"]
-      style 56 fill:#ffffff,stroke:#444444,color:#444444
+    subgraph 52 ["Estación del Centro de Control"]
+      style 52 fill:#ffffff,stroke:#444444,color:#444444
 
-      subgraph 57 ["Navegador Web"]
-        style 57 fill:#ffffff,stroke:#444444,color:#444444
+      subgraph 53 ["Navegador Web"]
+        style 53 fill:#ffffff,stroke:#444444,color:#444444
 
-        58["<div style='font-weight: bold'>Panel Web de Operaciones</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + Vite + TailwindCSS]</div><div style='font-size: 80%; margin-top:10px'>Panel para supervisores del<br />SIT; visualización de flota<br />en mapa, frecuencias y<br />gestión de contingencias.</div>"]
-        style 58 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        54["<div style='font-weight: bold'>Panel Web de Operaciones</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + Vite + TailwindCSS]</div><div style='font-size: 80%; margin-top:10px'>Panel para supervisores del<br />SIT; visualización de flota<br />en mapa y gestión de flota<br />por consorcio [QA-05].</div>"]
+        style 54 fill:#438dd5,stroke:#2e6295,color:#ffffff
       end
 
     end
 
-    subgraph 59 ["Servidor VPS en la Nube"]
-      style 59 fill:#ffffff,stroke:#444444,color:#444444
+    subgraph 55 ["Servidor VPS en la Nube"]
+      style 55 fill:#ffffff,stroke:#444444,color:#444444
 
-      subgraph 60 ["Docker Compose"]
-        style 60 fill:#ffffff,stroke:#444444,color:#444444
+      subgraph 56 ["Docker Compose"]
+        style 56 fill:#ffffff,stroke:#444444,color:#444444
 
-        61["<div style='font-weight: bold'>API Monolito Asíncrono</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python 3.11+ / FastAPI (ASGI)]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular que procesa<br />telemetría GPS, expone<br />endpoints REST y canaliza<br />WebSockets de tiempo real.</div>"]
+        57["<div style='font-weight: bold'>API Monolito Asíncrono</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python 3.12 / FastAPI (ASGI)]</div><div style='font-size: 80%; margin-top:10px'>Monolito modular con 4<br />workers ASGI; procesa<br />telemetría de 1200 buses<br />[QA-02] y aísla consorcios<br />con RLS [QA-05].</div>"]
+        style 57 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        60["<div style='font-weight: bold'>Worker Espacial y Outbox</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Background Worker]</div><div style='font-size: 80%; margin-top:10px'>Proceso asíncrono para<br />drenaje de la cola outbox<br />tras reconexión [QA-03] y<br />cálculo batch de geocercas.</div>"]
+        style 60 fill:#438dd5,stroke:#2e6295,color:#ffffff
+        61["<div style='font-weight: bold'>Caché de Estimaciones y Buffer</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis 7.x]</div><div style='font-size: 80%; margin-top:10px'>Caché en memoria para tiempos<br />de llegada con TTL de 10s<br />[QA-01] y buffer temporal de<br />telemetría.</div>"]
         style 61 fill:#438dd5,stroke:#2e6295,color:#ffffff
-        64["<div style='font-weight: bold'>Worker Espacial y Batch</div><div style='font-size: 70%; margin-top: 0px'>[Container: Python / Background Worker]</div><div style='font-size: 80%; margin-top:10px'>Proceso asíncrono para<br />cálculo geométrico de<br />geocercas, estimación de ETA<br />y persistencia en lote.</div>"]
+        64[("<div style='font-weight: bold'>Base de Datos Geoespacial y Outbox</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL 16 + PostGIS 3.4]</div><div style='font-size: 80%; margin-top:10px'>PostgreSQL 16 con PostGIS,<br />tabla outbox para resiliencia<br />[QA-03] y políticas Row-Level<br />Security por consorcio<br />[QA-05].</div>")]
         style 64 fill:#438dd5,stroke:#2e6295,color:#ffffff
-        65["<div style='font-weight: bold'>Caché y Buffer en Memoria</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis 7.x]</div><div style='font-size: 80%; margin-top:10px'>Buffer de telemetría<br />(Streams), caché de última<br />posición de buses (TTL) y<br />Pub/Sub de eventos.</div>"]
-        style 65 fill:#438dd5,stroke:#2e6295,color:#ffffff
-        68[("<div style='font-weight: bold'>Base de Datos Geoespacial</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL 16 + PostGIS 3.4]</div><div style='font-size: 80%; margin-top:10px'>Almacén relacional con<br />extensión PostGIS para<br />catálogo vial (rutas,<br />paraderos) e histórico<br />consolidado.</div>")]
-        style 68 fill:#438dd5,stroke:#2e6295,color:#ffffff
       end
 
     end
 
-    55-. "<div>Consulta catálogo REST y<br />recibe telemetría en vivo</div><div style='font-size: 70%'>[HTTPS / WSS]</div>" .->61
-    58-. "<div>Solicita métricas de flota y<br />recibe eventos de<br />contingencia</div><div style='font-size: 70%'>[HTTPS / WSS]</div>" .->61
-    61-. "<div>Encola telemetría en buffer<br />(Streams) y consulta última<br />posición de buses</div><div style='font-size: 70%'>[Redis protocol]</div>" .->65
-    64-. "<div>Consume telemetría (Streams)<br />y publica alertas/ETA<br />calculados (Pub/Sub)</div><div style='font-size: 70%'>[Redis protocol]</div>" .->65
-    61-. "<div>Consulta información de rutas<br />y paraderos</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->68
-    64-. "<div>Persiste histórico<br />consolidado de telemetría por<br />lotes cada 5 s</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->68
+    51-. "<div>Consulta catálogo REST y<br />recibe telemetría en vivo<br />[QA-01]</div><div style='font-size: 70%'>[HTTPS / WSS]</div>" .->57
+    54-. "<div>Solicita métricas de flota<br />con token JWT [QA-05]</div><div style='font-size: 70%'>[HTTPS / WSS]</div>" .->57
+    57-. "<div>Lee y escribe estimaciones en<br />caché (TTL 10s) [QA-01]</div><div style='font-size: 70%'>[Redis protocol]</div>" .->61
+    60-. "<div>Consume eventos del buffer de<br />telemetría</div><div style='font-size: 70%'>[Redis protocol]</div>" .->61
+    57-. "<div>Consulta datos con índice y<br />persiste en outbox ante<br />caídas [QA-01, QA-03, QA-05]</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->64
+    60-. "<div>Drena tabla outbox_telemetria<br />hacia histórico [QA-03]</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->64
 
   end

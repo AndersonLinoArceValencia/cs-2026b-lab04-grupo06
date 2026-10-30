@@ -4,10 +4,10 @@ graph LR
   subgraph diagram ["Component View: RutaSIT Arequipa - API Monolito Asíncrono"]
     style diagram fill:#ffffff,stroke:#ffffff
 
-    15["<div style='font-weight: bold'>Dispositivos GPS Embarcados</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Equipos GPS instalados en 300<br />buses que emiten tramas de<br />telemetría y geolocalización<br />continua.</div>"]
-    style 15 fill:#999999,stroke:#6b6b6b,color:#ffffff
-    17["<div style='font-weight: bold'>Servicio Web Push</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Plataforma de mensajería para<br />despacho de alertas masivas e<br />incidencias a pasajeros y<br />operadores.</div>"]
-    style 17 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    16["<div style='font-weight: bold'>Dispositivos GPS Embarcados</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Equipos GPS en 1200 buses<br />emitiendo telemetría cada 5 s<br />(240 ev/s) [QA-02].</div>"]
+    style 16 fill:#999999,stroke:#6b6b6b,color:#ffffff
+    18["<div style='font-weight: bold'>Servicio Web Push</div><div style='font-size: 70%; margin-top: 0px'>[Software System]</div><div style='font-size: 80%; margin-top:10px'>Plataforma de mensajería para<br />despacho de alertas masivas e<br />incidencias a pasajeros y<br />operadores.</div>"]
+    style 18 fill:#999999,stroke:#6b6b6b,color:#ffffff
 
     subgraph 3 ["RutaSIT Arequipa"]
       style 3 fill:#ffffff,stroke:#0b4884,color:#0b4884
@@ -15,43 +15,43 @@ graph LR
       subgraph 6 ["API Monolito Asíncrono"]
         style 6 fill:#ffffff,stroke:#2e6295,color:#2e6295
 
-        10["<div style='font-weight: bold'>Módulo Catálogo SIT</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter / SQL Repository]</div><div style='font-size: 80%; margin-top:10px'>Gestiona información de rutas<br />troncales/alimentadoras,<br />paraderos oficiales y<br />frecuencias programadas.</div>"]
+        10["<div style='font-weight: bold'>Módulo Catálogo SIT</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter / SQL Repository]</div><div style='font-size: 80%; margin-top:10px'>Gestiona rutas troncales y<br />alimentadoras, paraderos e<br />información multitenant de<br />consorcios [QA-05, QA-07].</div>"]
         style 10 fill:#85bbf0,stroke:#5d82a8,color:#000000
-        11["<div style='font-weight: bold'>Módulo Supervisión de Flota</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter / Dashboard Service]</div><div style='font-size: 80%; margin-top:10px'>Consolida indicadores<br />operativos, puntualidad,<br />velocidades y monitoreo en<br />vivo para operadores.</div>"]
+        11["<div style='font-weight: bold'>Módulo Supervisión de Flota</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter / Dashboard Service]</div><div style='font-size: 80%; margin-top:10px'>Consolida indicadores<br />operativos, puntualidad y<br />velocidades con aislamiento<br />RLS [QA-05].</div>"]
         style 11 fill:#85bbf0,stroke:#5d82a8,color:#000000
-        7["<div style='font-weight: bold'>Módulo Ingesta GPS</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter]</div><div style='font-size: 80%; margin-top:10px'>Recepciona y valida tramas de<br />telemetría de 300 buses;<br />realiza triage rápido y<br />encola en Redis Streams.</div>"]
+        12["<div style='font-weight: bold'>Módulo Circuit Breaker y Outbox</div><div style='font-size: 70%; margin-top: 0px'>[Component: Python Resilience Decorator]</div><div style='font-size: 80%; margin-top:10px'>Decorator sobre adaptadores<br />GPS que protege ante caídas<br />de red y encola en outbox<br />[QA-03].</div>"]
+        style 12 fill:#85bbf0,stroke:#5d82a8,color:#000000
+        7["<div style='font-weight: bold'>Módulo Ingesta GPS</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI APIRouter]</div><div style='font-size: 80%; margin-top:10px'>Recepciona y valida<br />telemetría de 1200 buses con<br />Decorator Circuit Breaker<br />[QA-02, QA-03].</div>"]
         style 7 fill:#85bbf0,stroke:#5d82a8,color:#000000
-        8["<div style='font-weight: bold'>Módulo Estimación ETA y Geocercas</div><div style='font-size: 70%; margin-top: 0px'>[Component: Python Service (Spatial Engine)]</div><div style='font-size: 80%; margin-top:10px'>Calcula tiempos estimados de<br />arribo, verifica proximidad a<br />paraderos y detecta desvíos<br />de ruta.</div>"]
+        8["<div style='font-weight: bold'>Módulo Estimación ETA y Caché</div><div style='font-size: 70%; margin-top: 0px'>[Component: Python Service (Spatial Engine)]</div><div style='font-size: 80%; margin-top:10px'>Calcula tiempos estimados de<br />llegada con motor Strategy e<br />índices en BD; almacena en<br />caché [QA-01, QA-08].</div>"]
         style 8 fill:#85bbf0,stroke:#5d82a8,color:#000000
-        9["<div style='font-weight: bold'>Módulo Notificaciones y Tiempo Real</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI WebSocket Manager]</div><div style='font-size: 80%; margin-top:10px'>Canaliza eventos por<br />WebSockets hacia la PWA y<br />panel de operaciones, e<br />invoca alertas push.</div>"]
+        9["<div style='font-weight: bold'>Módulo Notificaciones</div><div style='font-size: 70%; margin-top: 0px'>[Component: FastAPI WebSocket Manager]</div><div style='font-size: 80%; margin-top:10px'>Canaliza eventos por<br />WebSockets hacia la PWA y<br />panel de operaciones [QA-01].</div>"]
         style 9 fill:#85bbf0,stroke:#5d82a8,color:#000000
       end
 
-      13["<div style='font-weight: bold'>Caché y Buffer en Memoria</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis 7.x]</div><div style='font-size: 80%; margin-top:10px'>Buffer de telemetría<br />(Streams), caché de última<br />posición de buses (TTL) y<br />Pub/Sub de eventos.</div>"]
-      style 13 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      14[("<div style='font-weight: bold'>Base de Datos Geoespacial</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL 16 + PostGIS 3.4]</div><div style='font-size: 80%; margin-top:10px'>Almacén relacional con<br />extensión PostGIS para<br />catálogo vial (rutas,<br />paraderos) e histórico<br />consolidado.</div>")]
+      14["<div style='font-weight: bold'>Caché de Estimaciones y Buffer</div><div style='font-size: 70%; margin-top: 0px'>[Container: Redis 7.x]</div><div style='font-size: 80%; margin-top:10px'>Caché en memoria para tiempos<br />de llegada con TTL de 10s<br />[QA-01] y buffer temporal de<br />telemetría.</div>"]
       style 14 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      4["<div style='font-weight: bold'>Aplicación Web Progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + TypeScript + Leaflet]</div><div style='font-size: 80%; margin-top:10px'>Interfaz móvil y web para<br />pasajeros; consulta de rutas,<br />paraderos y tiempo de llegada<br />en vivo con Leaflet.</div>"]
+      15[("<div style='font-weight: bold'>Base de Datos Geoespacial y Outbox</div><div style='font-size: 70%; margin-top: 0px'>[Container: PostgreSQL 16 + PostGIS 3.4]</div><div style='font-size: 80%; margin-top:10px'>PostgreSQL 16 con PostGIS,<br />tabla outbox para resiliencia<br />[QA-03] y políticas Row-Level<br />Security por consorcio<br />[QA-05].</div>")]
+      style 15 fill:#438dd5,stroke:#2e6295,color:#ffffff
+      4["<div style='font-weight: bold'>Aplicación Web Progresiva</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + TypeScript + Leaflet]</div><div style='font-size: 80%; margin-top:10px'>Interfaz móvil y web para<br />pasajeros; consulta paraderos<br />y tiempo de llegada en vivo<br />con Leaflet y caché offline<br />IndexedDB [QA-01, QA-03].</div>"]
       style 4 fill:#438dd5,stroke:#2e6295,color:#ffffff
-      5["<div style='font-weight: bold'>Panel Web de Operaciones</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + Vite + TailwindCSS]</div><div style='font-size: 80%; margin-top:10px'>Panel para supervisores del<br />SIT; visualización de flota<br />en mapa, frecuencias y<br />gestión de contingencias.</div>"]
+      5["<div style='font-weight: bold'>Panel Web de Operaciones</div><div style='font-size: 70%; margin-top: 0px'>[Container: React + Vite + TailwindCSS]</div><div style='font-size: 80%; margin-top:10px'>Panel para supervisores del<br />SIT; visualización de flota<br />en mapa y gestión de flota<br />por consorcio [QA-05].</div>"]
       style 5 fill:#438dd5,stroke:#2e6295,color:#ffffff
     end
 
-    4-. "<div>Consulta rutas y paraderos<br />disponibles</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->10
-    4-. "<div>Solicita cálculo de tiempo de<br />llegada al paradero</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->8
-    4-. "<div>Recibe flujo continuo de<br />posiciones y eventos de bus</div><div style='font-size: 70%'>[WSS]</div>" .->9
-    5-. "<div>Consulta indicadores y estado<br />operativo de la flota</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->11
-    5-. "<div>Recibe alertas de desvío y<br />contingencias operativas</div><div style='font-size: 70%'>[WSS]</div>" .->9
-    15-. "<div>Envía tramas de telemetría<br />cada 10 s</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->7
-    7-. "<div>Encola tramas crudas en<br />buffer de telemetría</div><div style='font-size: 70%'>[Redis Streams (XADD)]</div>" .->13
-    8-. "<div>Lee tramas de telemetría<br />validadas (IProveedorGPS)</div><div style='font-size: 70%'></div>" .->7
-    8-. "<div>Consulta trazado de rutas y<br />coordenadas de paraderos</div><div style='font-size: 70%'></div>" .->10
-    8-. "<div>Almacena última posición y<br />ETA calculado</div><div style='font-size: 70%'>[Redis protocol]</div>" .->13
+    4-. "<div>Consulta paraderos y trazado<br />de rutas [QA-01]</div><div style='font-size: 70%'>[HTTPS/REST]</div>" .->10
+    4-. "<div>Solicita cálculo de tiempo de<br />llegada al paradero [QA-01]</div><div style='font-size: 70%'>[HTTPS/REST]</div>" .->8
+    4-. "<div>Suscribe a WebSocket de<br />eventos de viaje</div><div style='font-size: 70%'>[WSS]</div>" .->9
+    5-. "<div>Consulta dashboard operativo<br />filtrado por consorcio_id<br />[QA-05]</div><div style='font-size: 70%'>[HTTPS/REST]</div>" .->11
+    16-. "<div>Envía tramas de telemetría<br />cada 5 s [QA-02]</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->7
+    7-. "<div>Valida disponibilidad<br />mediante Circuit Breaker<br />[QA-03]</div><div style='font-size: 70%'></div>" .->12
+    12-. "<div>Persiste tramas en outbox si<br />el circuito está abierto<br />[QA-03]</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->15
+    7-. "<div>Encola tramas crudas en<br />buffer de telemetría</div><div style='font-size: 70%'>[Redis Streams]</div>" .->14
+    8-. "<div>Consulta coordenadas de<br />paraderos y rutas</div><div style='font-size: 70%'></div>" .->10
+    8-. "<div>Consulta y almacena<br />estimaciones de llegada<br />[QA-01]</div><div style='font-size: 70%'>[Redis protocol]</div>" .->14
+    8-. "<div>Consulta histórico con índice<br />(linea_id, parada_id) [QA-01]</div><div style='font-size: 70%'>[SQL/TCP]</div>" .->15
     9-. "<div>Escucha cambios de estado y<br />desvíos detectados</div><div style='font-size: 70%'></div>" .->8
-    9-. "<div>Consume eventos del canal<br />Pub/Sub</div><div style='font-size: 70%'>[Redis protocol]</div>" .->13
-    9-. "<div>Despacha alertas críticas de<br />retraso o desvío</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->17
-    11-. "<div>Consulta estado de viajes en<br />curso (solo lectura)</div><div style='font-size: 70%'></div>" .->8
-    11-. "<div>Consulta programación y<br />frecuencias oficiales (solo<br />lectura)</div><div style='font-size: 70%'></div>" .->10
-    10-. "<div>Consulta y persiste<br />geometrías de paraderos y<br />rutas</div><div style='font-size: 70%'>[SQL/TCP (PostGIS)]</div>" .->14
+    9-. "<div>Despacha alertas críticas de<br />retraso o desvío</div><div style='font-size: 70%'>[HTTPS/JSON]</div>" .->18
+    11-. "<div>Consulta programación<br />filtrada por consorcio<br />[QA-05]</div><div style='font-size: 70%'></div>" .->10
 
   end
