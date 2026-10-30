@@ -218,3 +218,52 @@ A continuación se presentan los enlaces a las imágenes renderizadas de las cin
 La IA nos ahorró mucho tiempo en lo mecánico: armar la estructura de los drivers, escribir la sintaxis de Mermaid, PlantUML y Diagrams, y proponer alternativas que no habíamos pensado, como la variante de Django con un ingestor aparte. Donde más nos sirvió fue como abogado del diablo, porque nos obligó a ver que nuestra opción favorita podía bloquear el event loop o perder el estado si Redis se caía.
 También cometió errores, y no siempre se notaban. Primero sugirió microservicios con brokers pesados para un equipo de 2 personas, y en la crítica a la Alternativa A dio cifras alarmantes ("agota los workers", "100 % de I/O") que no resistieron un cálculo simple con la Ley de Little. En el Laboratorio 06, sugirió eliminar la relación directa entre el worker y PostgreSQL bajo una falsa premisa de aislamiento de microservicios; fue descartada gracias a la lista de revisión oficial de c4model.com.
 Aprendimos a tratar cada número que da la IA como una hipótesis: pasarlo a carga por segundo, compararlo con las restricciones de `drivers.md` y no copiarlo a un documento sin una fuente o un cálculo. La IA propone, pero las decisiones y su defensa son nuestras.
+
+
+---
+
+## Diseño de la Arquitectura Guiada por Atributos de Calidad (Lab 08)
+
+![Fitness Functions](https://github.com/AndersonLinoArceValencia/cs-2026b-lab04-grupo06/actions/workflows/fitness.yml/badge.svg)
+
+En este laboratorio se diseñó la evolución arquitectónica de **RutaSIT Arequipa** ante el escenario de crecimiento:
+> **Escenario de crecimiento:** *"De 300 a 1200 buses; 50,000 consultas de tiempo de llegada en hora punta. Atributo crítico: Rendimiento en tiempo real."*
+
+### 1. Árbol de Utilidad
+El árbol de utilidad define los 4 atributos de calidad, sub-atributos y 8 escenarios cuantitativos:
+* Archivo fuente: [`docs/architecture/utilidad/arbol.dot`](docs/architecture/utilidad/arbol.dot)
+* Imagen renderizada: [`docs/architecture/utilidad/arbol.png`](docs/architecture/utilidad/arbol.png)
+
+![Árbol de Utilidad](docs/architecture/utilidad/arbol.png)
+
+### 2. Tabla de Iteraciones de ADD
+
+| Iteración | Escenario Priorizado | Táctica de Diseño (Bass et al., 2021) | Evidencia Cuantitativa | ¿Cumple? | ADR Asociado |
+| :---: | :--- | :--- | :--- | :---: | :---: |
+| **Iteración 1 (E2)** | `[QA-01]` 50k consultas en hora punta con $p95 \le 150\text{ ms}$. | *Maintain copies of data* (Caché LRU 10s) + *Bound execution times* (Índice compuesto). | Simulación M/G/c ($\lambda=30\text{ req/s}$): $p95 = \mathbf{21.3\text{ ms}}$ (vs $183.5\text{ ms}$ sin táctica). | **SÍ** ($7\times$ holgura) | [ADR-006](docs/architecture/adr/006-cache-estimaciones-llegada.md) |
+| **Iteración 2 (E4)** | `[QA-03]` Falla de red celular o proveedor GPS: 0 eventos perdidos. | *Exception handling* (Circuit Breaker) + *Queue* (Outbox en PostgreSQL). | Simulación Monte Carlo: **0 pérdidas** (vs 277 perdidos) y $96.6\%$ menos llamadas en caída. | **SÍ** (100% resiliente) | [ADR-007](docs/architecture/adr/007-circuit-breaker-outbox-telemetria.md) |
+| **Iteración 3 (E4)** | `[QA-05] / [QA-07]` Aislamiento 100% entre consorcios y alta en $\le 2$ días. | *Authorize access* (JWT claims) + *Limit access* (Row-Level Security en PostgreSQL). | Aislamiento forzado por kernel de BD; alta de consorcio en **15 minutos** sin alterar código. | **SÍ** (Aislamiento total) | [ADR-008](docs/architecture/adr/008-multitenencia-consorcios-rls.md) |
+
+### 3. Fitness Functions en Integración Continua (CI)
+Se establecieron compuertas de calidad automáticas ejecutadas en cada Pull Request mediante GitHub Actions:
+* **Estructurales (`.importlinter`):**
+  * `FF-01`: Capas del monolito modular sin dependencias circulares (`servicio -> decoradores -> adaptadores -> dominio`).
+  * `FF-02`: Dominio puro sin acoplamiento a adaptadores ni librerías externas.
+  * `FF-03`: Componente de IA aislado mediante Facade/Proxy (ADR-005).
+* **De Calidad (`tests/test_fitness.py`):**
+  * `FF-04`: Presupuesto de latencia $p95 \le 150\text{ ms}$ en simulación bajo carga.
+  * `FF-05`: Garantía de 0 eventos telemétricos perdidos ante caídas de red.
+  * `FF-06`: Protección del canal (Circuit Breaker reduce $>90\%$ de llamadas inútiles).
+  * `FF-07`: Verificación del contrato de aislamiento multitenant por `consorcio_id`.
+
+### 4. Entregables del Laboratorio 08
+| Código | Archivos del Entregable | Descripción |
+| :---: | :--- | :--- |
+| **E1** | [`docs/architecture/utilidad/`](docs/architecture/utilidad/) | Árbol de utilidad en Graphviz (`arbol.dot` y `arbol.png`) con 4 atributos y escenarios medibles. |
+| **E2** | [`docs/architecture/add/iteracion-1.md`](docs/architecture/add/iteracion-1.md), [`fitness/rendimiento.py`](fitness/rendimiento.py) | Iteración 1 de ADD, simulación de cola M/G/c y gráfico de sensibilidad. |
+| **E3** | [`docs/architecture/atam-lite.md`](docs/architecture/atam-lite.md) | Evaluación ATAM-lite con hallazgos (sensibilidades, trade-offs, riesgos) y respuesta a issue. |
+| **E4** | [`docs/architecture/add/iteracion-2.md`](docs/architecture/add/iteracion-2.md), [`iteracion-3.md`](docs/architecture/add/iteracion-3.md), [`fitness/disponibilidad.py`](fitness/disponibilidad.py) | Iteraciones 2 y 3 de ADD con simulación Monte Carlo y comparación de multitenencia. |
+| **E5** | [`.importlinter`](.importlinter), [`tests/test_fitness.py`](tests/test_fitness.py), [`.github/workflows/fitness.yml`](.github/workflows/fitness.yml) | Contratos de arquitectura en import-linter, pruebas de calidad en pytest y workflow de CI. |
+| **E6** | [`docs/architecture/adr/`](docs/architecture/adr/), [`docs/architecture/c4/workspace.dsl`](docs/architecture/c4/workspace.dsl) | ADR-005 a ADR-008 y modelo C4 actualizado con trazabilidad `[QA-xx]`. |
+| **E7** | [`docs/architecture/atam-lite.md`](docs/architecture/atam-lite.md), [`docs/architecture/bitacora-ia.md`](docs/architecture/bitacora-ia.md) | Matriz de riesgos, mitigaciones e interacciones de IA (con refutación de falsos positivos). |
+| **E8** | [`README.md`](README.md), etiqueta `v0.8-arquitectura` | Sección de Lab 08 en README, badges y tag de versión para entrega. |
