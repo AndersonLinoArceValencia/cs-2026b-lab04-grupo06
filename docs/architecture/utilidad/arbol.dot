@@ -1,0 +1,63 @@
+digraph ArbolUtilidad {
+    rankdir=LR;
+    node [shape=box, style="filled,rounded", fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+    // Nodo raíz
+    raiz [label="Utilidad del Sistema\nRutaSIT Arequipa\n(1200 buses / 50k consultas)", fillcolor="#1B365D", fontcolor="white", penwidth=2, fontsize=12];
+
+    // Atributos de Calidad
+    rendimiento [label="Rendimiento\n(Tiempo Real)", fillcolor="#D9E1F2", fontcolor="#0F243E", penwidth=1.5];
+    disponibilidad [label="Disponibilidad\n(Resiliencia)", fillcolor="#D9E1F2", fontcolor="#0F243E", penwidth=1.5];
+    seguridad [label="Seguridad\n(Aislamiento)", fillcolor="#D9E1F2", fontcolor="#0F243E", penwidth=1.5];
+    modificabilidad [label="Modificabilidad\n(Evolución)", fillcolor="#D9E1F2", fontcolor="#0F243E", penwidth=1.5];
+
+    raiz -> rendimiento;
+    raiz -> disponibilidad;
+    raiz -> seguridad;
+    raiz -> modificabilidad;
+
+    // Sub-atributos Rendimiento
+    sub_latencia [label="Latencia de\nconsultas", fillcolor="#F2F2F2"];
+    sub_ingesta [label="Throughput de\ntelemetría", fillcolor="#F2F2F2"];
+    rendimiento -> sub_latencia;
+    rendimiento -> sub_ingesta;
+
+    qa01 [label="[QA-01] 50,000 consultas concurrentes\nen hora punta con p95 <= 150 ms\n(Alta, Alta)", fillcolor="#F8CBAD", fontcolor="#C00000", penwidth=1.5];
+    qa02 [label="[QA-02] 1200 buses transmitiendo GPS cada 5s\n(240 ev/s) con retraso <= 500 ms\n(Alta, Media)", fillcolor="#FFF2CC", fontcolor="#B25900"];
+    sub_latencia -> qa01;
+    sub_ingesta -> qa02;
+
+    // Sub-atributos Disponibilidad
+    sub_falla_red [label="Falla de canal\nGPS/Celular", fillcolor="#F2F2F2"];
+    sub_resiliencia_bd [label="Falla de BD\nprimaria", fillcolor="#F2F2F2"];
+    disponibilidad -> sub_falla_red;
+    disponibilidad -> sub_resiliencia_bd;
+
+    qa03 [label="[QA-03] Caída de red móvil o proveedor GPS:\n0 eventos perdidos (búfer local + cola outbox)\n(Alta, Media)", fillcolor="#FFF2CC", fontcolor="#B25900"];
+    qa04 [label="[QA-04] Caída de base de datos transaccional:\nmodo degradado desde réplica/caché (0 caídas)\n(Media, Media)", fillcolor="#FFF2CC", fontcolor="#333333"];
+    sub_falla_red -> qa03;
+    sub_resiliencia_bd -> qa04;
+
+    // Sub-atributos Seguridad
+    sub_multitenant [label="Aislamiento entre\nconsorcios", fillcolor="#F2F2F2"];
+    sub_integridad [label="Integridad de\ntramas IoT", fillcolor="#F2F2F2"];
+    seguridad -> sub_multitenant;
+    seguridad -> sub_integridad;
+
+    qa05 [label="[QA-05] 100% aislamiento entre empresas\nconcesionarias mediante RLS y claims JWT\n(Alta, Alta) *Corregido por equipo*", fillcolor="#F8CBAD", fontcolor="#C00000", penwidth=1.5];
+    qa06 [label="[QA-06] Validación criptográfica HMAC\nde telemetría de 1200 buses sin cuello de botella\n(Media, Baja)", fillcolor="#E2EFDA", fontcolor="#385723"];
+    sub_multitenant -> qa05;
+    sub_integridad -> qa06;
+
+    // Sub-atributos Modificabilidad
+    sub_rutas [label="Nuevos consorcios\ny rutas", fillcolor="#F2F2F2"];
+    sub_estrategia [label="Reemplazo de motor\nde predicción ETA", fillcolor="#F2F2F2"];
+    modificabilidad -> sub_rutas;
+    modificabilidad -> sub_estrategia;
+
+    qa07 [label="[QA-07] Incorporar un nuevo consorcio o ruta\nen <= 2 días sin tocar el núcleo de monitoreo\n(Media, Baja)", fillcolor="#E2EFDA", fontcolor="#385723"];
+    qa08 [label="[QA-08] Sustituir motor de estimación de llegada\nen <= 1 sprint gracias a patrón Strategy\n(Media, Baja)", fillcolor="#E2EFDA", fontcolor="#385723"];
+    sub_rutas -> qa07;
+    sub_estrategia -> qa08;
+}
