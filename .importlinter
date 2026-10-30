@@ -1,0 +1,33 @@
+[importlinter]
+root_package = src
+
+[importlinter:contract:capas]
+name = FF-01 Capas del monolito modular sin dependencias circulares (ADR-001)
+type = layers
+layers =
+    src.monitoreo.servicio
+    src.monitoreo.decoradores
+    src.monitoreo.adaptadores
+    src.monitoreo.dominio
+
+[importlinter:contract:dominio_aislado]
+name = FF-02 El dominio es puro y no depende de adaptadores ni servicios externos (ADR-001)
+type = forbidden
+source_modules =
+    src.monitoreo.dominio
+forbidden_modules =
+    src.monitoreo.servicio
+    src.monitoreo.adaptadores
+    src.monitoreo.decoradores
+    src.monitoreo.externos
+    src.monitoreo.ia
+
+[importlinter:contract:ia_aislada]
+name = FF-03 El componente de IA esta aislado y no conoce los adaptadores de infraestructura (ADR-005)
+type = forbidden
+source_modules =
+    src.monitoreo.ia
+forbidden_modules =
+    src.monitoreo.adaptadores
+    src.monitoreo.externos
+    src.monitoreo.decoradores

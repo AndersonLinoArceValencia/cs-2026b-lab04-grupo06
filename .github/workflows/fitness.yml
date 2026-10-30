@@ -1,0 +1,33 @@
+name: fitness-functions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  arquitectura:
+    name: Verificacion de Fitness Functions y Contratos Arquitectonicos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar herramientas de arquitectura
+        run: |
+          python -m pip install --upgrade pip
+          pip install import-linter pytest matplotlib
+
+      - name: Verificar contratos estructurales (ADR-001 y ADR-005)
+        run: |
+          PYTHONPATH=. lint-imports
+
+      - name: Verificar escenarios de calidad en pruebas (QA-01, QA-03, QA-05)
+        run: |
+          PYTHONPATH=. pytest -v tests/test_fitness.py
