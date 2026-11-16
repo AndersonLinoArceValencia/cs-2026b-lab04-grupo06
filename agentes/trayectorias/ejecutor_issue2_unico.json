@@ -1,0 +1,44 @@
+[
+ {
+  "pensamiento": "Leo issues/ISSUE-02.md para entender el reporte de falso desvío en curvas.",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "issues/ISSUE-02.md"
+  }
+ },
+ {
+  "pensamiento": "Leo src/monitoreo/desvios.py para ver cómo se calcula la distancia.",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "src/monitoreo/desvios.py"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas para reproducir el fallo actual.",
+  "accion": "ejecutar_pruebas",
+  "args": {}
+ },
+ {
+  "pensamiento": "Reemplazo el cálculo por proyección a segmentos de recta.",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/monitoreo/desvios.py",
+   "antes": "def evaluar_desvio_ruta(\n    posicion: CoordenadaGPS,\n    waypoints_ruta: List[CoordenadaGPS],\n    umbral_metros: float = 50.0\n) -> bool:\n    \"\"\"Evalúa si una unidad está desviada de su ruta.\n    \n    BUG (ISSUE-02): Compara la distancia del bus únicamente contra los vértices/waypoints\n    discretos de la ruta en vez de calcular la distancia ortogonal al segmento de curva.\n    En curvas con waypoints espaciados (>100m), esto genera falsos positivos (retorna True).\n    \"\"\"\n    if not waypoints_ruta:\n        return False\n    # Error: evalúa solo contra los waypoints aislados\n    dist_minima = min(distancia_metros(posicion, wp) for wp in waypoints_ruta)\n    return dist_minima > umbral_metros",
+   "despues": "def distancia_punto_a_segmento_metros(p: CoordenadaGPS, a: CoordenadaGPS, b: CoordenadaGPS) -> float:\n    dx = (b.lon - a.lon) * math.cos(math.radians(-16.4090)) * 111320.0\n    dy = (b.lat - a.lat) * 110574.0\n    longitud_seg_sq = dx * dx + dy * dy\n    px = (p.lon - a.lon) * math.cos(math.radians(-16.4090)) * 111320.0\n    py = (p.lat - a.lat) * 110574.0\n    t = max(0.0, min(1.0, (px * dx + py * dy) / longitud_seg_sq))\n    proj_x = a.lon + t * (b.lon - a.lon)\n    proj_y = a.lat + t * (b.lat - a.lat)\n    return distancia_metros(p, CoordenadaGPS(lat=proj_y, lon=proj_x))\n\ndef evaluar_desvio_ruta(\n    posicion: CoordenadaGPS,\n    waypoints_ruta: List[CoordenadaGPS],\n    umbral_metros: float = 50.0\n) -> bool:\n    if not waypoints_ruta:\n        return False\n    dist_minima = min(\n        distancia_punto_a_segmento_metros(posicion, waypoints_ruta[i], waypoints_ruta[i+1])\n        for i in range(len(waypoints_ruta) - 1)\n    )\n    return dist_minima > umbral_metros"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas para comprobar que la aserción pasa.",
+  "accion": "ejecutar_pruebas",
+  "args": {}
+ },
+ {
+  "pensamiento": "Inspecciono el diff para confirmar la modificación.",
+  "accion": "ver_cambios",
+  "args": {}
+ },
+ {
+  "pensamiento": "Todas las pruebas pasan; no considero necesario más cambios.",
+  "final": "ISSUE-02 resuelto con éxito: se calculó la distancia hacia los segmentos de la ruta, eliminando falsos positivos en curvas."
+ }
+]

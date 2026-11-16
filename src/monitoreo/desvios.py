@@ -17,6 +17,27 @@ def distancia_metros(c1: CoordenadaGPS, c2: CoordenadaGPS) -> float:
     return math.hypot(dx, dy)
 
 
+def distancia_punto_a_segmento_metros(
+    p: CoordenadaGPS,
+    a: CoordenadaGPS,
+    b: CoordenadaGPS
+) -> float:
+    """Calcula la distancia mínima en metros desde el punto p al segmento ab."""
+    dx = (b.lon - a.lon) * math.cos(math.radians(-16.4090)) * 111320.0
+    dy = (b.lat - a.lat) * 110574.0
+    longitud_seg_sq = dx * dx + dy * dy
+    if longitud_seg_sq == 0.0:
+        return distancia_metros(p, a)
+
+    px = (p.lon - a.lon) * math.cos(math.radians(-16.4090)) * 111320.0
+    py = (p.lat - a.lat) * 110574.0
+    t = max(0.0, min(1.0, (px * dx + py * dy) / longitud_seg_sq))
+
+    proj_x = a.lon + t * (b.lon - a.lon)
+    proj_y = a.lat + t * (b.lat - a.lat)
+    return distancia_metros(p, CoordenadaGPS(lat=proj_y, lon=proj_x))
+
+
 def evaluar_desvio_ruta(
     posicion: CoordenadaGPS,
     waypoints_ruta: List[CoordenadaGPS],
@@ -24,12 +45,16 @@ def evaluar_desvio_ruta(
 ) -> bool:
     """Evalúa si una unidad está desviada de su ruta.
     
-    BUG (ISSUE-02): Compara la distancia del bus únicamente contra los vértices/waypoints
-    discretos de la ruta en vez de calcular la distancia ortogonal al segmento de curva.
-    En curvas con waypoints espaciados (>100m), esto genera falsos positivos (retorna True).
+    Calcula la distancia ortogonal mínima a los segmentos formados por waypoints
+    consecutivos, evitando falsos positivos en curvas cerradas.
     """
     if not waypoints_ruta:
         return False
-    # Error: evalúa solo contra los waypoints aislados
-    dist_minima = min(distancia_metros(posicion, wp) for wp in waypoints_ruta)
+    if len(waypoints_ruta) == 1:
+        return distancia_metros(posicion, waypoints_ruta[0]) > umbral_metros
+
+    dist_minima = min(
+        distancia_punto_a_segmento_metros(posicion, waypoints_ruta[i], waypoints_ruta[i + 1])
+        for i in range(len(waypoints_ruta) - 1)
+    )
     return dist_minima > umbral_metros

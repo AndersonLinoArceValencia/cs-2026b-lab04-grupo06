@@ -1,6 +1,6 @@
 [
  {
-  "pensamiento": "El issue tiene una prueba que lo reproduce. Plan mínimo: reproducir, localizar, corregir sin tocar las pruebas, verificar y revisar.",
-  "final": "PLAN\n1. Leer ISSUE-27.md y reproducir el fallo con las pruebas.\n2. Localizar ventas_semanales y corregir el filtro de estados.\n3. Verificar: pruebas en verde y complejidad aceptable (radon).\n4. Revisión independiente del diff antes de abrir el Pull Request."
+  "pensamiento": "Analizo el objetivo para ISSUE-02.md en RutaSIT Arequipa. El defecto reporta falsos positivos de desvío en curvas porque el algoritmo evalúa solo contra vértices discretos. Elaboro un plan riguroso en 4 pasos para guiar al ejecutor.",
+  "final": "Plan para resolver ISSUE-02.md:\n1. Inspeccionar issues/ISSUE-02.md y src/monitoreo/desvios.py.\n2. Reproducir el fallo con ejecutar_pruebas() en tests/test_issue_02.py.\n3. Sustituir la distancia euclidiana simple a waypoints por la distancia ortogonal a segmentos continuos de la ruta.\n4. Validar con ejecutar_pruebas() y verificar el diff con ver_cambios()."
  }
 ]
