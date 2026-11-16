@@ -40,10 +40,14 @@ class GPSOperadorAAdapter(IProveedorGPS):
     def obtener_posicion(self, id_bus: str) -> DatosTelemetria:
         resp = self.sdk.obtener_posicion(id_bus)
         if resp.get("ok"):
+            lat = resp.get("lat")
+            lon = resp.get("lon")
+            if lat is None or lon is None:
+                raise ValueError(f"Trama GPS con coordenadas nulas o inválidas para unidad {id_bus}")
             return DatosTelemetria(
-                latitud=resp["lat"],
-                longitud=resp["lon"],
-                velocidad_kmh=resp["velocidad_kmh"],
+                latitud=float(lat),
+                longitud=float(lon),
+                velocidad_kmh=float(resp.get("velocidad_kmh") or 0.0),
                 id_unidad=resp.get("id_unidad", id_bus)
             )
         raise ValueError(f"Respuesta inválida del Operador A para unidad {id_bus}")

@@ -37,3 +37,24 @@ def test_politica_respeta_presupuesto_de_pasos():
 def test_sandbox_impide_salir_del_directorio(tmp_path):
     with pytest.raises(PermissionError):
         Herramientas(tmp_path).leer_archivo("../../etc/passwd")
+
+
+def test_herramienta_mapa_repo_con_ast(tmp_path):
+    archivo_py = tmp_path / "modulo.py"
+    archivo_py.write_text("class ServicioPrueba:\n    def procesar(self):\n        pass\n\ndef funcion_libre():\n    pass\n")
+    h = Herramientas(tmp_path)
+    mapa = h.mapa_repo(".")
+    assert "class ServicioPrueba" in mapa
+    assert "def procesar()" in mapa
+    assert "def funcion_libre()" in mapa
+
+
+def test_memoria_de_notas(tmp_path):
+    h = Herramientas(tmp_path)
+    assert h.leer_notas() == "(sin notas registradas en notas.md)"
+    res = h.anotar("Hipótesis: el fallo se debe a coordenadas nulas")
+    assert "OK" in res
+    h.anotar("Archivo clave: adaptadores.py")
+    notas = h.leer_notas()
+    assert "- Hipótesis: el fallo se debe a coordenadas nulas" in notas
+    assert "- Archivo clave: adaptadores.py" in notas

@@ -20,6 +20,9 @@ class Herramientas:
             "listar_archivos": "listar_archivos(carpeta='.'): lista los archivos .py y .md",
             "leer_archivo": "leer_archivo(ruta): devuelve el contenido con números de línea",
             "buscar": "buscar(patron): busca una expresión regular en los archivos .py",
+            "mapa_repo": "mapa_repo(carpeta='.'): devuelve el mapa estructural con AST (clases, métodos y firmas) sin volcar todo el código",
+            "anotar": "anotar(texto): guarda una hipótesis o nota de trabajo en notas.md",
+            "leer_notas": "leer_notas(): devuelve las notas acumuladas en notas.md",
             "ejecutar_pruebas": "ejecutar_pruebas(): ejecuta pytest y devuelve el resumen",
             "editar_archivo": "editar_archivo(ruta, antes, despues): reemplaza un fragmento exacto (una sola vez)",
             "ver_cambios": "ver_cambios(): muestra el diff respecto de la versión original",
@@ -43,6 +46,45 @@ class Herramientas:
                 if rx.search(l):
                     hallazgos.append(f"{p.relative_to(self.raiz)}:{i}: {l.strip()}")
         return "\n".join(hallazgos) or "(sin resultados)"
+
+    def mapa_repo(self, carpeta="."):
+        """Devuelve las firmas y clases del proyecto extraídas con el módulo ast (Sección 1.5)."""
+        import ast
+        base = self._ruta(carpeta)
+        lineas = []
+        for p in sorted(base.rglob("*.py")):
+            if "__pycache__" in p.parts:
+                continue
+            rel = p.relative_to(self.raiz)
+            try:
+                arbol = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+            except Exception:
+                continue
+            items = []
+            for nodo in arbol.body:
+                if isinstance(nodo, ast.ClassDef):
+                    metodos = [f"    def {m.name}()" for m in nodo.body if isinstance(m, ast.FunctionDef)]
+                    items.append(f"  class {nodo.name}:\n" + "\n".join(metodos) if metodos else f"  class {nodo.name}")
+                elif isinstance(nodo, ast.FunctionDef):
+                    items.append(f"  def {nodo.name}()")
+            if items:
+                lineas.append(f"{rel}:\n" + "\n".join(items))
+        return "\n\n".join(lineas) or "(repositorio vacío o sin definiciones Python)"
+
+    def anotar(self, texto: str):
+        """Guarda notas o hipótesis en notas.md (memoria de trabajo externa, Sección 1.6)."""
+        p = self.raiz / "notas.md"
+        anterior = p.read_text(encoding="utf-8") if p.exists() else ""
+        nuevo = anterior + ("\n" if anterior and not anterior.endswith("\n") else "") + f"- {texto.strip()}\n"
+        p.write_text(nuevo, encoding="utf-8")
+        return "OK: nota guardada en notas.md"
+
+    def leer_notas(self):
+        """Devuelve el contenido actual de notas.md."""
+        p = self.raiz / "notas.md"
+        if not p.exists():
+            return "(sin notas registradas en notas.md)"
+        return p.read_text(encoding="utf-8").strip()
 
     def ejecutar_pruebas(self):
         import sys, os

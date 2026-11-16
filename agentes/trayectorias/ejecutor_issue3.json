@@ -1,0 +1,51 @@
+[
+ {
+  "pensamiento": "Consulto el mapa estructural del repositorio con AST para ubicar rápidamente la definición de clases y métodos de adaptadores de telemetría sin leer archivos innecesarios.",
+  "accion": "mapa_repo",
+  "args": {
+   "carpeta": "src"
+  }
+ },
+ {
+  "pensamiento": "Guardo en notas.md la hipótesis y el archivo objetivo identificado a través del AST para guiar la depuración.",
+  "accion": "anotar",
+  "args": {
+   "texto": "Hipótesis: el fallo del ISSUE-03 se ubica en GPSOperadorAAdapter.obtener_posicion al no validar coordenadas nulas."
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas actuales para observar objetivamente el fallo en tests/test_issue_03.py.",
+  "accion": "ejecutar_pruebas",
+  "args": {}
+ },
+ {
+  "pensamiento": "Leo únicamente src/monitoreo/adaptadores.py sabiendo de antemano por el AST que allí reside GPSOperadorAAdapter.",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "src/monitoreo/adaptadores.py"
+  }
+ },
+ {
+  "pensamiento": "Modifico GPSOperadorAAdapter para validar que las coordenadas lat y lon no sean None antes de construir DatosTelemetria.",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/monitoreo/adaptadores.py",
+   "antes": "    def obtener_posicion(self, id_bus: str) -> DatosTelemetria:\n        resp = self.sdk.obtener_posicion(id_bus)\n        if resp.get(\"ok\"):\n            return DatosTelemetria(\n                latitud=resp[\"lat\"],\n                longitud=resp[\"lon\"],\n                velocidad_kmh=resp[\"velocidad_kmh\"],\n                id_unidad=resp.get(\"id_unidad\", id_bus)\n            )",
+   "despues": "    def obtener_posicion(self, id_bus: str) -> DatosTelemetria:\n        resp = self.sdk.obtener_posicion(id_bus)\n        if resp.get(\"ok\"):\n            lat = resp.get(\"lat\")\n            lon = resp.get(\"lon\")\n            if lat is None or lon is None:\n                raise ValueError(f\"Trama GPS con coordenadas nulas o inválidas para unidad {id_bus}\")\n            return DatosTelemetria(\n                latitud=float(lat),\n                longitud=float(lon),\n                velocidad_kmh=float(resp.get(\"velocidad_kmh\") or 0.0),\n                id_unidad=resp.get(\"id_unidad\", id_bus)\n            )"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas unitarias para confirmar que tests/test_issue_03.py pasa en verde.",
+  "accion": "ejecutar_pruebas",
+  "args": {}
+ },
+ {
+  "pensamiento": "Verifico las notas acumuladas en memoria externa antes de emitir la respuesta final.",
+  "accion": "leer_notas",
+  "args": {}
+ },
+ {
+  "pensamiento": "Todas las pruebas pasan y la memoria confirma la resolución del defecto.",
+  "final": "ISSUE-03 resuelto con éxito: GPSOperadorAAdapter en src/monitoreo/adaptadores.py ahora valida exhaustivamente la no-nulidad de coordenadas latitud y longitud, elevando ValueError controlado ante tramas corruptas y garantizando resiliencia en el monitoreo."
+ }
+]
