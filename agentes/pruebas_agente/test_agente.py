@@ -5,7 +5,7 @@ from agente.contrato import validar_decision
 from agente.politica import Politica
 from agente.herramientas import Herramientas
 
-H = {"leer_archivo", "editar_archivo", "ejecutar_comando"}
+H = {"leer_archivo", "editar_archivo", "ejecutar_comando", "buscar", "ver_cambios"}
 
 @pytest.mark.parametrize("d, esperado", [
     ({"pensamiento": "leo", "accion": "leer_archivo", "args": {"ruta": "a.py"}}, True),
@@ -14,6 +14,13 @@ H = {"leer_archivo", "editar_archivo", "ejecutar_comando"}
     ({"pensamiento": "x", "accion": "borrar_todo"}, False),                   # herramienta inventada
     ({"pensamiento": "x", "accion": "leer_archivo", "final": "y"}, False),    # ambas formas
     ("leer_archivo(a.py)", False),                                            # texto libre, no JSON
+    # Nuevas decisiones inválidas solicitadas en E3:
+    ({"pensamiento": "leo", "accion": "leer_archivo", "args": {"ruta": "a.py"}, "campo_extra": 123}, False),  # campos de más
+    ({"pensamiento": "leo", "accion": "leer_archivo", "args": "ruta=a.py"}, False),                           # args como texto
+    ({"pensamiento": "leo", "accion": "", "args": {}}, False),                                                # acción vacía
+    ({"pensamiento": "   ", "accion": "leer_archivo", "args": {"ruta": "a.py"}}, False),                       # pensamiento con solo espacios
+    ({"pensamiento": "listo", "final": 404}, False),                                                           # final numérico
+    ({"pensamiento": "busco", "accion": "buscar_archivos", "args": {"patron": "x"}}, False),                 # vista en E2
 ])
 def test_contrato(d, esperado):
     assert validar_decision(d, H)[0] is esperado

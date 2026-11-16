@@ -1,0 +1,86 @@
+@startuml estados-agente
+skinparam dpi 200
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam state {
+  BackgroundColor #EEF2F8
+  BorderColor #1A3A5C
+  ArrowColor #444444
+}
+
+title Máquina de Estados del Agente ReAct — RutaSIT Arequipa (agente/nucleo.py)
+
+[*] --> Decidiendo : Objetivo recibido / Turno ReAct
+
+state Decidiendo {
+  Decidiendo : El modelo (LLM) delibera
+  Decidiendo : Formula pensamiento explícito
+  Decidiendo : Selecciona acción o respuesta final
+}
+
+Decidiendo --> ValidandoContrato : Decisión en JSON
+note on link
+  {"pensamiento": "...", "accion": "...", "args": {...}}
+  o {"pensamiento": "...", "final": "..."}
+end note
+
+state ValidandoContrato {
+  ValidandoContrato : validar_decision()
+  ValidandoContrato : Verifica esquema JSON,
+  ValidandoContrato : tipos y catálogo de herramientas
+}
+
+ValidandoContrato --> Decidiendo : [Inválida] / ERROR DE CONTRATO
+ValidandoContrato --> Finalizado : [Es "final"]
+ValidandoContrato --> EvaluandoPolitica : [Es "accion"]
+
+state EvaluandoPolitica {
+  EvaluandoPolitica : Politica.evaluar()
+  EvaluandoPolitica : Valida rutas protegidas (tests/),
+  EvaluandoPolitica : comandos seguros y presupuesto
+}
+
+EvaluandoPolitica --> Decidiendo : [Denegada por política] / BLOQUEADO
+EvaluandoPolitica --> LimiteAlcanzado : [paso > max_pasos]
+
+EvaluandoPolitica --> EsperandoAprobacion : [Requiere HITL: editar_archivo]
+state EsperandoAprobacion {
+  EsperandoAprobacion : Humano en el circuito (consola)
+  EsperandoAprobacion : Valida diff propuesto ('s'/'n')
+}
+
+EsperandoAprobacion --> Decidiendo : [Rechazado por humano] / BLOQUEADO
+EsperandoAprobacion --> Ejecutando : [Aprobado por humano]
+
+EvaluandoPolitica --> Ejecutando : [Permitida sin HITL]
+
+state Ejecutando {
+  Ejecutando : Invoca Herramientas en sandbox
+  Ejecutando : (leer, buscar, pruebas, ast, notas)
+}
+
+Ejecutando --> Observando : Retorno de herramienta o captura de error
+
+state Observando {
+  Observando : Se encapsula la observación
+  Observando : Se registra en traza JSONL
+  Observando : Se añade al historial de memoria
+}
+
+Observando --> Decidiendo : Próximo paso ReAct
+
+state Finalizado #EAF4EC {
+  Finalizado : Tarea completada con éxito
+  Finalizado : Emite texto para el revisor/usuario
+}
+
+state LimiteAlcanzado #F4CCC3 {
+  LimiteAlcanzado : Presupuesto agotado
+  LimiteAlcanzado : Detención forzada sin bucle infinito
+}
+
+Finalizado --> [*] : Respuesta final
+LimiteAlcanzado --> [*] : Salida por corte
+
+@enduml
