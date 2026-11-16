@@ -58,3 +58,23 @@ def test_memoria_de_notas(tmp_path):
     notas = h.leer_notas()
     assert "- Hipótesis: el fallo se debe a coordenadas nulas" in notas
     assert "- Archivo clave: adaptadores.py" in notas
+
+
+def test_aprobacion_humana_valida_s_y_n():
+    from agente.politica import solicitar_aprobacion_consola
+    args = {"ruta": "src/archivo.py", "antes": "a", "despues": "b"}
+
+    # Caso 1: Usuario aprueba con 's'
+    assert solicitar_aprobacion_consola(args, entrada_fn=lambda _: "s") is True
+    # Caso 2: Usuario rechaza con 'n'
+    assert solicitar_aprobacion_consola(args, entrada_fn=lambda _: "n") is False
+
+    # Caso 3: Reintentos ante entrada inválida antes de responder 's'
+    respuestas = iter(["quizas", "123", "s"])
+    assert solicitar_aprobacion_consola(args, entrada_fn=lambda _: next(respuestas)) is True
+
+    # Integración con Politica
+    p_hitl = Politica(aprobar_edicion=lambda a: False)
+    dec = p_hitl.evaluar("editar_archivo", {"ruta": "src/archivo.py"}, 1)
+    assert not dec.permitido
+    assert "humano rechazó" in dec.motivo

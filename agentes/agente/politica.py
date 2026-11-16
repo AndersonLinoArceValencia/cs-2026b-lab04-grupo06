@@ -17,7 +17,7 @@ class Politica:
     comandos_permitidos: tuple = (r"^python -m pytest\b", r"^radon cc\b", r"^lint-imports\b", r"^git (status|diff)\b")
     rutas_protegidas: tuple = ("tests/",)          # el agente no puede "arreglar" las pruebas para que pasen
     max_pasos: int = 15
-    aprobar_edicion = None                          # función opcional: humano en el circuito (human-in-the-loop)
+    aprobar_edicion: object = None                  # función opcional: humano en el circuito (human-in-the-loop)
 
     def evaluar(self, accion: str, args: dict, paso: int) -> Decision:
         if paso > self.max_pasos:
@@ -35,3 +35,21 @@ class Politica:
             if self.aprobar_edicion and not self.aprobar_edicion(args):
                 return Decision(False, "El revisor humano rechazó la edición")
         return Decision(True)
+
+
+def solicitar_aprobacion_consola(args: dict, entrada_fn=input) -> bool:
+    """Valida la aprobación humana interactiva exigiendo estrictamente 's' o 'n' (E6)."""
+    ruta = args.get("ruta", "(archivo desconocido)")
+    print(f"\n[HUMANO EN EL CIRCUITO] Solicitud de edición sobre: {ruta}")
+    print(f"--- FRAGMENTO ANTERIOR ---\n{args.get('antes', '')[:250]}")
+    print(f"--- FRAGMENTO PROPUESTO ---\n{args.get('despues', '')[:250]}")
+    while True:
+        try:
+            r = entrada_fn("¿Aprueba esta modificación en el código? (s/n): ").strip().lower()
+        except EOFError:
+            return False
+        if r == "s":
+            return True
+        elif r == "n":
+            return False
+        print("Entrada no válida. Por favor responda únicamente con 's' o 'n'.")
