@@ -289,3 +289,97 @@ Se establecieron compuertas de calidad automáticas ejecutadas en cada Pull Requ
 | **E6** | [`docs/architecture/adr/`](docs/architecture/adr/), [`docs/architecture/c4/workspace.dsl`](docs/architecture/c4/workspace.dsl) | ADR-005 a ADR-008 y modelo C4 actualizado con trazabilidad `[QA-xx]`. |
 | **E7** | [`docs/architecture/atam-lite.md`](docs/architecture/atam-lite.md), [`docs/architecture/bitacora-ia.md`](docs/architecture/bitacora-ia.md) | Matriz de riesgos, mitigaciones e interacciones de IA (con refutación de falsos positivos). |
 | **E8** | [`README.md`](README.md), etiqueta `v0.8-arquitectura` | Sección de Lab 08 en README, badges y tag de versión para entrega. |
+
+
+---
+
+## Sistemas agénticos (Laboratorio 10)
+
+En este laboratorio se diseñó, construyó y coordinó un sistema agéntico autónomo y supervisado para el diagnóstico y resolución de incidencias complejas en el repositorio de **RutaSIT Arequipa** (siguiendo los principios de SWE-bench y la arquitectura de agentes de Albada 2025 y Koenigstein 2026).
+
+### 1. Máquina de Estados del Agente ReAct
+El bucle ReAct (*Reasoning + Acting*) opera como una máquina de estados finita que valida contratos y políticas de seguridad antes de invocar cualquier herramienta:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Decidiendo : Objetivo recibido
+    Decidiendo --> ValidandoContrato : Decisión en JSON
+    ValidandoContrato --> Decidiendo : [Inválida] ERROR DE CONTRATO
+    ValidandoContrato --> Finalizado : [Es "final"]
+    ValidandoContrato --> EvaluandoPolitica : [Es "accion"]
+    EvaluandoPolitica --> Decidiendo : [Denegada] BLOQUEADO
+    EvaluandoPolitica --> LimiteAlcanzado : [paso > max_pasos]
+    EvaluandoPolitica --> EsperandoAprobacion : [Requiere HITL: editar_archivo]
+    EsperandoAprobacion --> Decidiendo : [Rechazado por humano]
+    EsperandoAprobacion --> Ejecutando : [Aprobado por humano ('s')]
+    EvaluandoPolitica --> Ejecutando : [Permitida sin HITL]
+    Ejecutando --> Observando : Retorno o captura de error
+    Observando --> Decidiendo : Agrega observación al historial
+    Finalizado --> [*] : Respuesta final
+    LimiteAlcanzado --> [*] : Salida forzada por presupuesto
+```
+*(Diagrama PlantUML formal disponible en [`agentes/diseno/estados.puml`](agentes/diseno/estados.puml) y renderizado en [`agentes/diseno/estados.png`](agentes/diseno/estados.png)).*
+
+### 2. Diagrama de Trayectoria (Orquestador Actor-Crítico sobre ISSUE-02)
+El siguiente diagrama muestra la coordinación por gestor (Planificador) y el bucle Actor-Crítico en 2 rondas, donde el revisor detectó una potencial división por cero antes de la aprobación humana:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Humano
+    participant PL as Planificador
+    participant EJ as Ejecutor (actor)
+    participant RV as Revisor (crítico)
+    participant P as Política
+    participant H as Herramientas
+
+    U->>PL: Objetivo: resolver ISSUE-02.md
+    PL->>EJ: Plan en 4 pasos
+    Note over EJ,RV: Ronda 1 del bucle actor-crítico
+    EJ->>H: leer_archivo(ISSUE-02.md)
+    H-->>EJ: Contenido del issue
+    EJ->>H: ejecutar_pruebas()
+    H-->>EJ: FAILED (assert True is False)
+    EJ->>H: editar_archivo(desvios.py)
+    H-->>EJ: OK, archivo modificado
+    EJ->>H: ejecutar_pruebas()
+    H-->>EJ: PASSED
+    EJ->>RV: Resumen de cambios aplicados
+    RV->>H: ver_cambios()
+    H-->>RV: Inspección del diff
+    RV-->>EJ: CAMBIOS SOLICITADOS (Riesgo ZeroDivisionError)
+
+    Note over EJ,RV: Ronda 2 del bucle actor-crítico
+    EJ->>H: editar_archivo(desvios.py: protección longitud_seg_sq == 0)
+    H-->>EJ: OK, archivo modificado
+    EJ->>H: ejecutar_pruebas()
+    H-->>EJ: PASSED (suite en verde)
+    EJ->>RV: Casos borde subsanados
+    RV->>H: ver_cambios()
+    H-->>RV: Diff robusto
+    RV-->>U: APROBADO (Listo para revisión humana)
+```
+
+### 3. Tabla Consolidada de Métricas de los 3 Issues
+Comparación del desempeño agéntico en las tres incidencias resueltas:
+
+| Métrica de Observabilidad | ISSUE-01 (E2: ReAct Clásico) | ISSUE-02: Agente Único | ISSUE-02: Actor-Crítico (E5) | ISSUE-03 (E4: AST + Notas) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Defecto Resuelto** | ETA negativo si bus pasó paradero | Falsos desvíos en curvas | Falsos desvíos en curvas + casos borde | Crash TypeError por GPS sin datos |
+| **Arquetipo** | Agente ReAct simple | Agente ReAct simple | Planificador + [Ejecutor $\leftrightarrow$ Revisor] | ReAct con AST + Memoria de Notas |
+| **Rondas** | 1 ronda | 1 ronda | 2 rondas | 1 ronda |
+| **Pasos Totales** | 11 pasos | 7 pasos | 15 pasos acumulados | 8 pasos |
+| **Acciones Permitidas** | 9 acciones | 6 acciones | 13 acciones | 7 acciones |
+| **Rechazos por Contrato** | 1 (`buscar_archivos` inventada) | 0 | 0 | 0 |
+| **Contexto Acumulado** | 24,180 caracteres (~6,045 tokens) | 9,466 caracteres (~2,366 tokens) | 26,976 caracteres (~6,744 tokens) | 14,801 caracteres (~3,700 tokens) |
+| **Hallazgo Clave** | Contrato forzó autocorrección. | No detectó riesgo de `ZeroDivisionError`. | **El revisor detectó `ZeroDivisionError`** y rutas de 1 punto. | **-38.8% de contexto** gracias a `mapa_repo()` con AST. |
+| **Estado de Pruebas** | 100% verde (3/3) | 100% verde (2/2) | 100% verde (2/2 + casos borde) | 100% verde (1/1) |
+
+### 4. Enlaces a Entregables Oficiales de Lab 10
+* **Lienzo de diseño (7 decisiones):** [`agentes/diseno/lienzo.md`](agentes/diseno/lienzo.md)
+* **Máquina de estados PlantUML:** [`agentes/diseno/estados.puml`](agentes/diseno/estados.puml) y render en [`agentes/diseno/estados.png`](agentes/diseno/estados.png)
+* **Hoja de ruta de autonomía:** [`agentes/delegacion.md`](agentes/delegacion.md)
+* **Métricas y observabilidad:** [`agentes/observacion.md`](agentes/observacion.md)
+* **Bitácora de interacciones con IA:** [`agentes/bitacora-ia.md`](agentes/bitacora-ia.md)
+* **Decisión de Arquitectura:** [`docs/architecture/adr/010-sistema-agentico.md`](docs/architecture/adr/010-sistema-agentico.md)
+* **Informe en Word/ODT:** [`informe_laboratorio_10.docx`](/home/andersp666/informe_lab10_cs/informe_laboratorio_10.docx) y [`informe_laboratorio_10.odt`](/home/andersp666/informe_lab10_cs/informe_laboratorio_10.odt)
