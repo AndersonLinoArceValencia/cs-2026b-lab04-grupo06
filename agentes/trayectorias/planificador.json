@@ -1,0 +1,6 @@
+[
+ {
+  "pensamiento": "El issue tiene una prueba que lo reproduce. Plan mínimo: reproducir, localizar, corregir sin tocar las pruebas, verificar y revisar.",
+  "final": "PLAN\n1. Leer ISSUE-27.md y reproducir el fallo con las pruebas.\n2. Localizar ventas_semanales y corregir el filtro de estados.\n3. Verificar: pruebas en verde y complejidad aceptable (radon).\n4. Revisión independiente del diff antes de abrir el Pull Request."
+ }
+]
