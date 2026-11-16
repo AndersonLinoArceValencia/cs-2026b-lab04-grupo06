@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .venv/
 agentes/trabajo/
+agentes/trabajo_unico/
