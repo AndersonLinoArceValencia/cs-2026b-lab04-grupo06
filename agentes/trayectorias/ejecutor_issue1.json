@@ -1,0 +1,76 @@
+[
+ {
+  "pensamiento": "Voy a leer el archivo issues/ISSUE-01.md para entender el defecto reportado y los requisitos esperados.",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "issues/ISSUE-01.md"
+  }
+ },
+ {
+  "pensamiento": "Voy a buscar el archivo con una herramienta inventada para explorar el sistema.",
+  "accion": "buscar_archivos",
+  "args": {
+   "patron": "estrategias"
+  }
+ },
+ {
+  "pensamiento": "La herramienta anterior fue rechazada por el contrato. Usaré la herramienta permitida 'buscar' para localizar la implementación de calcular_eta.",
+  "accion": "buscar",
+  "args": {
+   "patron": "def calcular_eta"
+  }
+ },
+ {
+  "pensamiento": "Leo el archivo src/monitoreo/estrategias.py para inspeccionar la implementación actual de las estrategias de cálculo de ETA.",
+  "accion": "leer_archivo",
+  "args": {
+   "ruta": "src/monitoreo/estrategias.py"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas actuales para observar objetivamente el fallo reportado en tests/test_issue_01.py.",
+  "accion": "ejecutar_pruebas",
+  "args": {}
+ },
+ {
+  "pensamiento": "Modifico ETALinealStrategy en src/monitoreo/estrategias.py para que retorne 0 si distancia_km <= 0.0.",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/monitoreo/estrategias.py",
+   "antes": "class ETALinealStrategy(IEstrategiaETA):\n    \"\"\"Estrategia estándar: cálculo cinemático básico considerando velocidad mínima base.\"\"\"\n\n    def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:\n        v = velocidad_kmh if velocidad_kmh > 5.0 else 15.0\n        return int(round((distancia_km / v) * 60))",
+   "despues": "class ETALinealStrategy(IEstrategiaETA):\n    \"\"\"Estrategia estándar: cálculo cinemático básico considerando velocidad mínima base.\"\"\"\n\n    def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:\n        if distancia_km <= 0.0:\n            return 0\n        v = velocidad_kmh if velocidad_kmh > 5.0 else 15.0\n        return int(round((distancia_km / v) * 60))"
+  }
+ },
+ {
+  "pensamiento": "Aplico la misma protección a ETAHoraPuntaStrategy para evitar que distancias negativas generen resultados negativos.",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/monitoreo/estrategias.py",
+   "antes": "class ETAHoraPuntaStrategy(IEstrategiaETA):\n    \"\"\"Estrategia para congestión: penalización de velocidad al 60% y demora en paraderos.\"\"\"\n\n    def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:\n        v = (velocidad_kmh * 0.6) if velocidad_kmh > 5.0 else 10.0\n        return int(round((distancia_km / v) * 60)) + 4",
+   "despues": "class ETAHoraPuntaStrategy(IEstrategiaETA):\n    \"\"\"Estrategia para congestión: penalización de velocidad al 60% y demora en paraderos.\"\"\"\n\n    def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:\n        if distancia_km <= 0.0:\n            return 0\n        v = (velocidad_kmh * 0.6) if velocidad_kmh > 5.0 else 10.0\n        return int(round((distancia_km / v) * 60)) + 4"
+  }
+ },
+ {
+  "pensamiento": "Aplico la protección a ETAParadasIntermediasStrategy para distancias menores o iguales a 0.",
+  "accion": "editar_archivo",
+  "args": {
+   "ruta": "src/monitoreo/estrategias.py",
+   "antes": "class ETAParadasIntermediasStrategy(IEstrategiaETA):\n    \"\"\"Estrategia con paraderos intermedios: suma 2 min por cada 2 km de tramo.\"\"\"\n\n    def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:\n        v = velocidad_kmh if velocidad_kmh > 5.0 else 18.0\n        paradas = int(distancia_km // 2)\n        return int(round((distancia_km / v) * 60)) + (paradas * 2)",
+   "despues": "class ETAParadasIntermediasStrategy(IEstrategiaETA):\n    \"\"\"Estrategia con paraderos intermedios: suma 2 min por cada 2 km de tramo.\"\"\"\n\n    def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:\n        if distancia_km <= 0.0:\n            return 0\n        v = velocidad_kmh if velocidad_kmh > 5.0 else 18.0\n        paradas = int(distancia_km // 2)\n        return int(round((distancia_km / v) * 60)) + (paradas * 2)"
+  }
+ },
+ {
+  "pensamiento": "Ejecuto las pruebas unitarias para comprobar si los fallos en tests/test_issue_01.py fueron resueltos y no hay regresiones.",
+  "accion": "ejecutar_pruebas",
+  "args": {}
+ },
+ {
+  "pensamiento": "Inspecciono el diff de cambios generados respecto a trabajo_original para asegurar modificaciones limpias.",
+  "accion": "ver_cambios",
+  "args": {}
+ },
+ {
+  "pensamiento": "Las pruebas pasaron al 100% y el diff es atómico y exacto. Concluyo la tarea.",
+  "final": "ISSUE-01 resuelto con éxito: se normalizó el cálculo en las tres estrategias de ETA en src/monitoreo/estrategias.py para retornar 0 minutos cuando distancia_km <= 0.0, eliminando tiempos negativos para paraderos ya rebasados."
+ }
+]

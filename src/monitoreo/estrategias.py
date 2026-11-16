@@ -21,6 +21,8 @@ class ETALinealStrategy(IEstrategiaETA):
     """Estrategia estándar: cálculo cinemático básico considerando velocidad mínima base."""
 
     def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:
+        if distancia_km <= 0.0:
+            return 0
         v = velocidad_kmh if velocidad_kmh > 5.0 else 15.0
         return int(round((distancia_km / v) * 60))
 
@@ -29,6 +31,8 @@ class ETAHoraPuntaStrategy(IEstrategiaETA):
     """Estrategia para congestión: penalización de velocidad al 60% y demora en paraderos."""
 
     def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:
+        if distancia_km <= 0.0:
+            return 0
         v = (velocidad_kmh * 0.6) if velocidad_kmh > 5.0 else 10.0
         return int(round((distancia_km / v) * 60)) + 4
 
@@ -37,6 +41,8 @@ class ETAParadasIntermediasStrategy(IEstrategiaETA):
     """Estrategia con paraderos intermedios: suma 2 min por cada 2 km de tramo."""
 
     def calcular_eta(self, distancia_km: float, velocidad_kmh: float) -> int:
+        if distancia_km <= 0.0:
+            return 0
         v = velocidad_kmh if velocidad_kmh > 5.0 else 18.0
         paradas = int(distancia_km // 2)
         return int(round((distancia_km / v) * 60)) + (paradas * 2)

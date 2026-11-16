@@ -45,8 +45,11 @@ class Herramientas:
         return "\n".join(hallazgos) or "(sin resultados)"
 
     def ejecutar_pruebas(self):
-        r = subprocess.run(["python", "-m", "pytest", "-q", "--no-header", "-p", "no:cacheprovider"],
-                           cwd=self.raiz, capture_output=True, text=True, timeout=120)
+        import sys, os
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(self.raiz)
+        r = subprocess.run([sys.executable, "-m", "pytest", "-q", "--no-header", "-p", "no:cacheprovider"],
+                           cwd=self.raiz, env=env, capture_output=True, text=True, timeout=120)
         salida = (r.stdout + r.stderr).strip().splitlines()
         fallos = [l for l in salida if l.startswith(("FAILED", "E "))][:6]
         return "\n".join(fallos + salida[-1:])
