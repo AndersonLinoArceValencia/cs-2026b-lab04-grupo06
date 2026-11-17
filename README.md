@@ -383,3 +383,18 @@ Comparación del desempeño agéntico en las tres incidencias resueltas:
 * **Bitácora de interacciones con IA:** [`agentes/bitacora-ia.md`](agentes/bitacora-ia.md)
 * **Decisión de Arquitectura:** [`docs/architecture/adr/010-sistema-agentico.md`](docs/architecture/adr/010-sistema-agentico.md)
 * **Informe en Word/ODT:** [`informe_laboratorio_10.docx`](/home/andersp666/informe_lab10_cs/informe_laboratorio_10.docx) y [`informe_laboratorio_10.odt`](/home/andersp666/informe_lab10_cs/informe_laboratorio_10.odt)
+
+## Prompt engineering (Lab 09)
+
+Los prompts se tratan como código: contrato de salida en `prompts/criterios/asserts/esquema.json`, dataset de 8 historias, aserciones A1–A6 en promptfoo y respuestas grabadas con un asistente de IA (`prompts/record.py`). Tarea A: criterios de aceptación Gherkin a partir de historias de RutaSIT. Tarea B: pruebas pytest para el cálculo de ETA. Evaluación: `sh prompts/evaluar.sh criterios` (requiere Node 20+ y `PROMPTFOO_PYTHON` si `python` no está en el PATH).
+
+| Versión | Cambio | Casos aprobados | Tasa |
+|---|---|---|---:|
+| v1 | Prompt ingenuo | 0/8 | 0 % |
+| v2 | Rol, contexto y formato JSON | 1/8 | 12,5 % |
+| v3 | Restricciones, delimitadores, ejemplo y verificación INVEST | 3/8 | 37,5 % |
+| v3.1 | INVEST tolerante: las dudas menores no bloquean los escenarios | 8/8 | 100 % |
+
+![Tasa de aprobación por versión](prompts/img/resultados.png)
+
+Lecciones: la v3 llegó a 100 % con las aserciones A1–A5 pero rechazaba todas las historias válidas; la aserción A6 lo reveló. Con 8 casos, 100 % no prueba que el prompt sea bueno. Red teaming: v3.1 resiste 4/5 ataques y v4 5/5 ([red-team.md](prompts/seguridad/red-team.md)); no determinismo en [no-determinismo.md](prompts/no-determinismo.md); bitácora en [bitacora-ia.md](prompts/bitacora-ia.md). Integración: `src/monitoreo/generador_criterios.py` detrás de `IProveedorLLM`.
