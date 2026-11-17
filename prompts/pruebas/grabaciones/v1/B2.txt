@@ -1,0 +1,95 @@
+Aquí tienes las pruebas. Ajusta la línea de `import` a la ruta real de tu módulo. No ejecuté las pruebas: no tengo acceso a tu código ni a un entorno de ejecución.
+
+```python
+import pytest
+
+from estrategias_eta import ETAHoraPuntaStrategy  # ajusta la ruta del import
+
+
+@pytest.fixture
+def estrategia():
+    return ETAHoraPuntaStrategy()
+
+
+# --- Distancia no positiva ---------------------------------------------------
+
+@pytest.mark.parametrize("distancia", [0.0, -0.1, -5.0, -1000.0])
+@pytest.mark.parametrize("velocidad", [0.0, 3.0, 60.0])
+def test_distancia_cero_o_negativa_retorna_cero(estrategia, distancia, velocidad):
+    assert estrategia.calcular_eta(distancia, velocidad) == 0
+
+
+# --- Velocidad normal (> 5 km/h): v = velocidad * 0.6 -------------------------
+
+@pytest.mark.parametrize(
+    "distancia, velocidad, esperado",
+    [
+        (30.0, 60.0, 54),   # v=36   -> 50 min + 4
+        (6.0, 100.0, 10),   # v=60   -> 6 min + 4
+        (1.8, 6.0, 34),     # v=3.6  -> 30 min + 4
+        (1.0, 5.1, 24),     # v=3.06 -> 19.6 ~ 20 min + 4
+    ],
+)
+def test_velocidad_normal_aplica_factor_hora_punta(estrategia, distancia, velocidad, esperado):
+    assert estrategia.calcular_eta(distancia, velocidad) == esperado
+
+
+# --- Velocidad baja (<= 5 km/h): v fija en 10 --------------------------------
+
+@pytest.mark.parametrize("velocidad", [5.0, 4.9, 1.0, 0.0, -10.0])
+def test_velocidad_baja_usa_velocidad_fija_de_10(estrategia, velocidad):
+    # v=10 -> 10 km / 10 km/h = 60 min + 4
+    assert estrategia.calcular_eta(10.0, velocidad) == 64
+
+
+def test_limite_exacto_5_kmh_no_aplica_factor(estrategia):
+    # 5.0 no es > 5.0, así que v=10 (y no 3.0)
+    assert estrategia.calcular_eta(5.0, 5.0) == 34   # 30 + 4
+
+
+def test_justo_por_encima_del_limite_aplica_factor(estrategia):
+    # 5.1 > 5.0 => v=3.06, mucho más lento que v=10
+    assert estrategia.calcular_eta(5.0, 5.1) > estrategia.calcular_eta(5.0, 5.0)
+
+
+# --- Redondeo y recargo fijo --------------------------------------------------
+
+def test_distancia_minima_devuelve_solo_el_recargo(estrategia):
+    # 0.001 km -> ~0.006 min -> round = 0, más los 4 min fijos
+    assert estrategia.calcular_eta(0.001, 60.0) == 4
+
+
+def test_redondea_al_entero_mas_cercano(estrategia):
+    # v=10 -> 1 km = 6 min exactos
+    assert estrategia.calcular_eta(1.0, 0.0) == 10
+    # 0.26 km / 10 * 60 = 1.56 -> 2
+    assert estrategia.calcular_eta(0.26, 0.0) == 6
+    # 0.24 km / 10 * 60 = 1.44 -> 1
+    assert estrategia.calcular_eta(0.24, 0.0) == 5
+
+
+# --- Propiedades generales ----------------------------------------------------
+
+def test_retorna_int(estrategia):
+    assert isinstance(estrategia.calcular_eta(12.5, 40.0), int)
+    assert isinstance(estrategia.calcular_eta(0.0, 40.0), int)
+
+
+def test_eta_nunca_menor_a_4_con_distancia_positiva(estrategia):
+    assert estrategia.calcular_eta(1e-9, 100.0) >= 4
+
+
+def test_mayor_distancia_no_reduce_eta(estrategia):
+    etas = [estrategia.calcular_eta(d, 40.0) for d in (1, 5, 10, 20, 50)]
+    assert etas == sorted(etas)
+
+
+def test_mayor_velocidad_no_aumenta_eta(estrategia):
+    etas = [estrategia.calcular_eta(20.0, v) for v in (10, 20, 40, 80)]
+    assert etas == sorted(etas, reverse=True)
+```
+
+Notas:
+- **Casos de borde:** cubren `distancia <= 0` y el límite `velocidad == 5.0`, que usa v=10 porque la condición es `> 5.0` y no `>= 5.0`. Probé también 5.1, 4.9, 0 y velocidades negativas, que caen en la rama de v=10.
+- **Redondeo:** `round()` de Python redondea los empates (`x.5`) al par más cercano. Evité asertar empates exactos porque además dependen del punto flotante. Si ese comportamiento te importa, conviene fijarlo con un caso explícito.
+- **Velocidades negativas:** el código las trata como "lentas" (v=10) sin validar. Lo dejé cubierto en la parametrización, pero si prefieres que lancen un error, habría que cambiar la función y la prueba.

@@ -1,0 +1,37 @@
+from src.monitoreo.estrategias import ETALinealStrategy
+
+
+def test_eta_caso_normal():
+    # 10 / 30 * 60 = 20.0 -> 20
+    estrategia = ETALinealStrategy()
+    assert estrategia.calcular_eta(10.0, 30.0) == 20
+
+
+def test_eta_distancia_cero_o_negativa_devuelve_cero():
+    estrategia = ETALinealStrategy()
+    assert estrategia.calcular_eta(0.0, 30.0) == 0
+    assert estrategia.calcular_eta(-3.0, 30.0) == 0
+
+
+def test_eta_velocidad_muy_baja_usa_velocidad_por_defecto():
+    # v = 2 (<= 5) se reemplaza por 15 -> 5 / 15 * 60 = 20.0 -> 20
+    estrategia = ETALinealStrategy()
+    assert estrategia.calcular_eta(5.0, 2.0) == 20
+    # velocidad 0 tambien usa 15 -> 20
+    assert estrategia.calcular_eta(5.0, 0.0) == 20
+
+
+def test_eta_velocidad_borde_exactamente_cinco():
+    # v = 5.0 no es > 5.0, se usa 15 -> 5 / 15 * 60 = 20
+    estrategia = ETALinealStrategy()
+    assert estrategia.calcular_eta(5.0, 5.0) == 20
+    # v = 5.1 si es > 5.0 -> 5 / 5.1 * 60 = 58.82 -> 59
+    assert estrategia.calcular_eta(5.0, 5.1) == 59
+
+
+def test_eta_redondeo_a_entero():
+    # 1 / 45 * 60 = 1.333... -> 1
+    estrategia = ETALinealStrategy()
+    resultado = estrategia.calcular_eta(1.0, 45.0)
+    assert resultado == 1
+    assert isinstance(resultado, int)
