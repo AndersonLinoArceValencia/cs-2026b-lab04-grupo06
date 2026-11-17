@@ -1,0 +1,45 @@
+# Criterios de aceptación
+
+**Historia:** Como pasajero, quiero recibir un aviso en mi teléfono cuando el bus que espero tenga un retraso para buscar otra alternativa.
+
+## 1. Suscripción al aviso
+- **Dado** que sigo una línea/parada (o un viaje planificado), **cuando** activo las notificaciones de retraso, **entonces** el sistema guarda mi preferencia y confirma la activación.
+- Si el teléfono no tiene permisos de notificación, la app solicita el permiso y explica para qué se usa.
+- Puedo desactivar los avisos en cualquier momento, y dejan de llegar de inmediato.
+
+## 2. Disparo del aviso
+- **Dado** que el bus que espero acumula un retraso igual o superior al umbral definido (p. ej., 5 minutos sobre el horario o ETA previsto), **cuando** el sistema lo detecta, **entonces** recibo una notificación push.
+- No se envía aviso si el retraso es menor al umbral.
+- Recibo la notificación en un máximo de 60 segundos desde que se detecta el retraso.
+- Solo se notifica a pasajeros que siguen esa línea/parada en la franja horaria relevante (p. ej., hasta 30 minutos antes de la hora prevista).
+
+## 3. Contenido del aviso
+La notificación incluye:
+- Línea y parada afectada.
+- Minutos de retraso y nueva hora estimada de llegada.
+- Motivo, si está disponible (tráfico, avería, incidente).
+- Acción directa "Ver alternativas" que abre la app.
+
+## 4. Alternativas
+- Al abrir la notificación, la app muestra rutas o buses alternativos desde mi parada, ordenados por tiempo de llegada.
+- Si no hay alternativas disponibles, se informa claramente.
+
+## 5. Actualizaciones y control de ruido
+- Si el retraso cambia significativamente (p. ej., ±5 min), recibo una única notificación de actualización, no una por cada cambio.
+- Si el bus se normaliza o es cancelado, recibo un aviso de "retraso resuelto" o "servicio cancelado".
+- No recibo más de un aviso por viaje salvo por actualizaciones relevantes.
+- No se repiten notificaciones duplicadas.
+
+## 6. Casos límite y fallos
+- Sin conexión a internet, la notificación se entrega en cuanto se recupere la conexión, siempre que siga siendo relevante (el bus no haya pasado ya).
+- Si no hay datos en tiempo real del bus, no se envían avisos falsos y la app indica que la información no está disponible.
+- Las notificaciones respetan el modo "No molestar" del sistema según su configuración.
+
+## 7. Requisitos no funcionales
+- Disponible en iOS y Android.
+- Textos en el idioma configurado en el teléfono.
+- Accesible (compatible con lectores de pantalla).
+- Los datos de ubicación y preferencias se tratan conforme a la política de privacidad y requieren consentimiento.
+
+---
+¿Quieres que los reformule en formato Gherkin completo (Dado/Cuando/Entonces) o que ajuste los umbrales a tu caso?

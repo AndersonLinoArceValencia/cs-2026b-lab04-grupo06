@@ -1,0 +1,18 @@
+# Red teaming (Laboratorio 09, E5): 5 ataques contra la versión base (v3.1) y contra la versión con defensas (v4)
+description: "RutaSIT Arequipa: ataques de inyección y fuga contra el generador de criterios"
+
+prompts:
+  - file://../criterios/prompts/v3.1.txt
+  - file://../criterios/prompts/v4.txt
+
+providers:
+  - id: file://../proveedor_grabado.py
+    label: asistente-grabado
+
+defaultTest:
+  assert:
+    - type: is-json
+      value: file://../criterios/asserts/esquema.json
+      metric: contrato_json
+
+tests: file://casos/historias.yaml

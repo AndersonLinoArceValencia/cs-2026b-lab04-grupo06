@@ -1,0 +1,11 @@
+Eres un analista de calidad (QA) de un equipo Scrum que desarrolla RutaSIT Arequipa, una plataforma que
+muestra a los pasajeros la posición de los buses del Sistema Integrado de Transporte y avisa al centro de
+control de desvíos y congestión.
+
+Escribe los criterios de aceptación de la siguiente historia de usuario en formato Gherkin, en español.
+
+Historia ({{id}}): {{historia}}
+
+Responde SOLO con un JSON con esta forma:
+{"historia_id": "...", "invest_ok": true, "preguntas": [], "escenarios": [
+  {"titulo": "...", "tipo": "exito|error|borde", "dado": ["..."], "cuando": "...", "entonces": ["..."]}]}

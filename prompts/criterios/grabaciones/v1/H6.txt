@@ -1,0 +1,78 @@
+# Criterios de aceptación
+
+**Historia:** Como usuario, quiero que la aplicación sea rápida y fácil de usar.
+
+La historia es subjetiva, así que cada criterio la convierte en algo medible. Los umbrales son valores de partida y conviene ajustarlos al producto.
+
+## Rapidez
+
+**CA1. Carga inicial**
+- **Dado** que abro la aplicación con una conexión 4G estable,
+- **cuando** se carga la pantalla principal,
+- **entonces** el contenido principal es visible en 2 segundos o menos (LCP ≤ 2,5 s en el percentil 75).
+
+**CA2. Respuesta a acciones**
+- **Dado** que interactúo con un botón, enlace o campo,
+- **cuando** realizo la acción,
+- **entonces** la aplicación da una respuesta visual en 100 ms o menos (INP ≤ 200 ms).
+
+**CA3. Operaciones largas**
+- **Dado** que una operación tarda más de 1 segundo,
+- **cuando** se está procesando,
+- **entonces** veo un indicador de progreso (spinner o barra) y no se bloquea la interfaz.
+
+**CA4. Navegación entre pantallas**
+- **Dado** que navego entre secciones,
+- **cuando** cambio de pantalla,
+- **entonces** la transición se completa en 1 segundo o menos en al menos el 95 % de los casos.
+
+## Facilidad de uso
+
+**CA5. Tareas principales sin ayuda**
+- **Dado** que soy un usuario nuevo sin capacitación,
+- **cuando** intento completar las tareas principales (por ejemplo, registrarme, buscar, completar una compra),
+- **entonces** al menos el 90 % de los participantes en una prueba de usabilidad las completa sin asistencia.
+
+**CA6. Pocos pasos**
+- **Dado** que quiero realizar una tarea frecuente,
+- **cuando** la inicio desde la pantalla principal,
+- **entonces** la completo en 3 clics/toques o menos.
+
+**CA7. Navegación clara**
+- **Dado** que estoy en cualquier pantalla,
+- **cuando** busco cómo volver o ir a otra sección,
+- **entonces** encuentro un menú o una ruta de navegación consistente y visible.
+
+**CA8. Mensajes de error comprensibles**
+- **Dado** que cometo un error (campo inválido, falla de red),
+- **cuando** el sistema lo detecta,
+- **entonces** muestra un mensaje en lenguaje claro que indica qué pasó y cómo corregirlo, y conserva los datos que ya ingresé.
+
+**CA9. Consistencia visual**
+- **Dado** que uso distintas pantallas,
+- **cuando** veo elementos similares (botones, formularios, etiquetas),
+- **entonces** tienen el mismo aspecto y comportamiento en toda la aplicación.
+
+**CA10. Accesibilidad básica**
+- **Dado** que uso la aplicación en un dispositivo móvil o con teclado,
+- **cuando** interactúo con ella,
+- **entonces** los elementos táctiles miden al menos 44×44 px, el contraste de texto cumple WCAG 2.1 AA y se puede navegar con teclado.
+
+## Medición y satisfacción
+
+**CA11. Satisfacción del usuario**
+- **Dado** que se realiza una encuesta SUS a una muestra de usuarios,
+- **cuando** se calcula el resultado,
+- **entonces** la puntuación es 70 o más.
+
+**CA12. Monitoreo**
+- **Dado** que la aplicación está en producción,
+- **cuando** se miden los tiempos de carga y respuesta,
+- **entonces** existe un panel de métricas que permite verificar los CA1 a CA4 de forma continua.
+
+## Definición de terminado
+- Los criterios CA1 a CA4 se verifican con pruebas de rendimiento (Lighthouse, WebPageTest u otra herramienta equivalente).
+- Los criterios CA5 a CA11 se validan con una prueba de usabilidad con al menos 5 usuarios.
+- No hay defectos críticos abiertos de rendimiento ni de usabilidad.
+
+Si me indicas el tipo de aplicación (web, móvil, escritorio) y cuáles son sus flujos principales, ajusto los criterios y los umbrales a tu caso.

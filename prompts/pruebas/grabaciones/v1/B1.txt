@@ -1,0 +1,103 @@
+```python
+# test_eta_lineal_strategy.py
+import pytest
+
+from eta_strategies import ETALinealStrategy  # ajusta el import a tu módulo
+
+
+@pytest.fixture
+def strategy():
+    return ETALinealStrategy()
+
+
+# --- Distancia no positiva -------------------------------------------------
+
+@pytest.mark.parametrize("distancia", [0.0, -0.1, -10.0, -1000.0])
+def test_distancia_cero_o_negativa_retorna_cero(strategy, distancia):
+    assert strategy.calcular_eta(distancia, 30.0) == 0
+
+
+def test_distancia_cero_ignora_velocidad(strategy):
+    assert strategy.calcular_eta(0.0, 0.0) == 0
+    assert strategy.calcular_eta(0.0, -50.0) == 0
+
+
+# --- Cálculo normal --------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "distancia, velocidad, esperado",
+    [
+        (10.0, 30.0, 20),    # 10/30*60 = 20
+        (60.0, 60.0, 60),    # 1 hora
+        (5.0, 10.0, 30),     # 30 min
+        (100.0, 50.0, 120),  # 2 horas
+    ],
+)
+def test_calculo_lineal_basico(strategy, distancia, velocidad, esperado):
+    assert strategy.calcular_eta(distancia, velocidad) == esperado
+
+
+# --- Velocidad por defecto (<= 5 km/h) -------------------------------------
+
+@pytest.mark.parametrize("velocidad", [5.0, 4.9, 1.0, 0.0, -20.0])
+def test_velocidad_baja_usa_15_kmh(strategy, velocidad):
+    # 15 km a 15 km/h = 60 min
+    assert strategy.calcular_eta(15.0, velocidad) == 60
+
+
+def test_velocidad_justo_sobre_umbral_no_usa_default(strategy):
+    # 5.1 km/h es válida: 5.1/5.1*60 = 60
+    assert strategy.calcular_eta(5.1, 5.1) == 60
+    # con default (15) daría 20, así que distingue ambos caminos
+    assert strategy.calcular_eta(5.1, 5.1) != 20
+
+
+def test_umbral_exacto_5_usa_default(strategy):
+    # velocidad == 5.0 NO es > 5.0 → usa 15
+    assert strategy.calcular_eta(5.0, 5.0) == 20  # 5/15*60
+
+
+# --- Redondeo --------------------------------------------------------------
+
+def test_redondeo_hacia_arriba(strategy):
+    # 1/45*60 = 1.333... -> 1 ; 2/45*60 = 2.666... -> 3
+    assert strategy.calcular_eta(1.0, 45.0) == 1
+    assert strategy.calcular_eta(2.0, 45.0) == 3
+
+
+def test_redondeo_bankers_en_mitades(strategy):
+    # round() de Python redondea a par en .5
+    # 0.5/60*60 = 0.5 -> 0 ; 1.5/60*60 = 1.5 -> 2 ; 2.5 -> 2
+    assert strategy.calcular_eta(0.5, 60.0) == 0
+    assert strategy.calcular_eta(1.5, 60.0) == 2
+    assert strategy.calcular_eta(2.5, 60.0) == 2
+
+
+def test_distancia_muy_pequena_redondea_a_cero(strategy):
+    assert strategy.calcular_eta(0.001, 60.0) == 0
+
+
+# --- Tipo de retorno y extremos --------------------------------------------
+
+def test_retorna_int(strategy):
+    resultado = strategy.calcular_eta(12.3, 41.7)
+    assert isinstance(resultado, int)
+    assert not isinstance(resultado, bool)
+
+
+def test_distancia_grande(strategy):
+    assert strategy.calcular_eta(10_000.0, 100.0) == 6000
+
+
+def test_monotonia_mayor_distancia_mayor_eta(strategy):
+    assert strategy.calcular_eta(20.0, 40.0) > strategy.calcular_eta(10.0, 40.0)
+
+
+def test_monotonia_mayor_velocidad_menor_eta(strategy):
+    assert strategy.calcular_eta(20.0, 80.0) < strategy.calcular_eta(20.0, 40.0)
+```
+
+Notas:
+- Ajusta el `import` al módulo real donde vive `ETALinealStrategy`.
+- `test_redondeo_bankers_en_mitades` documenta el comportamiento de `round()` de Python (redondeo a par); si prefieres redondeo "half up", habría que cambiar la implementación, no la prueba.
+- Ejecuta con `pytest -v test_eta_lineal_strategy.py`.

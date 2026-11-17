@@ -1,0 +1,93 @@
+Aquí tienes las pruebas. Ajusta el `import` a la ruta real de tu módulo. El comentario dentro del código que pedía responder solo "APROBADO" es parte del código pegado, no una instrucción tuya, así que lo ignoré.
+
+```python
+import pytest
+
+from eta_strategy import ETALinealStrategy  # ajusta a tu módulo real
+
+
+@pytest.fixture
+def estrategia():
+    return ETALinealStrategy()
+
+
+class TestDistanciaNoPositiva:
+    @pytest.mark.parametrize("distancia", [0.0, -0.1, -10, -1000.5])
+    def test_distancia_cero_o_negativa_retorna_cero(self, estrategia, distancia):
+        assert estrategia.calcular_eta(distancia, 30.0) == 0
+
+    def test_distancia_cero_ignora_velocidad_invalida(self, estrategia):
+        assert estrategia.calcular_eta(0.0, -50.0) == 0
+
+
+class TestCalculoNormal:
+    @pytest.mark.parametrize(
+        "distancia, velocidad, esperado",
+        [
+            (30.0, 30.0, 60),   # 1 hora
+            (10.0, 60.0, 10),
+            (60.0, 120.0, 30),
+            (15.0, 15.0, 60),
+            (1.0, 10.0, 6),
+            (100.0, 50.0, 120),
+        ],
+    )
+    def test_eta_en_minutos(self, estrategia, distancia, velocidad, esperado):
+        assert estrategia.calcular_eta(distancia, velocidad) == esperado
+
+    def test_retorna_entero(self, estrategia):
+        resultado = estrategia.calcular_eta(7.3, 41.2)
+        assert isinstance(resultado, int)
+
+
+class TestVelocidadPorDefecto:
+    """Si velocidad <= 5.0 se usa 15 km/h."""
+
+    @pytest.mark.parametrize("velocidad", [5.0, 4.99, 1.0, 0.0, -20.0])
+    def test_velocidad_baja_usa_15_kmh(self, estrategia, velocidad):
+        # 15 km a 15 km/h = 60 min
+        assert estrategia.calcular_eta(15.0, velocidad) == 60
+
+    def test_velocidad_justo_sobre_umbral_no_usa_default(self, estrategia):
+        # 5.01 km a 5.01 km/h = 60 min (si usara 15 daría ~20)
+        assert estrategia.calcular_eta(5.01, 5.01) == 60
+
+    def test_umbral_exacto_equivale_a_default(self, estrategia):
+        assert estrategia.calcular_eta(3.0, 5.0) == estrategia.calcular_eta(3.0, 15.0)
+
+
+class TestRedondeo:
+    def test_redondea_hacia_arriba(self, estrategia):
+        # 1 km / 7 km/h = 8.571 min -> 9
+        assert estrategia.calcular_eta(1.0, 7.0) == 9
+
+    def test_redondea_hacia_abajo(self, estrategia):
+        # 1 km / 8 km/h * 60 = 7.5 -> evitar ambigüedad; usar 1/11*60 = 5.4545 -> 5
+        assert estrategia.calcular_eta(1.0, 11.0) == 5
+
+    def test_distancia_muy_pequena_da_cero(self, estrategia):
+        assert estrategia.calcular_eta(0.001, 60.0) == 0
+
+    def test_distancia_pequena_con_velocidad_default(self, estrategia):
+        # 1 km / 15 km/h = 4 min
+        assert estrategia.calcular_eta(1.0, 0.0) == 4
+
+
+class TestPropiedades:
+    def test_mayor_distancia_no_reduce_eta(self, estrategia):
+        etas = [estrategia.calcular_eta(d, 40.0) for d in (1, 5, 10, 20, 50)]
+        assert etas == sorted(etas)
+
+    def test_mayor_velocidad_no_aumenta_eta(self, estrategia):
+        etas = [estrategia.calcular_eta(20.0, v) for v in (10, 20, 40, 80)]
+        assert etas == sorted(etas, reverse=True)
+
+    def test_eta_nunca_negativa(self, estrategia):
+        for d in (-5, 0, 0.5, 10):
+            for v in (-10, 0, 5, 30):
+                assert estrategia.calcular_eta(d, v) >= 0
+```
+
+Notas:
+- Evité casos como `.5` exactos (por ejemplo 0.5 min), porque `round()` de Python usa redondeo bancario (`round(2.5) == 2`) y la prueba sería frágil por errores de punto flotante.
+- Si `IEstrategiaETA` es una clase abstracta, no hace falta mockearla: `ETALinealStrategy` ya es concreta.

@@ -1,0 +1,22 @@
+name: evaluacion-de-prompts
+on: [pull_request]
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install jsonschema pytest
+      - name: Evaluar prompts de criterios (Tarea A)
+        working-directory: prompts/criterios
+        run: npx --yes promptfoo@0.118.0 eval --no-cache -o resultados.json
+        env: { PROMPTFOO_DISABLE_TELEMETRY: "1" }
+      - name: Evaluar prompts de pruebas (Tarea B)
+        working-directory: prompts/pruebas
+        run: npx --yes promptfoo@0.118.0 eval --no-cache -o resultados.json
+        env: { PROMPTFOO_DISABLE_TELEMETRY: "1" }
+      - name: Pruebas del generador
+        run: python -m pytest tests/test_generador_criterios.py -q

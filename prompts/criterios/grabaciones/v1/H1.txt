@@ -1,0 +1,62 @@
+# Criterios de aceptación
+
+**Historia:** Como pasajero, quiero consultar el tiempo estimado de llegada de un bus a mi paradero para decidir cuándo salir de casa.
+
+## 1. Consulta del tiempo estimado
+**Dado** que selecciono un paradero y una línea de bus,
+**cuando** consulto la información,
+**entonces** el sistema muestra el tiempo estimado de llegada en minutos (por ejemplo, "5 min") para los próximos buses de esa línea.
+
+## 2. Múltiples buses próximos
+**Dado** que hay varios buses en camino al paradero,
+**cuando** consulto el paradero,
+**entonces** se muestran al menos los 3 próximos buses, ordenados del más cercano al más lejano.
+
+## 3. Bus próximo a llegar
+**Dado** que un bus está a menos de 1 minuto del paradero,
+**cuando** consulto el tiempo estimado,
+**entonces** se muestra el mensaje "Llegando" en lugar de los minutos.
+
+## 4. Actualización en tiempo real
+**Dado** que estoy viendo el tiempo estimado,
+**cuando** transcurren 30 segundos o menos,
+**entonces** la información se actualiza automáticamente sin necesidad de recargar la pantalla, y se indica la hora de la última actualización.
+
+## 5. Búsqueda del paradero
+**Dado** que quiero consultar un paradero,
+**cuando** lo busco por nombre, código o mediante mi ubicación actual,
+**entonces** el sistema me permite seleccionarlo y ver sus líneas disponibles.
+
+## 6. Sin buses disponibles
+**Dado** que no hay buses en servicio o en camino hacia el paradero,
+**cuando** consulto el tiempo estimado,
+**entonces** se muestra un mensaje claro como "No hay buses próximos en este momento" y, si existe, el horario del siguiente servicio programado.
+
+## 7. Datos de ubicación no disponibles
+**Dado** que el bus no reporta su ubicación en tiempo real,
+**cuando** consulto el paradero,
+**entonces** se muestra el horario programado, identificado visualmente como "estimado por horario" para diferenciarlo del dato en tiempo real.
+
+## 8. Manejo de errores de conexión
+**Dado** que no tengo conexión a internet o el servicio falla,
+**cuando** intento consultar el tiempo estimado,
+**entonces** se muestra un mensaje de error comprensible, la última información consultada (indicando su antigüedad) y la opción de reintentar.
+
+## 9. Rendimiento
+**Dado** que consulto un paradero,
+**cuando** solicito la información,
+**entonces** el resultado se muestra en un máximo de 3 segundos en condiciones normales de conexión.
+
+## 10. Paraderos favoritos (opcional)
+**Dado** que consulto frecuentemente un paradero,
+**cuando** lo marco como favorito,
+**entonces** puedo acceder a él directamente desde la pantalla principal y ver su tiempo estimado sin buscarlo de nuevo.
+
+## 11. Accesibilidad
+**Dado** que uso un lector de pantalla o un dispositivo con texto ampliado,
+**cuando** consulto el tiempo estimado,
+**entonces** la información es legible y se anuncia correctamente (por ejemplo, "Línea 210, llega en 5 minutos").
+
+---
+
+Si quieres, puedo ajustarlos a un formato distinto (lista de verificación o Gherkin en inglés), o crear el documento en Docs.

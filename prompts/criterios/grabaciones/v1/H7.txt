@@ -1,0 +1,51 @@
+# Criterios de aceptación
+
+**Historia:** El sistema debe usar Redis Streams con workers asíncronos y una base PostgreSQL con PostGIS e índices espaciales.
+
+## 1. Redis Streams y mensajería
+
+- **Dado** que un componente publica un evento, **cuando** se envía al sistema, **entonces** se agrega a un stream de Redis (`XADD`) con un identificador único y su payload serializado, y el productor recibe confirmación de la escritura.
+- **Dado** que existen varios workers, **cuando** consumen un stream, **entonces** lo hacen mediante un *consumer group* (`XREADGROUP`), de modo que cada mensaje es procesado por un solo worker del grupo.
+- **Dado** que un worker procesa un mensaje con éxito, **cuando** termina, **entonces** envía `XACK` y el mensaje sale de la lista de pendientes (PEL).
+- **Dado** que un worker falla o se cae sin hacer `XACK`, **cuando** pasa el tiempo de inactividad configurado (p. ej. 60 s), **entonces** otro worker reclama el mensaje (`XAUTOCLAIM`) y lo reprocesa.
+- **Dado** que un mensaje falla más de N reintentos (configurable, p. ej. 5), **cuando** se supera el límite, **entonces** se mueve a un stream de *dead-letter* con el motivo del error y se genera una alerta.
+- **Dado** que los streams crecen, **cuando** alcanzan el tamaño máximo configurado, **entonces** se recortan (`XTRIM`/`MAXLEN`) sin perder mensajes aún no confirmados.
+
+## 2. Workers asíncronos
+
+- **Dado** una solicitud que requiere procesamiento pesado, **cuando** el cliente la envía, **entonces** la API responde de inmediato (p. ej. `202 Accepted` con un ID de seguimiento) sin esperar a que el worker termine.
+- **Dado** que el mismo mensaje se entrega más de una vez, **cuando** el worker lo procesa, **entonces** el resultado es idempotente (sin duplicados ni efectos secundarios repetidos).
+- **Dado** un incremento de carga, **cuando** se agregan más instancias de workers, **entonces** el throughput aumenta sin cambios de código ni pérdida de mensajes.
+- **Dado** una señal de apagado (`SIGTERM`), **cuando** el worker la recibe, **entonces** termina el mensaje en curso, confirma y se detiene de forma ordenada.
+- **Dado** que Redis no está disponible temporalmente, **cuando** el worker o productor intenta conectarse, **entonces** reintenta con *backoff* exponencial y se recupera automáticamente al restablecerse el servicio.
+- **Dado** el funcionamiento normal, **cuando** se consultan las métricas, **entonces** se exponen longitud del stream, mensajes pendientes, latencia de procesamiento, tasa de errores y tamaño de la dead-letter.
+
+## 3. PostgreSQL con PostGIS
+
+- **Dado** el entorno desplegado, **cuando** se ejecuta `SELECT PostGIS_Version();`, **entonces** devuelve la versión de PostGIS instalada y la extensión está habilitada vía migración versionada.
+- **Dado** datos geográficos, **cuando** se almacenan, **entonces** usan tipos `geometry`/`geography` con SRID explícito (p. ej. 4326) y restricciones que validan tipo y SRID.
+- **Dado** que se insertan geometrías inválidas, **cuando** se intenta guardarlas, **entonces** se rechazan o se corrigen según la regla definida (`ST_IsValid`/`ST_MakeValid`), con un error claro.
+- **Dado** el esquema, **cuando** se aplican migraciones, **entonces** son reproducibles, reversibles y se ejecutan de forma automática en CI/CD.
+
+## 4. Índices espaciales y rendimiento
+
+- **Dado** cada columna geoespacial consultada, **cuando** se revisa el esquema, **entonces** tiene un índice espacial `GIST` (o `SP-GiST`/`BRIN` si se justifica).
+- **Dado** consultas espaciales típicas (`ST_DWithin`, `ST_Intersects`, `ST_Contains`, vecino más cercano con `<->`), **cuando** se analizan con `EXPLAIN ANALYZE`, **entonces** usan el índice espacial y no un *sequential scan*.
+- **Dado** un volumen de referencia (p. ej. 10 millones de registros), **cuando** se ejecuta una consulta de proximidad, **entonces** responde en menos de X ms en el percentil 95 (valor a definir con el equipo).
+- **Dado** el mantenimiento regular, **cuando** corren `VACUUM`/`ANALYZE` y se reconstruyen índices si es necesario, **entonces** las estadísticas se mantienen y el rendimiento no se degrada.
+
+## 5. Integración extremo a extremo
+
+- **Dado** un evento con datos geoespaciales publicado en el stream, **cuando** el worker lo procesa, **entonces** persiste el registro en PostgreSQL/PostGIS con la geometría correcta y confirma el mensaje.
+- **Dado** un fallo de base de datos durante el procesamiento, **cuando** ocurre, **entonces** la transacción se revierte, el mensaje no se confirma y se reintenta según la política definida.
+- **Dado** el sistema bajo prueba de carga, **cuando** se alcanza el volumen objetivo (p. ej. N eventos/s), **entonces** no se pierden mensajes y el retraso (*lag*) de los consumer groups permanece bajo el umbral acordado.
+
+## 6. Seguridad y operación
+
+- **Dado** el despliegue, **cuando** se configuran las conexiones, **entonces** Redis y PostgreSQL requieren autenticación y TLS, y las credenciales se gestionan como secretos (no en el código).
+- **Dado** persistencia y recuperación, **cuando** Redis se reinicia, **entonces** AOF/RDB está configurado para limitar la pérdida de datos a lo acordado, y PostgreSQL cuenta con copias de seguridad y restauración probadas.
+- **Dado** un incidente, **cuando** se revisan los logs, **entonces** cada mensaje es trazable con un ID de correlación desde la API hasta el worker y la base de datos.
+
+---
+
+**Nota:** los valores entre paréntesis (tiempos, reintentos, volúmenes, latencias) son propuestas; conviene validarlos con el equipo. Si quieres, puedo dividir esta historia en historias más pequeñas (mensajería, persistencia geoespacial, observabilidad), ya que combina varias responsabilidades técnicas.

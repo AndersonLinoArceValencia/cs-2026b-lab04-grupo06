@@ -1,0 +1,121 @@
+No pude guardar el archivo porque la herramienta de escritura está deshabilitada en esta sesión. Te dejo las pruebas aquí para que las copies a `test_eta_paradas_intermedias.py`. No las ejecuté, pero calculé a mano los valores esperados a partir de la fórmula.
+
+```python
+import pytest
+
+# Ajusta el import al módulo real donde vive la clase.
+from eta_strategies import ETAParadasIntermediasStrategy
+
+
+@pytest.fixture
+def strategy():
+    return ETAParadasIntermediasStrategy()
+
+
+# ---------- Distancia no positiva ----------
+
+@pytest.mark.parametrize("distancia", [0, 0.0, -0.1, -5, -100.5])
+def test_distancia_cero_o_negativa_devuelve_cero(strategy, distancia):
+    assert strategy.calcular_eta(distancia, 30.0) == 0
+
+
+def test_distancia_cero_ignora_velocidad_invalida(strategy):
+    assert strategy.calcular_eta(0.0, -10.0) == 0
+
+
+# ---------- Cálculo normal ----------
+
+@pytest.mark.parametrize(
+    "distancia, velocidad, esperado",
+    [
+        (10.0, 30.0, 30),    # 20 min viaje + 5 paradas * 2
+        (2.0, 60.0, 4),      # 2 min + 1 parada * 2
+        (3.0, 18.0, 12),     # 10 min + 1 parada * 2
+        (7.5, 30.0, 21),     # 15 min + 3 paradas * 2
+        (100.0, 50.0, 220),  # 120 min + 50 paradas * 2
+    ],
+)
+def test_calculo_con_velocidad_valida(strategy, distancia, velocidad, esperado):
+    assert strategy.calcular_eta(distancia, velocidad) == esperado
+
+
+# ---------- Paradas intermedias (distancia // 2) ----------
+
+@pytest.mark.parametrize("distancia", [0.1, 1.0, 1.99])
+def test_menos_de_2km_no_agrega_paradas(strategy, distancia):
+    v = 60.0
+    esperado = int(round((distancia / v) * 60))
+    assert strategy.calcular_eta(distancia, v) == esperado
+
+
+def test_exactamente_2km_agrega_una_parada(strategy):
+    sin_parada = int(round((2.0 / 60.0) * 60))
+    assert strategy.calcular_eta(2.0, 60.0) == sin_parada + 2
+
+
+def test_parada_se_trunca_no_se_redondea(strategy):
+    # 3.9 km -> 1 parada (no 2)
+    base = int(round((3.9 / 60.0) * 60))
+    assert strategy.calcular_eta(3.9, 60.0) == base + 2
+
+
+# ---------- Velocidad mínima / fallback a 18 km/h ----------
+
+@pytest.mark.parametrize("velocidad", [5.0, 4.99, 1.0, 0.0, -20.0])
+def test_velocidad_menor_o_igual_a_5_usa_18(strategy, velocidad):
+    # 9 km a 18 km/h = 30 min + 4 paradas * 2 = 38
+    assert strategy.calcular_eta(9.0, velocidad) == 38
+
+
+def test_velocidad_justo_sobre_5_no_usa_fallback(strategy):
+    # 10 km / 5.01 * 60 = 119.76 -> 120, + 5 paradas * 2 = 130
+    assert strategy.calcular_eta(10.0, 5.01) == 130
+
+
+def test_fallback_equivale_a_pasar_18_explicito(strategy):
+    assert strategy.calcular_eta(12.0, 0.0) == strategy.calcular_eta(12.0, 18.0)
+
+
+# ---------- Redondeo y tipo de retorno ----------
+
+def test_redondea_hacia_arriba_el_tiempo_de_viaje(strategy):
+    # 1 km a 35 km/h = 1.714 min -> 2 (sin paradas)
+    assert strategy.calcular_eta(1.0, 35.0) == 2
+
+
+def test_redondea_hacia_abajo_el_tiempo_de_viaje(strategy):
+    # 1 km a 45 km/h = 1.333 min -> 1 (sin paradas)
+    assert strategy.calcular_eta(1.0, 45.0) == 1
+
+
+@pytest.mark.parametrize(
+    "distancia, velocidad", [(0.0, 30.0), (1.5, 30.0), (10.0, 0.0), (7.3, 22.2)]
+)
+def test_retorna_int(strategy, distancia, velocidad):
+    resultado = strategy.calcular_eta(distancia, velocidad)
+    assert isinstance(resultado, int)
+
+
+# ---------- Propiedades ----------
+
+def test_eta_crece_con_la_distancia(strategy):
+    etas = [strategy.calcular_eta(d, 30.0) for d in (1, 2, 5, 10, 20, 50)]
+    assert etas == sorted(etas)
+    assert len(set(etas)) == len(etas)
+
+
+def test_mayor_velocidad_reduce_eta(strategy):
+    lento = strategy.calcular_eta(20.0, 20.0)
+    rapido = strategy.calcular_eta(20.0, 60.0)
+    assert rapido < lento
+
+
+def test_eta_positivo_para_distancia_positiva(strategy):
+    assert strategy.calcular_eta(2.0, 120.0) > 0
+```
+
+**Notas:**
+- **Import:** `from eta_strategies import ...` es un marcador. Cámbialo por el módulo real donde está tu clase.
+- **Casos de borde:** cubre `distancia <= 0`, el umbral de velocidad (`5.0` usa 18 km/h y `5.01` no), la frontera de paradas en 2 km y el truncamiento de `// 2`.
+- **Redondeo:** evité casos donde el tiempo cae exactamente en `.5`. `round()` de Python redondea a par (por ejemplo `round(0.5) == 0`) y los flotantes pueden dar resultados inesperados. Si ese comportamiento te importa, conviene fijarlo con un test explícito.
+- **Sospecha en el código:** una velocidad de 5 o menos se trata como "sin dato" y se sustituye por 18. Eso significa que un vehículo realmente lento (por ejemplo 4 km/h) obtiene un ETA más corto que uno a 6 km/h. Si no es intencional, vale la pena revisarlo. Los tests `test_velocidad_menor_o_igual_a_5_usa_18` y `test_velocidad_justo_sobre_5_no_usa_fallback` documentan ese salto.

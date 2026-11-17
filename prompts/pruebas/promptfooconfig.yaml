@@ -1,0 +1,32 @@
+# Tarea B del caso RutaSIT: generar pruebas pytest para la función de tiempo de llegada
+description: "RutaSIT Arequipa: pruebas pytest generadas por el asistente para el cálculo de ETA"
+
+prompts:
+  - file://prompts/v1.txt
+  - file://prompts/v2.txt
+
+providers:
+  - id: file://../proveedor_grabado.py
+    label: asistente-grabado
+
+defaultTest:
+  assert:
+    - type: javascript            # B1: solo código, sin bloques markdown ni texto previo
+      metric: B1_solo_codigo
+      value: |
+        const t = output.trim();
+        return !t.includes('```') && /^(import|from|def|class|#)/.test(t);
+    - type: javascript            # B2: aserción clave de la guía, 3 o más assert
+      metric: B2_tres_o_mas_assert
+      value: |
+        (output.match(/^\s*assert\s/gm) || []).length >= 3
+    - type: javascript            # B3: importa la clase real del proyecto
+      metric: B3_importa_clase_real
+      value: |
+        /from src\.monitoreo\.estrategias import ETA\w+Strategy/.test(output)
+    - type: javascript            # B4: funciones de prueba con nombre test_
+      metric: B4_funciones_test
+      value: |
+        (output.match(/^def test_\w+/gm) || []).length >= 3
+
+tests: file://casos/historias.yaml
