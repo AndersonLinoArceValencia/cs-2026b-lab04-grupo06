@@ -1,0 +1,43 @@
+# Criterios de aceptación
+
+**Historia:** Como operador del centro de control, quiero ver un panel con la frecuencia de paso y los buses activos por ruta para detectar rutas desatendidas.
+
+## 1. Visualización del panel
+- **Dado** que el operador ha iniciado sesión, **cuando** accede al panel, **entonces** se muestra una lista/tabla con todas las rutas configuradas, incluyendo por cada una: nombre/código de ruta, número de buses activos, frecuencia de paso actual (minutos entre buses) y frecuencia objetivo.
+- **Dado** que existen rutas sin buses activos, **cuando** se carga el panel, **entonces** dichas rutas aparecen igualmente con 0 buses activos y la frecuencia mostrada como "Sin servicio".
+
+## 2. Cálculo de datos
+- Los **buses activos** son aquellos en servicio en esa ruta que han reportado posición GPS en los últimos N minutos (N configurable; por defecto 5).
+- La **frecuencia de paso** se calcula como el tiempo promedio entre los últimos pasos consecutivos de buses por un punto de referencia de la ruta, sobre una ventana configurable (por defecto 30 min).
+- Los buses fuera de servicio, en cochera o sin señal GPS vigente no se cuentan como activos.
+
+## 3. Detección de rutas desatendidas
+- **Dado** que una ruta tiene 0 buses activos, o su frecuencia actual supera la frecuencia objetivo en más de un umbral configurable (por defecto 50 %), **entonces** la ruta se marca como "Desatendida" con indicador visual distintivo (color e ícono, no solo color).
+- **Dado** que la ruta recupera su frecuencia dentro del umbral, **entonces** el indicador se retira automáticamente.
+- El umbral y la frecuencia objetivo pueden ajustarse por ruta y por franja horaria (p. ej., hora pico / valle).
+
+## 4. Actualización en tiempo real
+- El panel se actualiza automáticamente al menos cada 30 segundos sin recargar la página.
+- Se muestra la hora de la última actualización.
+- **Dado** que se pierde la conexión con la fuente de datos, **entonces** se muestra un aviso visible y los datos se marcan como desactualizados.
+
+## 5. Filtrado y ordenamiento
+- El operador puede filtrar por estado (Todas / Desatendidas / Normales) y buscar por nombre o código de ruta.
+- Las rutas desatendidas se muestran primero por defecto; el operador puede ordenar por cualquier columna.
+- Se muestra un contador resumen (p. ej., "5 de 42 rutas desatendidas").
+
+## 6. Alertas
+- **Dado** que una ruta pasa a estado "Desatendida", **entonces** se muestra una notificación en el panel y se registra el evento con ruta, hora de inicio y causa (sin buses / frecuencia excedida).
+- Las alertas repetidas de la misma ruta no se duplican mientras el estado persista.
+
+## 7. Detalle de ruta
+- **Dado** que el operador selecciona una ruta, **entonces** se muestra el detalle con la lista de buses activos (identificador, posición, último reporte) y el historial de frecuencia de las últimas horas.
+
+## 8. Requisitos no funcionales
+- El panel carga en menos de 3 segundos con hasta 200 rutas y 1 000 buses.
+- Accesible solo para usuarios con rol de operador o superior.
+- Cumple con criterios de accesibilidad WCAG 2.1 AA (contraste, navegación por teclado, etiquetas para lectores de pantalla).
+
+---
+
+Si quieres, puedo ajustarlos al formato Gherkin completo, o agregar valores concretos si me indicas los umbrales reales de tu operación.

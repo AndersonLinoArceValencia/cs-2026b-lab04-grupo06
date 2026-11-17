@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "required": ["historia_id", "invest_ok", "preguntas", "escenarios"],
+  "additionalProperties": false,
+  "properties": {
+    "historia_id": {"type": "string"},
+    "invest_ok": {"type": "boolean"},
+    "preguntas": {"type": "array", "items": {"type": "string", "minLength": 5}},
+    "escenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["titulo", "tipo", "dado", "cuando", "entonces"],
+        "additionalProperties": false,
+        "properties": {
+          "titulo": {"type": "string", "minLength": 3},
+          "tipo": {"enum": ["exito", "error", "borde"]},
+          "dado": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "cuando": {"type": "string", "minLength": 3},
+          "entonces": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+# Criterios de aceptación
+
+**Historia:** Como operador del centro de control, quiero recibir una alerta cuando un bus se aleje más de 100 metros de su ruta para contactar al conductor.
+
+## Escenarios (Dado / Cuando / Entonces)
+
+**1. Alerta por desvío**
+- **Dado** un bus en servicio con una ruta asignada y reportando posición GPS,
+- **Cuando** su distancia a la ruta planificada supera los 100 metros,
+- **Entonces** el sistema genera una alerta de desvío visible en el panel del operador en un máximo de 15 segundos desde la recepción de la posición.
+
+**2. Contenido de la alerta**
+- **Dado** que se ha generado una alerta de desvío,
+- **Cuando** el operador la visualiza,
+- **Entonces** esta muestra: identificador del bus, ruta asignada, nombre y teléfono del conductor, distancia actual de desvío, hora de inicio del desvío y posición en el mapa.
+
+**3. Sin alerta dentro del umbral**
+- **Dado** un bus en servicio,
+- **Cuando** su distancia a la ruta es de 100 metros o menos,
+- **Entonces** no se genera ninguna alerta.
+
+**4. Tolerancia a imprecisión del GPS**
+- **Dado** un bus cuya posición supera el umbral en una sola lectura aislada,
+- **Cuando** las lecturas siguientes (p. ej., 2 consecutivas o 20 s) vuelven a estar dentro del umbral,
+- **Entonces** no se genera alerta. La alerta solo se emite si el desvío se mantiene en lecturas consecutivas configurables.
+
+**5. Sin duplicados**
+- **Dado** una alerta activa para un bus,
+- **Cuando** el bus continúa fuera de ruta,
+- **Entonces** no se crean alertas nuevas; se actualizan la distancia y la posición de la alerta existente.
+
+**6. Reconocimiento de la alerta**
+- **Dado** una alerta activa,
+- **Cuando** un operador la reconoce (“atendida”),
+- **Entonces** queda registrado el operador, la hora y, opcionalmente, una nota del contacto con el conductor; las demás pantallas de operadores reflejan el cambio de estado.
+
+**7. Cierre automático**
+- **Dado** una alerta activa,
+- **Cuando** el bus regresa a menos de 100 metros de la ruta,
+- **Entonces** la alerta pasa a estado “resuelta” automáticamente y se registra la hora de retorno.
+
+**8. Alerta no reconocida**
+- **Dado** una alerta sin reconocer,
+- **Cuando** transcurren más de 2 minutos (configurable),
+- **Entonces** el sistema la escala (resaltado visual y sonoro / aviso al supervisor).
+
+**9. Excepciones planificadas**
+- **Dado** un bus con desvío autorizado (obra, cierre de vía, ruta alterna),
+- **Cuando** se desvía dentro de la ruta alterna vigente,
+- **Entonces** no se genera alerta.
+
+**10. Pérdida de señal GPS**
+- **Dado** un bus que no reporta posición durante más de 60 s (configurable),
+- **Cuando** se agota el tiempo,
+- **Entonces** se genera una alerta distinta de “pérdida de señal”, sin confundirse con un desvío.
+
+**11. Historial**
+- **Dado** que existen alertas pasadas,
+- **Cuando** el operador o supervisor consulta el historial,
+- **Entonces** puede filtrar por bus, ruta, conductor, fecha y estado, y ver duración y distancia máxima del desvío.
+
+## Criterios no funcionales
+- **Rendimiento:** soporta toda la flota activa simultáneamente sin superar la latencia de 15 s.
+- **Precisión:** el cálculo de distancia usa la distancia perpendicular más corta al trazado de la ruta.
+- **Configurabilidad:** umbral (100 m), lecturas consecutivas y tiempos de escalamiento son parámetros ajustables por administradores.
+- **Disponibilidad:** el servicio de alertas opera 24/7 en horario de servicio de la flota.
+- **Auditoría:** todas las alertas y acciones quedan registradas.
+
+## Preguntas abiertas
+- ¿El teléfono del conductor es personal o de la empresa? ¿Se necesita llamada directa desde el panel?
+- ¿Se requiere notificación fuera del panel (SMS, correo, push)?
+- ¿Debe haber un tiempo máximo de desvío tolerado en paradas operativas (terminales, talleres)?

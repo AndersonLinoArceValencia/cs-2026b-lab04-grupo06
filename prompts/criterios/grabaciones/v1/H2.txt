@@ -1,0 +1,33 @@
+## Criterios de aceptación
+
+**Historia:** Como pasajero, quiero ver en un mapa la posición actual de los buses de la ruta que elegí para saber qué tan cerca está mi bus.
+
+### Visualización del mapa
+1. **Dado** que selecciono una ruta, **cuando** se abre la pantalla del mapa, **entonces** se muestra el trazado de la ruta y solo los buses activos de esa ruta.
+2. **Dado** que el mapa está abierto, **cuando** se carga, **entonces** se muestra mi ubicación (si di permiso) y las paradas de la ruta.
+3. **Dado** que hay varios buses en la ruta, **cuando** los veo en el mapa, **entonces** cada uno aparece con un ícono distinguible, con su identificador (p. ej. número de unidad) y su sentido de circulación.
+
+### Actualización de posición
+4. **Dado** que estoy viendo el mapa, **cuando** un bus se desplaza, **entonces** su posición se actualiza automáticamente al menos cada 10 segundos, sin que yo recargue la pantalla.
+5. **Dado** que la posición se actualiza, **cuando** el bus se mueve, **entonces** el ícono se desplaza de forma fluida y no "salta" ni se duplica.
+6. **Dado** que la posición mostrada tiene cierta antigüedad, **cuando** consulto un bus, **entonces** veo la hora de la última actualización.
+
+### Cercanía y detalle
+7. **Dado** que toco un bus o una parada, **cuando** se abre el detalle, **entonces** veo la distancia o el tiempo estimado de llegada a la parada seleccionada o a mi ubicación.
+8. **Dado** que marqué una parada de interés, **cuando** un bus se acerca, **entonces** el bus más cercano se destaca respecto a los demás.
+
+### Casos límite y errores
+9. **Dado** que no hay buses activos en la ruta, **cuando** abro el mapa, **entonces** se muestra el mensaje "No hay buses en servicio en esta ruta por ahora", junto con el trazado de la ruta.
+10. **Dado** que un bus deja de reportar posición por más de 60 segundos, **cuando** lo veo en el mapa, **entonces** se marca como "sin señal" (p. ej. ícono atenuado) o se oculta, y no se presenta como posición actual.
+11. **Dado** que pierdo la conexión a internet, **cuando** el mapa no puede actualizarse, **entonces** se informa que los datos pueden estar desactualizados y se conserva la última posición conocida con su hora.
+12. **Dado** que no otorgué permiso de ubicación, **cuando** abro el mapa, **entonces** puedo seguir viendo la ruta y los buses, y solo se omite mi ubicación y la distancia a mí.
+13. **Dado** que cambio de ruta, **cuando** selecciono otra, **entonces** el mapa muestra únicamente los buses de la nueva ruta, sin restos de la anterior.
+
+### No funcionales
+14. **Rendimiento:** el mapa carga y muestra los buses en menos de 3 segundos con conexión 4G.
+15. **Compatibilidad:** funciona en las versiones de Android/iOS y navegadores definidos como soportados.
+16. **Accesibilidad:** los íconos y estados (activo / sin señal) no dependen solo del color, y los elementos tienen etiquetas legibles por lector de pantalla.
+17. **Privacidad:** no se expone información del conductor ni datos personales del pasajero.
+
+---
+Los umbrales (10 s, 60 s, 3 s) son propuestas; ajústalos según lo que permita la telemetría de tu flota. Si quieres, puedo reducirlos a un formato más corto o ponerlos en un documento.
