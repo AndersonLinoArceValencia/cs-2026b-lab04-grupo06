@@ -398,3 +398,26 @@ Los prompts se tratan como código: contrato de salida en `prompts/criterios/ass
 ![Tasa de aprobación por versión](prompts/img/resultados.png)
 
 Lecciones: la v3 llegó a 100 % con las aserciones A1–A5 pero rechazaba todas las historias válidas; la aserción A6 lo reveló. Con 8 casos, 100 % no prueba que el prompt sea bueno. Red teaming: v3.1 resiste 4/5 ataques y v4 5/5 ([red-team.md](prompts/seguridad/red-team.md)); no determinismo en [no-determinismo.md](prompts/no-determinismo.md); bitácora en [bitacora-ia.md](prompts/bitacora-ia.md). Integración: `src/monitoreo/generador_criterios.py` detrás de `IProveedorLLM`.
+
+
+## Desarrollo asistido por IA (Lab 12)
+
+En el Laboratorio 12 se implementó la historia **HU-12: Estimar la hora de llegada al paradero** (`src/monitoreo/llegada.py`) aplicando **Desarrollo Guiado por Especificación (SDD)** y **TDD** con apoyo del asistente en modo agente (**Antigravity / Gemini**), siguiendo las reglas definidas en [`AGENTS.md`](AGENTS.md) y la política formalizada en [`ADR-012`](docs/architecture/adr/012-uso-de-ia.md).
+
+### Flujo seguido
+1. **Contexto y compuertas (E1):** `AGENTS.md`, `CLAUDE.md`, `pyproject.toml`, `calidad/verificar.py` y workflow CI `.github/workflows/calidad.yml`.
+2. **Especificación y plan (E2):** `specs/hu-12/spec.md` (5 escenarios Gherkin incluyendo `YA_PASO`, `SIN_GPS` y validación geográfica de Arequipa), `plan.md` y `tasks.md`.
+3. **TDD con IA (E3):** pruebas en rojo (`tests/test_hu12_llegada.py`), implementación mínima reutilizando `FabricaEstrategiasETA` y registro en [`docs/lab12/sesion-ia.md`](docs/lab12/sesion-ia.md).
+4. **Revisión y compuertas (E4–E5):** revisión cruzada IA vs. humana ([`docs/lab12/revision-pr.md`](docs/lab12/revision-pr.md)), nueva compuerta de arquitectura con `import-linter` y comparación contra borradores sin revisar ([`docs/lab12/comparativa-compuertas.md`](docs/lab12/comparativa-compuertas.md)).
+5. **Experimento y bitácora (E6–E7):** [`docs/lab12/experimento.csv`](docs/lab12/experimento.csv), [`docs/lab12/experimento.md`](docs/lab12/experimento.md) y [`docs/lab12/bitacora-ia.md`](docs/lab12/bitacora-ia.md).
+6. **Reto opcional:** comando reutilizable `/nueva-historia` demostrado con [`specs/hu-13/`](specs/hu-13/spec.md).
+
+![Compuertas de calidad HU-12](docs/lab12/fig_compuertas_hu12.png)
+
+### Resultado del mini experimento de productividad (E6)
+| Integrante | Tarea | Modo | Minutos | Iteraciones IA | Compuertas 1.er intento | Defectos revisión |
+|---|---|---|---:|---:|---:|---:|
+| Arce Valencia Anderson Lino | T-A (Validación geográfica/velocidad) | Con IA | 14 | 2 | 7/8 | 1 |
+| Carlos Ccamaqque Wilson Freddy | T-A (Validación geográfica/velocidad) | Sin IA | 21 | 0 | 8/8 | 0 |
+| Carlos Ccamaqque Wilson Freddy | T-B (Cálculo ETA y casos borde) | Con IA | 18 | 3 | 6/8 | 2 |
+| Arce Valencia Anderson Lino | T-B (Cálculo ETA y casos borde) | Sin IA | 24 | 0 | 8/8 | 0 |

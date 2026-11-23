@@ -1,0 +1,9 @@
+# Registro de Sesión Asistida por IA · HU-12 (E3)
+
+| Paso | Prompt enviado al asistente | Resumen de respuesta de la IA | Decisión del equipo | Motivo |
+|---|---|---|---|---|
+| 1 (E2) | Genera el borrador de `specs/hu-12/spec.md` para estimar la hora de llegada al paradero en RutaSIT Arequipa con casos borde de bus pasado y GPS sin datos. | Propuso 5 escenarios Gherkin incluyendo `YA_PASO`, `SIN_GPS` y validación geográfica de Arequipa. | **Corregida** | Se añadió explícitamente la sección *Fuera de alcance* para evitar notificaciones y escritura en disco. |
+| 2 (E3-T1) | Usando `implementar-tarea`, escribe solo las pruebas unitarias en `tests/test_hu12_llegada.py` para los 5 escenarios de `spec.md` y verifica que fallen. | Generó 8 pruebas parametrizadas con soporte a la variable `MODULO`. Todas fallaron en rojo por ausencia del módulo. | **Aceptada** | Coincide 100 % con los criterios Gherkin y permite evaluar borradores alternativos. |
+| 3 (E3-T2) | Implementa las validaciones de rango geográfico de Arequipa, velocidad y casos borde `SIN_GPS` y `YA_PASO` en `src/monitoreo/llegada.py`. | Creó `_validar_coordenada_arequipa`, `_validar_velocidad` y el dataclass inmutable `ResultadoLlegada`. | **Aceptada** | Funciones pequeñas con complejidad ciclomática A y mensajes de error claros. |
+| 4 (E3-T3) | Integra el cálculo de ETA en `estimar_hora_llegada` sin duplicar fórmulas. | En un primer intento escribió la fórmula lineal manual; al recordarle `AGENTS.md`, la reemplazó por `FabricaEstrategiasETA().crear(estrategia)`. | **Corregida** | Evita duplicar reglas de negocio ya probadas en `src/monitoreo/estrategias.py`. |
+| 5 (E3-T4) | Ejecuta `pytest` y `calidad/verificar.py src.monitoreo.llegada`. | Reportó 7/7 compuertas en verde con 100 % de cobertura, 0 hallazgos en Ruff y Bandit, y complejidad máxima A (CC=3). | **Aceptada** | Cumple todos los umbrales de calidad definidos para el proyecto. |

@@ -1,0 +1,5 @@
+integrante,tarea,modo,minutos,iteraciones_ia,compuertas_primer_intento,defectos_revision,comprende_todo
+Arce Valencia Anderson Lino,T-A (Validacion geografica y velocidad),Con IA,14,2,7/8,1,Si
+Carlos Ccamaqque Wilson Freddy,T-A (Validacion geografica y velocidad),Sin IA,21,0,8/8,0,Si
+Carlos Ccamaqque Wilson Freddy,T-B (Calculo ETA y casos borde),Con IA,18,3,6/8,2,Si
+Arce Valencia Anderson Lino,T-B (Calculo ETA y casos borde),Sin IA,24,0,8/8,0,Si
