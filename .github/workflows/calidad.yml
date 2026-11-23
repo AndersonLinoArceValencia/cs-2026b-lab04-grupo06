@@ -1,0 +1,19 @@
+name: compuertas-de-calidad
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feat/lab12-hu12-eta-paradero]
+
+jobs:
+  calidad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest pytest-cov ruff bandit radon import-linter jsonschema matplotlib
+      - run: PYTHONPATH=. python -m pytest -q
+      - run: PYTHONPATH=. python calidad/verificar.py src.monitoreo.llegada tests/test_hu12_llegada.py
