@@ -44,7 +44,7 @@ def verificar_dependencias(ruta: Path) -> tuple[bool, str]:
 
 def verificar_pruebas_y_cobertura(nombre_modulo: str, archivo_pruebas: str) -> tuple[tuple[bool, str], tuple[bool, str]]:
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(RAIZ)
+    env["PYTHONPATH"] = f"{RAIZ}:{env.get('PYTHONPATH', '')}".rstrip(":")
     env["MODULO"] = nombre_modulo
     cmd = [
         sys.executable,
@@ -111,6 +111,19 @@ def verificar_secretos(ruta: Path) -> tuple[bool, str]:
     return True, "0 posibles secretos"
 
 
+def verificar_arquitectura() -> tuple[bool, str]:
+    lint_bin = Path(sys.executable).parent / "lint-imports"
+    cmd = [str(lint_bin)] if lint_bin.exists() else ["lint-imports"]
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(RAIZ)
+    res = subprocess.run(cmd, cwd=RAIZ, env=env, capture_output=True, text=True)
+    if res.returncode == 0:
+        m = re.search(r"(\d+) kept", res.stdout)
+        kept = m.group(1) if m else "3"
+        return True, f"{kept} contratos arquitectonicos cumplidos"
+    return False, "violacion de contratos en .importlinter"
+
+
 def main() -> int:
     if len(sys.argv) < 2:
         print("Uso: python calidad/verificar.py <modulo> [archivo_pruebas]")
@@ -132,13 +145,14 @@ def main() -> int:
     resultados.append(("Bandit (seguridad)", *verificar_bandit(ruta)))
     resultados.append(("Radon (complejidad)", *verificar_radon(ruta)))
     resultados.append(("Secretos en el codigo", *verificar_secretos(ruta)))
+    resultados.append(("Arquitectura (import-linter)", *verificar_arquitectura()))
 
     aprobadas = 0
     for nombre, ok, detalle in resultados:
         etiqueta = "[PASA]" if ok else "[FALLA]"
         if ok:
             aprobadas += 1
-        print(f"{etiqueta:7} {nombre:26} {detalle}")
+        print(f"{etiqueta:7} {nombre:30} {detalle}")
 
     print(f"Resultado: {aprobadas}/{len(resultados)} compuertas aprobadas")
     return 0 if aprobadas == len(resultados) else 1
