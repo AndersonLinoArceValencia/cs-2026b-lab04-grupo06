@@ -6,10 +6,10 @@ Se comparó un borrador generado con un prompt vago sin `AGENTS.md` ni `spec.md`
 |---|---|---|---|
 | 1. Dependencias aprobadas | FALLA (`geopy_fast_eta`, `subprocess`) | FALLA (`subprocess`) | PASA (4 aprobadas) |
 | 2. Pruebas HU-12 | FALLA (0/8) | FALLA (2/8) | PASA (8/8) |
-| 3. Cobertura (>= 85 %) | FALLA (0 %) | FALLA (74 %) | PASA (100 %) |
-| 4. Ruff (estilo y seguridad) | FALLA | FALLA | PASA (0 hallazgos) |
+| 3. Cobertura (>= 85 %) | FALLA (14 %) | PASA (86 %) | PASA (100 %) |
+| 4. Ruff (estilo y seguridad) | FALLA (3 hallazgos) | FALLA (2 hallazgos) | PASA (0 hallazgos) |
 | 5. Bandit (seguridad) | FALLA (B404, B602) | FALLA (B404, B602) | PASA (sin hallazgos) |
-| 6. Radon (complejidad <= B) | PASA (B, CC=7) | PASA (B, CC=7) | PASA (A, CC=3) |
+| 6. Radon (complejidad <= B) | PASA (B, CC=6) | PASA (B, CC=6) | PASA (A, CC=3) |
 | 7. Secretos en el código | PASA (0) | PASA (0) | PASA (0) |
 | 8. Arquitectura (`import-linter`) | PASA (3 contratos) | PASA (3 contratos) | PASA (3 contratos) |
-| **Total aprobadas** | **3/8** | **3/8** | **8/8** |
+| **Total aprobadas** | **3/8** | **4/8** | **8/8** |
