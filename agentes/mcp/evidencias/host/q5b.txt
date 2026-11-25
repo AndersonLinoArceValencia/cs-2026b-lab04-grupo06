@@ -1,0 +1,15 @@
+MCP: [{'name': 'rutasit', 'status': 'connected', 'source': 'dynamic'}]
+TOOL_USE ToolSearch {"query": "select:mcp__rutasit__buses_en_ruta,mcp__rutasit__reportar_desvio,mcp__rutasit__verificar_desvio"}
+RESULT   
+TOOL_USE mcp__rutasit__buses_en_ruta {"id_ruta": "R-01"}
+RESULT {"id_ruta":"R-01","nombre":"Cono Norte - Centro","buses":[{"id_bus":"B-011","estado":"EN_RUTA","km":2,"velocidad_kmh":24},{"id_bus":"B-012","estado":"EN_RUTA","km":5,"velocidad_kmh":18},{"id_bus":"B-013","estado":"DESVIADO","km":4,"velocidad_kmh":15}]}
+TOOL_USE mcp__rutasit__verificar_desvio {"id_bus": "B-013"}
+RESULT {"id_bus":"B-013","id_ruta":"R-01","desviado":true,"umbral_m":50}
+TOOL_USE mcp__rutasit__reportar_desvio {"id_bus": "B-013", "descripcion": "Bus B-013 fuera del trazado de la ruta R-01 (Cono Norte - Centro) entre Av. Ejército y Puente Grau, desde las 07:30 del 25/11/2026. Verificación GPS: desviado a más de 50 m del trazado; km 4, velocidad 15 km/h."}
+RESULT {"result":"Creado reportes/DESVIO-02.md"}
+FINAL: Registré el reporte del desvío del B-013 en `reportes/DESVIO-02.md`.
+
+Antes de crearlo comprobé el dato con el servidor rutasit. El B-013 figura como **DESVIADO** en la R-01 (Cono Norte - Centro) y la señal GPS lo ubica a más de 50 m del trazado. Va por el km 4 a 15 km/h.
+
+El reporte dice que el bus está fuera del trazado entre Av. Ejército y Puente Grau desde las 07:30 del 25/11/2026, e incluye la verificación por GPS.
+DENIALS: []

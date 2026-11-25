@@ -1,0 +1,19 @@
+MCP: [{'name': 'rutasit', 'status': 'connected', 'source': 'dynamic'}]
+TOOL_USE ToolSearch {"query": "select:mcp__rutasit__tiempo_llegada,mcp__rutasit__buses_en_ruta"}
+RESULT  
+TOOL_USE ToolSearch {"query": "select:ReadMcpResourceTool"}
+RESULT 
+TOOL_USE ReadMcpResourceTool {"server": "rutasit", "uri": "rutasit://rutas/mapa"}
+RESULT {"contents":[{"uri":"rutasit://rutas/mapa","mimeType":"application/json","text":"{\"R-01\": {\"nombre\": \"Cono Norte - Centro\", \"paraderos\": [{\"id\": \"P-101\", \"nombre\": \"Terminal Cono Norte\", \"km\": 0.0}, {\"id\": \"P-102\", \"nombre\": \"Av. Ejército\", \"km\": 3.0}, {\"id\": \"P-103\",
+TOOL_USE mcp__rutasit__buses_en_ruta {"id_ruta": "R-02"}
+RESULT {"id_ruta":"R-02","nombre":"Socabaya - Centro","buses":[{"id_bus":"B-021","estado":"EN_RUTA","km":1.5,"velocidad_kmh":30},{"id_bus":"B-022","estado":"DETENIDO","km":5,"velocidad_kmh":0}]}
+TOOL_USE mcp__rutasit__tiempo_llegada {"id_bus": "B-021", "id_paradero": "P-203", "hora_actual": "2026-11-25T18:10", "estrategia": "HORA_PUNTA"}
+RESULT {"id_bus":"B-021","paradero":"Av. Independencia","estado":"EN_CAMINO","minutos_eta":24,"hora_estimada":"18:34"}
+FINAL: Según el servidor `rutasit`, el bus **B-021 tarda unos 24 minutos** en llegar a **Av. Independencia (P-203)** y llegaría hacia las **18:34**.
+
+- **Ubicación:** el bus está en el km 1.5 de la ruta R-02 (Socabaya - Centro), en estado `EN_RUTA`, a 30 km/h.
+- **Distancia:** el paradero está en el km 7.5, así que le faltan 6 km.
+- **Estrategia:** usé `HORA_PUNTA` porque las 18:10 es hora punta. A velocidad constante (`LINEAL`) serían unos 12 minutos, así que esta estrategia duplica el tiempo.
+
+Los datos del servidor son ficticios.
+DENIALS: []
