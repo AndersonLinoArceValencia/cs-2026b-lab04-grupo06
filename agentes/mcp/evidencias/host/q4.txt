@@ -1,0 +1,11 @@
+MCP: [{'name': 'rutasit', 'status': 'connected', 'source': 'dynamic'}]
+FINAL: **Aviso para pasajeros, ruta R-01 (SIT Arequipa)**
+
+> Aviso R-01: Por obras en el Puente Grau, desde las 07:00 los buses de la ruta R-01 toman el desvío por la Av. Ejército. Te sugerimos salir con algo de anticipación. ¡Gracias por tu comprensión!
+
+(Tiene unos 200 caracteres, así que cumple el límite de 280.)
+
+**Notas:**
+- La plantilla recibió el motivo cortado (solo `"obras`), porque el argumento se partió en los espacios. Para el aviso usé el texto completo que escribiste en el comando.
+- La única hora del aviso es la de inicio (07:00), que viene de tu motivo. No incluí hora de fin ni paraderos afectados porque no los indicaste. Si los tienes, puedo agregarlos.
+DENIALS: []

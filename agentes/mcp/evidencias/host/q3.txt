@@ -1,0 +1,14 @@
+MCP: [{'name': 'rutasit', 'status': 'connected', 'source': 'dynamic'}]
+TOOL_USE ToolSearch {"query": "select:mcp__rutasit__verificar_desvio"}
+RESULT 
+TOOL_USE mcp__rutasit__verificar_desvio {"id_bus": "B-013"}
+RESULT {"id_bus":"B-013","id_ruta":"R-01","desviado":true,"umbral_m":50}
+TOOL_USE mcp__rutasit__verificar_desvio {"id_bus": "B-022"}
+RESULT ERR Error executing tool verificar_desvio: El bus B-022 no tiene señal GPS; no se puede evaluar el desvío
+FINAL: Consulté el servidor rutasit (los datos son ficticios):
+
+- **B-013, ruta R-01: sí está desviado.** Está a más de 50 m del trazado de su ruta.
+- **B-022: no se pudo comprobar.** El bus no tiene señal GPS, así que el servidor no puede calcular si está desviado. No sabemos si está en su ruta o fuera de ella.
+
+No registré ningún reporte de desvío. Si quieres, reporto el de B-013 con `reportar_desvio`. Para B-022 tendríamos que esperar a que vuelva la señal GPS y consultar de nuevo.
+DENIALS: []

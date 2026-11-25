@@ -1,0 +1,23 @@
+sequenceDiagram
+    autonumber
+    actor U as Humano
+    participant A as Agente (host MCP)
+    participant S as Servidor MCP rutasit
+    A->>S: server/discover
+    S-->>A: versiones 2026-07-28 + capacidades
+    A->>S: tools/list
+    S-->>A: 4 herramientas con esquema
+    A->>S: resources/read rutasit://rutas/mapa
+    S-->>A: resultado (resultType=complete)
+    A->>S: tools/call buses_en_ruta
+    S-->>A: resultado (resultType=complete)
+    A->>S: tools/call tiempo_llegada
+    S--xA: error (isError=true)
+    A->>S: tools/call tiempo_llegada
+    S-->>A: resultado (resultType=complete)
+    A->>S: tools/call verificar_desvio
+    S-->>A: resultado (resultType=complete)
+    A->>U: ¿apruebas reportar_desvio?
+    U-->>A: sí
+    A->>S: tools/call reportar_desvio
+    S-->>A: resultado (resultType=complete)

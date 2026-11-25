@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "rutasit": {
+      "type": "stdio",
+      "command": ".venv/bin/python",
+      "args": ["agentes/mcp/servidor_mcp/rutasit_mcp.py"]
+    }
+  }
+}

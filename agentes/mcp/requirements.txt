@@ -1,0 +1,5 @@
+# Dependencias SOLO del servidor MCP y sus herramientas (Lab 11). El paquete src/ no las usa (ver ADR-011).
+mcp>=2,<3
+pytest
+radon
+matplotlib   # graficos.py (E6)

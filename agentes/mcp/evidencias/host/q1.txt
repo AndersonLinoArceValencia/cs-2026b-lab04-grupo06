@@ -1,0 +1,18 @@
+MCP: [{'name': 'rutasit', 'status': 'connected', 'source': 'dynamic'}]
+TOOL_USE ToolSearch {"query": "select:mcp__rutasit__buses_en_ruta"}
+RESULT 
+TOOL_USE mcp__rutasit__buses_en_ruta {"id_ruta": "R-01"}
+RESULT {"id_ruta":"R-01","nombre":"Cono Norte - Centro","buses":[{"id_bus":"B-011","estado":"EN_RUTA","km":2,"velocidad_kmh":24},{"id_bus":"B-012","estado":"EN_RUTA","km":5,"velocidad_kmh":18},{"id_bus":"B-013","estado":"DESVIADO","km":4,"velocidad_kmh":15}]}
+FINAL: Según el servidor `rutasit`, en la ruta **R-01 (Cono Norte - Centro)** circulan 3 buses:
+
+| Bus | Estado | Km recorrido | Velocidad |
+|---|---|---|---|
+| B-011 | EN_RUTA | 2 km | 24 km/h |
+| B-012 | EN_RUTA | 5 km | 18 km/h |
+| B-013 | **DESVIADO** | 4 km | 15 km/h |
+
+- B-011 y B-012 van por su recorrido normal.
+- B-013 figura como desviado. Va a 15 km/h, más lento que los otros dos.
+
+El servidor indica que estos datos son ficticios. Si quieres, puedo consultar el desvío de B-013 o calcular cuánto tarda un bus en llegar a un paradero.
+DENIALS: []

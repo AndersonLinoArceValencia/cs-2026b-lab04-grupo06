@@ -1,0 +1,16 @@
+MCP: [{'name': 'rutasit', 'status': 'connected', 'source': 'dynamic'}]
+TOOL_USE ToolSearch {"query": "select:mcp__rutasit__tiempo_llegada,mcp__rutasit__buses_en_ruta"}
+RESULT  
+TOOL_USE mcp__rutasit__buses_en_ruta {"id_ruta": "R-02"}
+RESULT {"id_ruta":"R-02","nombre":"Socabaya - Centro","buses":[{"id_bus":"B-021","estado":"EN_RUTA","km":1.5,"velocidad_kmh":30},{"id_bus":"B-022","estado":"DETENIDO","km":5,"velocidad_kmh":0}]}
+TOOL_USE Bash {"command": "grep -rn \"Independencia\" --include=*.py --include=*.json --include=*.md . | head -20", "description": "Search repo for the Independencia stop ID"}
+RESULT agentes/mcp/servidor_mcp/datos_rutasit.py:52:        ParaderoRuta("P-203", "Av. Independencia", 7.5, -16.4050, -71.5300),
+TOOL_USE mcp__rutasit__tiempo_llegada {"id_bus": "B-021", "id_paradero": "P-203", "hora_actual": "2026-11-25T18:10", "estrategia": "HORA_PUNTA"}
+RESULT {"id_bus":"B-021","paradero":"Av. Independencia","estado":"EN_CAMINO","minutos_eta":24,"hora_estimada":"18:34"}
+FINAL: El bus **B-021** llegará al paradero **Av. Independencia (P-203)** de la ruta R-02 (Socabaya - Centro) en unos **24 minutos**, a las **18:34**.
+
+Cómo lo calculé:
+- El B-021 está **EN_RUTA** en el km 1.5, a 30 km/h. El paradero está en el km 7.5, así que le faltan 6 km.
+- Usé la estrategia **HORA_PUNTA** porque eran las 18:10. Sin el ajuste por tráfico, la estimación lineal habría sido de unos 12 minutos.
+- El servidor rutasit no busca paraderos por nombre. Saqué el ID P-203 de `agentes/mcp/servidor_mcp/datos_rutasit.py:52`.
+DENIALS: []

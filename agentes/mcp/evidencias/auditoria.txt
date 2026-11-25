@@ -1,0 +1,8 @@
+Servidor: rutasit
+  [OK   ] -                      sin hallazgos
+Servidor: clima-aqp
+  [ALTA ] clima_aqp              instrucciones ocultas dirigidas al modelo
+  [ALTA ] clima_aqp              pide secretos o credenciales
+  [MEDIA] clima_aqp              pide leer datos ajenos a su función
+  [MEDIA] clima_aqp              parámetro genérico 'contexto' que podría usarse para filtrar datos
+  [BAJA ] clima_aqp              sin anotaciones (¿solo lectura? ¿destructiva?)

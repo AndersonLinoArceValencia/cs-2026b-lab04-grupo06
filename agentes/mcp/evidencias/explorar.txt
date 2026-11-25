@@ -1,0 +1,22 @@
+Servidor: rutasit | protocolo 2026-07-28
+
+HERRAMIENTAS (las elige el modelo):
+  - buses_en_ruta(id_ruta)  [solo lectura]
+  - tiempo_llegada(id_bus, id_paradero, hora_actual, estrategia)  [solo lectura]
+  - verificar_desvio(id_bus)  [solo lectura]
+  - reportar_desvio(id_bus, descripcion)  [ESCRITURA]
+
+RECURSOS (los elige la aplicación):
+  - rutasit://agents-md  Reglas para agentes (AGENTS.md)
+  - rutasit://rutas/mapa  Mapa de rutas y paraderos
+  - rutasit://adr/{numero}  Decisión de arquitectura (ADR) (plantilla)
+
+PROMPTS (los elige el usuario):
+  - aviso_usuarios(id_ruta, motivo)
+  - revisar_cambio(diff)
+
+PRUEBAS DE USO:
+  tiempo_llegada → {"id_bus": "B-011", "paradero": "Plaza de Armas", "estado": "EN_CAMINO", "minutos_eta": 15, "hora_estimada": "07:45"}
+  buses_en_ruta(R-09) → is_error = True | Error executing tool buses_en_ruta: Ruta desconocida 'R-09'. Valores válidos: R-01, R-02
+  read_resource(adr/001) → # ADR-001: Adoptar un monolito modular asíncrono con búfer en Redis para el MVP 
+  get_prompt(aviso_usuarios) → Redacta un aviso para los pasajeros de la ruta R-01 del SIT de Arequip …
