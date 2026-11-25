@@ -400,6 +400,63 @@ Los prompts se tratan como código: contrato de salida en `prompts/criterios/ass
 Lecciones: la v3 llegó a 100 % con las aserciones A1–A5 pero rechazaba todas las historias válidas; la aserción A6 lo reveló. Con 8 casos, 100 % no prueba que el prompt sea bueno. Red teaming: v3.1 resiste 4/5 ataques y v4 5/5 ([red-team.md](prompts/seguridad/red-team.md)); no determinismo en [no-determinismo.md](prompts/no-determinismo.md); bitácora en [bitacora-ia.md](prompts/bitacora-ia.md). Integración: `src/monitoreo/generador_criterios.py` detrás de `IProveedorLLM`.
 
 
+## Servidor MCP (Lab 11)
+
+El proyecto se publica como servidor MCP `rutasit` ([ADR-011](docs/architecture/adr/011-servidor-mcp.md)) para que
+Claude Code, VS Code + Copilot, MCP Inspector o el agente del Lab 10 usen las mismas herramientas. Datos ficticios.
+
+| Primitiva | Nombre | Escritura |
+|---|---|---|
+| Herramienta | `buses_en_ruta(id_ruta)` | No |
+| Herramienta | `tiempo_llegada(id_bus, id_paradero, hora_actual, estrategia)` | No |
+| Herramienta | `verificar_desvio(id_bus)` | No |
+| Herramienta | `reportar_desvio(id_bus, descripcion)` | **Sí, solo crea** (pide aprobación) |
+| Recurso | `rutasit://agents-md`, `rutasit://rutas/mapa`, `rutasit://adr/{numero}` | No |
+| Prompt | `aviso_usuarios(id_ruta, motivo)`, `revisar_cambio(diff)` | No |
+
+```bash
+python -m venv .venv && .venv/bin/pip install -r agentes/mcp/requirements.txt
+.venv/bin/python -m pytest -q agentes/mcp/pruebas          # 20 pruebas de contrato
+.venv/bin/python agentes/mcp/cliente/explorar.py           # host mínimo
+.venv/bin/python agentes/mcp/operador_mcp.py               # agente del Lab 10 vía MCP (con aprobación)
+.venv/bin/python agentes/mcp/cliente/traza_mcp.py          # diagrama de secuencia + métricas
+.venv/bin/python agentes/mcp/cliente/auditar.py agentes/mcp/terceros/clima_mcp.py
+```
+
+**Conectarlo a un host:** Claude Code lee `.mcp.json` de la raíz (o `claude mcp add rutasit -- .venv/bin/python
+agentes/mcp/servidor_mcp/rutasit_mcp.py`); VS Code usa `.vscode/mcp.json`. Detalle de las 5 consultas en
+[`agentes/mcp/uso-en-host.md`](agentes/mcp/uso-en-host.md).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Humano
+    participant A as Agente (host MCP)
+    participant S as Servidor MCP rutasit
+    A->>S: server/discover
+    S-->>A: versiones 2026-07-28 + capacidades
+    A->>S: tools/list
+    S-->>A: 4 herramientas con esquema
+    A->>S: resources/read rutasit://rutas/mapa
+    S-->>A: resultado
+    A->>S: tools/call buses_en_ruta
+    S-->>A: resultado
+    A->>S: tools/call tiempo_llegada
+    S--xA: error (isError=true)
+    A->>S: tools/call tiempo_llegada
+    S-->>A: resultado
+    A->>S: tools/call verificar_desvio
+    S-->>A: resultado
+    A->>U: ¿apruebas reportar_desvio?
+    U-->>A: sí
+    A->>S: tools/call reportar_desvio
+    S-->>A: resultado
+```
+
+Entregables: [catálogo](agentes/mcp/diseno/catalogo-mcp.md) · [Inspector](agentes/mcp/pruebas/inspector.md) ·
+[protocolo y costo](agentes/mcp/protocolo.md) · [seguridad](agentes/mcp/seguridad.md) ·
+[bitácora IA](agentes/mcp/bitacora-ia.md). Etiqueta: `v1.1-mcp`.
+
 ## Desarrollo asistido por IA (Lab 12)
 
 En el Laboratorio 12 se implementó la historia **HU-12: Estimar la hora de llegada al paradero** (`src/monitoreo/llegada.py`) aplicando **Desarrollo Guiado por Especificación (SDD)** y **TDD** con apoyo del asistente en modo agente (**Antigravity / Gemini**), siguiendo las reglas definidas en [`AGENTS.md`](AGENTS.md) y la política formalizada en [`ADR-012`](docs/architecture/adr/012-uso-de-ia.md).
