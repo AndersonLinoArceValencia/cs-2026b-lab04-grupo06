@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 agentes/trabajo/
 agentes/trabajo_unico/
+agentes/mcp/reportes/
