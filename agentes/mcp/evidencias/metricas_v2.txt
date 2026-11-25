@@ -1,0 +1,23 @@
+{
+ "mensajes": 16,
+ "errores": 1,
+ "latencia_ms": {
+  "server/discover": [
+   903.0
+  ],
+  "tools/list": [
+   2.1
+  ],
+  "resources/read": [
+   2.5
+  ],
+  "tools/call": [
+   2.2,
+   9.6,
+   1.5,
+   2.3,
+   2.4
+  ]
+ },
+ "bytes": 10718
+}

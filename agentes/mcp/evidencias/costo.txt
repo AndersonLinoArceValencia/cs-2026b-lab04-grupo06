@@ -1,0 +1,15 @@
+mcp_trafico_v1.jsonl: total ≈ 1018 tokens
+  buses_en_ruta      ≈ 293 tokens
+  tiempo_llegada     ≈ 314 tokens
+  verificar_desvio   ≈ 206 tokens
+  reportar_desvio    ≈ 205 tokens
+mcp_trafico_v2.jsonl: total ≈ 920 tokens
+  buses_en_ruta      ≈ 254 tokens
+  tiempo_llegada     ≈ 294 tokens
+  verificar_desvio   ≈ 182 tokens
+  reportar_desvio    ≈ 190 tokens
+mcp_trafico_v3.jsonl: total ≈ 935 tokens
+  buses_en_ruta      ≈ 254 tokens
+  tiempo_llegada     ≈ 309 tokens
+  verificar_desvio   ≈ 182 tokens
+  reportar_desvio    ≈ 190 tokens
