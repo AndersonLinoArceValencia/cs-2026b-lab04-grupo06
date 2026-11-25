@@ -1,0 +1,10 @@
+flowchart LR
+    subgraph L10["Agente del Lab 10"]
+        N["Núcleo ReAct<br/>+ contrato"] --> A["HerramientasMCP<br/>«Adapter»"]
+        N --> P["Política<br/>(aprobación de reportar_desvio)"]
+    end
+    A -- stdio --> E["espia.py<br/>(registra JSON-RPC)"]
+    E --> S["rutasit_mcp.py<br/>4 herramientas · 3 recursos · 2 prompts"]
+    H["Hosts reales:<br/>Claude Code, VS Code/Copilot,<br/>MCP Inspector"] -- stdio --> S
+    S --> D["Dominio RutaSIT<br/>llegada.py · desvios.py · estrategias.py<br/>datos ficticios"]
+    E -.-> T["trazas/mcp_trafico.jsonl<br/>→ diagrama Mermaid y métricas"]

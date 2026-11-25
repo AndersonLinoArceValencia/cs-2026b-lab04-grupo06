@@ -1,0 +1,9 @@
+[
+ {"pensamiento": "Primero leo el mapa de rutas para saber qué paraderos tiene la R-01 y su identificador.", "accion": "leer_recurso", "args": {"uri": "rutasit://rutas/mapa"}},
+ {"pensamiento": "Plaza de Armas es P-104. Consulto qué buses circulan en la R-01.", "accion": "buses_en_ruta", "args": {"id_ruta": "R-01"}},
+ {"pensamiento": "B-012 es el bus EN_RUTA más avanzado (km 5). Pido su tiempo de llegada a P-104 a las 07:30.", "accion": "tiempo_llegada", "args": {"id_bus": "B-012", "id_paradero": "P-104", "hora_actual": "07:30"}},
+ {"pensamiento": "El servidor rechazó la hora y me indica el formato AAAA-MM-DDTHH:MM. Corrijo y repito.", "accion": "tiempo_llegada", "args": {"id_bus": "B-012", "id_paradero": "P-104", "hora_actual": "2026-11-25T07:30"}},
+ {"pensamiento": "B-013 figura como DESVIADO; confirmo con el cálculo geométrico antes de reportar.", "accion": "verificar_desvio", "args": {"id_bus": "B-013"}},
+ {"pensamiento": "El desvío está confirmado. Registro el reporte para el centro de control (requiere aprobación humana).", "accion": "reportar_desvio", "args": {"id_bus": "B-013", "descripcion": "Observado: el bus B-013 de la ruta R-01 está a más de 50 m del trazado entre Av. Ejército y Puente Grau (consulta de las 07:30 del 25/11/2026). Evidencia: verificar_desvio(B-013) vía MCP devolvió desviado=true."}},
+ {"pensamiento": "Tengo los datos y el reporte registrado.", "final": "En la ruta R-01 circulan B-011 y B-012 (EN_RUTA) y B-013 (DESVIADO). El siguiente bus a Plaza de Armas es B-012: llega en 10 min, a las 07:40. B-013 está fuera del trazado; se registró DESVIO-01 para el centro de control."}
+]

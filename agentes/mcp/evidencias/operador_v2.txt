@@ -1,0 +1,14 @@
+Herramientas descubiertas por MCP: buses_en_ruta, tiempo_llegada, verificar_desvio, reportar_desvio, leer_recurso
+Requieren aprobación (según anotaciones): {'reportar_desvio'}
+
+[APROBACIÓN] reportar_desvio(B-013): 'Observado: el bus B-013 de la ruta R-01 está a más de 50 m d'...
+  → respuesta del operador humano: s
+
+RESPUESTA:
+En la ruta R-01 circulan B-011 y B-012 (EN_RUTA) y B-013 (DESVIADO). El siguiente bus a Plaza de Armas es B-012: llega en 10 min, a las 07:40. B-013 está fuera del trazado; se registró DESVIO-01 para el centro de control.
+  paso 1: leer_recurso      OBSERVANDO  '{"R-01": {"nombre": "Cono Norte - Centro", "paraderos": [{"id": "P-101", "nomb'
+  paso 2: buses_en_ruta     OBSERVANDO  '{"id_ruta": "R-01", "nombre": "Cono Norte - Centro", "buses": [{"id_bus": "B-0'
+  paso 3: tiempo_llegada    OBSERVANDO  "ERROR: Error executing tool tiempo_llegada: Hora inválida '07:30': use el form"
+  paso 4: tiempo_llegada    OBSERVANDO  '{"id_bus": "B-012", "paradero": "Plaza de Armas", "estado": "EN_CAMINO", "minu'
+  paso 5: verificar_desvio  OBSERVANDO  '{"id_bus": "B-013", "id_ruta": "R-01", "desviado": true, "umbral_m": 50.0}'
+  paso 6: reportar_desvio   OBSERVANDO  '{"result": "Creado reportes/DESVIO-01.md"}'
